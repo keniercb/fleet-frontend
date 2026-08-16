@@ -1,12 +1,25 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authApi } from '../api/endpoints';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import type { UserResponse, AuthResponseDto } from '@/types';
+import { authApi } from '@/api/endpoints';
 
-const AuthContext = createContext(null);
+interface AuthContextType {
+  user: UserResponse | null;
+  loading: boolean;
+  permissions: string[];
+  login: (email: string, password: string) => Promise<AuthResponseDto>;
+  logout: () => Promise<void>;
+  hasPermission: (permissionName: string) => boolean;
+  hasRole: (roleName: string) => boolean;
+  isAdmin: () => boolean;
+  isAuthenticated: boolean;
+}
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState([]);
+  const [permissions, setPermissions] = useState<string[]>([]);
 
   const loadUser = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -16,7 +29,7 @@ export function AuthProvider({ children }) {
       return;
     }
     try {
-      const parsedUser = JSON.parse(savedUser);
+      const parsedUser = JSON.parse(savedUser) as UserResponse;
       const response = await authApi.getCurrentUser();
       const fullUser = response.data;
       const userRoles = fullUser.roles || parsedUser.roles || [];
@@ -26,7 +39,7 @@ export function AuthProvider({ children }) {
       setPermissions([...new Set(allPermissions)]);
       setUser({ ...fullUser, roles: userRoles });
       localStorage.setItem('user', JSON.stringify({ ...fullUser, roles: userRoles }));
-    } catch (error) {
+    } catch {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
@@ -40,7 +53,7 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string): Promise<AuthResponseDto> => {
     const response = await authApi.login({ email, password });
     const { token, userId, email: userEmail } = response.data;
     localStorage.setItem('token', token);
@@ -61,15 +74,15 @@ export function AuthProvider({ children }) {
     setPermissions([]);
   };
 
-  const hasPermission = (permissionName) => {
+  const hasPermission = (permissionName: string): boolean => {
     return permissions.includes(permissionName);
   };
 
-  const hasRole = (roleName) => {
+  const hasRole = (roleName: string): boolean => {
     return user?.roles?.some((r) => r.name === roleName) ?? false;
   };
 
-  const isAdmin = () => {
+  const isAdmin = (): boolean => {
     return hasRole('ADMIN') || hasRole('ADMINISTRADOR');
   };
 
@@ -92,7 +105,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

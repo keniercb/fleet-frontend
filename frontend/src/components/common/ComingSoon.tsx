@@ -1,6 +1,10 @@
+interface ComingSoonProps {
+  title: string;
+}
+
 import { Construction } from 'lucide-react';
 
-export default function ComingSoon({ title }) {
+export default function ComingSoon({ title }: ComingSoonProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20">
       <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mb-4">

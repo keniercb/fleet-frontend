@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import MainLayout from './components/layout/MainLayout';
-import ProtectedRoute from './components/common/ProtectedRoute';
-import LoginPage from './pages/auth/LoginPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
-import ComingSoon from './components/common/ComingSoon';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import MainLayout from '@/components/layout/MainLayout';
+import ProtectedRoute from '@/components/common/ProtectedRoute';
+import LoginPage from '@/pages/auth/LoginPage';
+import DashboardPage from '@/pages/dashboard/DashboardPage';
+import ComingSoon from '@/components/common/ComingSoon';
+import type { ReactNode } from 'react';
 
-function PublicOnlyRoute({ children }) {
+function PublicOnlyRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) {
     return (
@@ -44,7 +45,6 @@ export default function App() {
           >
             <Route path="/" element={<DashboardPage />} />
 
-            {/* Each module route - will be replaced with real pages */}
             <Route
               path="/vehiculos"
               element={

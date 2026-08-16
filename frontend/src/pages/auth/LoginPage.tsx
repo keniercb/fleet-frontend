@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Car } from 'lucide-react';
+import type { AxiosError } from 'axios';
+
+interface ApiError {
+  message?: string;
+  error?: string;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,7 +17,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -20,9 +26,10 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/', { replace: true });
     } catch (err) {
+      const axiosErr = err as AxiosError<ApiError>;
       const message =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
+        axiosErr.response?.data?.message ||
+        axiosErr.response?.data?.error ||
         'Credenciales inválidas. Intente nuevamente.';
       setError(message);
     } finally {

@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   Car,
@@ -14,7 +15,15 @@ import {
   Link2,
 } from 'lucide-react';
 
-export const navigationConfig = [
+export interface NavItem {
+  id: string;
+  label: string;
+  path: string;
+  icon: LucideIcon;
+  permission: string | null;
+}
+
+export const navigationConfig: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -108,7 +117,10 @@ export const navigationConfig = [
   },
 ];
 
-export function getFilteredNavigation(hasPermission, isAdmin) {
+export function getFilteredNavigation(
+  hasPermission: (name: string) => boolean,
+  isAdmin: () => boolean
+): NavItem[] {
   if (isAdmin()) {
     return navigationConfig;
   }

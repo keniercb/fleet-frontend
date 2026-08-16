@@ -1,6 +1,16 @@
+interface ConfirmModalProps {
+  open: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  danger?: boolean;
+}
+
 import { X } from 'lucide-react';
 
-export default function ConfirmModal({ open, title, message, onConfirm, onCancel, confirmText = 'Eliminar', danger = true }) {
+export default function ConfirmModal({ open, title, message, onConfirm, onCancel, confirmText = 'Eliminar', danger = true }: ConfirmModalProps) {
   if (!open) return null;
 
   return (

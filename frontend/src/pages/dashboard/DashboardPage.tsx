@@ -1,10 +1,17 @@
-import { Car, Users, Route, Building2, AlertTriangle } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { Car, Users, Route, Building2, AlertTriangle, type LucideIcon } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface StatCard {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  color: string;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  const stats = [
+  const stats: StatCard[] = [
     { label: 'Vehículos', value: '--', icon: Car, color: 'bg-blue-500' },
     { label: 'Choferes', value: '--', icon: Users, color: 'bg-emerald-500' },
     { label: 'Recorridos', value: '--', icon: Route, color: 'bg-amber-500' },
