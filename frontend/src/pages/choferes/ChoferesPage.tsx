@@ -47,7 +47,7 @@ function getTempId() {
 export default function ChoferesPage() {
   const {
     data, loading, saving, totalPages, totalElements, page, size, error,
-    setPage, deleteItem,
+    setPage, createItem, updateItem, deleteItem,
   } = useCrud<ChoferRequest, ChoferResponse>(choferesApi);
 
   const { addToast } = useToast();
@@ -169,10 +169,10 @@ export default function ChoferesPage() {
     try {
       const payload = buildRequestPayload();
       if (editingEntity) {
-        await choferesApi.update(editingEntity.id, payload);
+        await updateItem(editingEntity.id, payload);
         addToast({ type: 'success', title: 'Chofer actualizado', message: 'El registro se ha actualizado correctamente.' });
       } else {
-        await choferesApi.create(payload);
+        await createItem(payload);
         addToast({ type: 'success', title: 'Chofer creado', message: 'El nuevo registro se ha creado correctamente.' });
       }
       setShowForm(false);

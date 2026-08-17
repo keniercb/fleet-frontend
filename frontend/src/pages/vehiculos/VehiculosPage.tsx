@@ -69,7 +69,7 @@ const EMPTY_FORM: FormData = {
 export default function VehiculosPage() {
   const {
     data, loading, saving, totalPages, totalElements, page, size, error,
-    setPage, deleteItem,
+    setPage, createItem, updateItem, deleteItem,
   } = useCrud<VehiculoRequest, VehiculoResponse>(vehiculosApi);
 
   const { addToast } = useToast();
@@ -174,10 +174,10 @@ export default function VehiculosPage() {
     try {
       const payload = buildRequestPayload();
       if (editingEntity) {
-        await vehiculosApi.update(editingEntity.id, payload);
+        await updateItem(editingEntity.id, payload);
         addToast({ type: 'success', title: 'Vehículo actualizado', message: 'El registro se ha actualizado correctamente.' });
       } else {
-        await vehiculosApi.create(payload);
+        await createItem(payload);
         addToast({ type: 'success', title: 'Vehículo creado', message: 'El nuevo registro se ha creado correctamente.' });
       }
       setShowForm(false);

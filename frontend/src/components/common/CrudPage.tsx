@@ -70,7 +70,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     getIsActive,
   } = config;
 
-  const { data, loading, saving, totalPages, totalElements, page, size, error, setPage, deleteItem } =
+  const { data, loading, saving, totalPages, totalElements, page, size, error, setPage, createItem, updateItem, deleteItem } =
     useCrud<TReq, TRes>(api);
 
   const { addToast } = useToast();
@@ -110,10 +110,10 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     e.preventDefault();
     try {
       if (editingEntity) {
-        await api.update(getId(editingEntity), formData);
+        await updateItem(getId(editingEntity), formData);
         addToast({ type: 'success', title: `${singular} actualizado`, message: 'El registro se ha actualizado correctamente.' });
       } else {
-        await api.create(formData);
+        await createItem(formData);
         addToast({ type: 'success', title: `${singular} creado`, message: 'El nuevo registro se ha creado correctamente.' });
       }
       setShowForm(false);
