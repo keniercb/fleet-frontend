@@ -11,6 +11,7 @@ import TipoCombustiblePage from '@/pages/catalogs/TipoCombustiblePage';
 import TipoVehiculoPage from '@/pages/catalogs/TipoVehiculoPage';
 import CategoriaLicenciaPage from '@/pages/catalogs/CategoriaLicenciaPage';
 import MarcaPage from '@/pages/catalogs/MarcaPage';
+import VehiculosPage from '@/pages/vehiculos/VehiculosPage';
 import ChoferesPage from '@/pages/choferes/ChoferesPage';
 import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import type { ReactNode } from 'react';
@@ -58,7 +59,7 @@ export default function App() {
               path="/vehiculos"
               element={
                 <ProtectedRoute permission="VEHICULOS_READ">
-                  <ComingSoon title="Vehículos" />
+                  <VehiculosPage />
                 </ProtectedRoute>
               }
             />
