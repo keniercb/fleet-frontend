@@ -197,6 +197,7 @@ export interface VehiculoRequest {
   marcaId: number;
   choferId?: number;
   tipoCombustibleId: number;
+  modelo?: string;
   matricula: string;
   numeroMotor: string;
   odometro: number;
@@ -213,6 +214,7 @@ export interface VehiculoResponse {
   marca: MarcaResponse;
   chofer: ChoferResponse | null;
   tipoCombustible: TipoCombustibleResponse;
+  modelo: string;
   matricula: string;
   numeroMotor: string;
   odometro: number;

@@ -40,6 +40,7 @@ interface FormData {
   marcaId: number;
   choferId: number;
   tipoCombustibleId: number;
+  modelo: string;
   matricula: string;
   numeroMotor: string;
   odometro: number;
@@ -55,6 +56,7 @@ const EMPTY_FORM: FormData = {
   marcaId: 0,
   choferId: 0,
   tipoCombustibleId: 0,
+  modelo: '',
   matricula: '',
   numeroMotor: '',
   odometro: 0,
@@ -139,6 +141,7 @@ export default function VehiculosPage() {
       marcaId: entity.marca.id,
       choferId: entity.chofer?.id ?? 0,
       tipoCombustibleId: entity.tipoCombustible.id,
+      modelo: entity.modelo || '',
       matricula: entity.matricula,
       numeroMotor: entity.numeroMotor,
       odometro: entity.odometro,
@@ -160,6 +163,7 @@ export default function VehiculosPage() {
     marcaId: formData.marcaId,
     choferId: formData.choferId || undefined,
     tipoCombustibleId: formData.tipoCombustibleId,
+    modelo: formData.modelo || undefined,
     matricula: formData.matricula,
     numeroMotor: formData.numeroMotor,
     odometro: formData.odometro,
@@ -200,7 +204,7 @@ export default function VehiculosPage() {
   // Search
   const filteredData = search
     ? data.filter((item) => {
-        const searchStr = `${item.matricula} ${item.numeroMotor} ${item.empresa.nombre} ${item.marca.nombre} ${item.tipoVehiculo.nombre} ${item.chofer?.nombre ?? ''} ${item.chofer?.apellidos ?? ''}`.toLowerCase();
+        const searchStr = `${item.matricula} ${item.numeroMotor} ${item.modelo} ${item.empresa.nombre} ${item.marca.nombre} ${item.tipoVehiculo.nombre} ${item.chofer?.nombre ?? ''} ${item.chofer?.apellidos ?? ''}`.toLowerCase();
         return searchStr.includes(search.toLowerCase());
       })
     : data;
@@ -266,13 +270,14 @@ export default function VehiculosPage() {
             <thead>
               <tr>
                 <th className="table-header px-4 py-3">Matrícula</th>
+                <th className="table-header px-4 py-3">Modelo</th>
                 <th className="table-header px-4 py-3">No. Motor</th>
                 <th className="table-header px-4 py-3">Empresa</th>
                 <th className="table-header px-4 py-3">Tipo</th>
                 <th className="table-header px-4 py-3">Marca</th>
                 <th className="table-header px-4 py-3">Combustible</th>
                 <th className="table-header px-4 py-3">Chofer</th>
-                <th className="table-header px-4 py-3 text-right">Odómetro</th>
+                <th className="table-header px-4 py-3 text-right">Odómetro (km)</th>
                 <th className="table-header px-4 py-3 text-right">Estado</th>
                 <th className="table-header px-4 py-3 text-right">Acciones</th>
               </tr>
@@ -280,7 +285,7 @@ export default function VehiculosPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={11} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
                       Cargando...
@@ -289,7 +294,7 @@ export default function VehiculosPage() {
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={11} className="px-4 py-12 text-center text-gray-400">
                     {search ? 'No se encontraron resultados' : 'No hay registros'}
                   </td>
                 </tr>
@@ -298,6 +303,9 @@ export default function VehiculosPage() {
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <span className="table-cell block font-medium text-gray-900">{item.matricula}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="table-cell block">{item.modelo || '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.numeroMotor}</span>
@@ -322,7 +330,7 @@ export default function VehiculosPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="table-cell block">{item.odometro.toLocaleString()} km</span>
+                      <span className="table-cell block">{item.odometro.toLocaleString()}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {item.activo
@@ -411,6 +419,19 @@ export default function VehiculosPage() {
 
           {/* Datos del vehículo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="modelo" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Modelo
+              </label>
+              <input
+                id="modelo"
+                type="text"
+                value={formData.modelo}
+                onChange={(e) => handleFieldChange('modelo', e.target.value)}
+                className="input-field"
+                placeholder="Ej: Corolla 2024"
+              />
+            </div>
             <div>
               <label htmlFor="matricula" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Matrícula<span className="text-red-500 ml-0.5">*</span>
