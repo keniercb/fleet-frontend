@@ -6,6 +6,9 @@ import MainLayout from '@/components/layout/MainLayout';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import LoginPage from '@/pages/auth/LoginPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
+import PermisosPage from '@/pages/admin/PermisosPage';
+import RolesPage from '@/pages/admin/RolesPage';
+import UsuariosPage from '@/pages/admin/UsuariosPage';
 import ComingSoon from '@/components/common/ComingSoon';
 import TipoCombustiblePage from '@/pages/catalogs/TipoCombustiblePage';
 import TipoVehiculoPage from '@/pages/catalogs/TipoVehiculoPage';
@@ -123,7 +126,7 @@ export default function App() {
               path="/usuarios"
               element={
                 <ProtectedRoute permission="USUARIOS_READ">
-                  <ComingSoon title="Usuarios" />
+                  <UsuariosPage />
                 </ProtectedRoute>
               }
             />
@@ -131,7 +134,7 @@ export default function App() {
               path="/roles"
               element={
                 <ProtectedRoute permission="ROLES_READ">
-                  <ComingSoon title="Roles" />
+                  <RolesPage />
                 </ProtectedRoute>
               }
             />
@@ -139,7 +142,7 @@ export default function App() {
               path="/permisos"
               element={
                 <ProtectedRoute permission="PERMISOS_READ">
-                  <ComingSoon title="Permisos" />
+                  <PermisosPage />
                 </ProtectedRoute>
               }
             />
