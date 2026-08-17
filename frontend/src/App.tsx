@@ -5,6 +5,11 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import LoginPage from '@/pages/auth/LoginPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import ComingSoon from '@/components/common/ComingSoon';
+import TipoCombustiblePage from '@/pages/catalogs/TipoCombustiblePage';
+import TipoVehiculoPage from '@/pages/catalogs/TipoVehiculoPage';
+import CategoriaLicenciaPage from '@/pages/catalogs/CategoriaLicenciaPage';
+import MarcaPage from '@/pages/catalogs/MarcaPage';
+import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import type { ReactNode } from 'react';
 
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -73,7 +78,7 @@ export default function App() {
               path="/empresas"
               element={
                 <ProtectedRoute permission="EMPRESAS_READ">
-                  <ComingSoon title="Empresas" />
+                  <EmpresaPage />
                 </ProtectedRoute>
               }
             />
@@ -81,7 +86,7 @@ export default function App() {
               path="/marcas"
               element={
                 <ProtectedRoute permission="MARCAS_READ">
-                  <ComingSoon title="Marcas" />
+                  <MarcaPage />
                 </ProtectedRoute>
               }
             />
@@ -89,7 +94,7 @@ export default function App() {
               path="/tipos-vehiculo"
               element={
                 <ProtectedRoute permission="TIPOS_VEHICULO_READ">
-                  <ComingSoon title="Tipos de Vehículo" />
+                  <TipoVehiculoPage />
                 </ProtectedRoute>
               }
             />
@@ -97,7 +102,7 @@ export default function App() {
               path="/tipos-combustible"
               element={
                 <ProtectedRoute permission="TIPOS_COMBUSTIBLE_READ">
-                  <ComingSoon title="Tipos de Combustible" />
+                  <TipoCombustiblePage />
                 </ProtectedRoute>
               }
             />
@@ -105,7 +110,7 @@ export default function App() {
               path="/categorias-licencia"
               element={
                 <ProtectedRoute permission="CATEGORIAS_LICENCIA_READ">
-                  <ComingSoon title="Categorías de Licencia" />
+                  <CategoriaLicenciaPage />
                 </ProtectedRoute>
               }
             />
