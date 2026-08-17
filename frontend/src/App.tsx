@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { ToastProvider } from '@/contexts/ToastContext';
+import ToastContainer from '@/components/ui/ToastContainer';
 import MainLayout from '@/components/layout/MainLayout';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import LoginPage from '@/pages/auth/LoginPage';
@@ -28,6 +30,7 @@ function PublicOnlyRoute({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastProvider>
       <AuthProvider>
         <Routes>
           {/* Public */}
@@ -152,6 +155,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
+      <ToastContainer />
+      </ToastProvider>
     </BrowserRouter>
   );
 }

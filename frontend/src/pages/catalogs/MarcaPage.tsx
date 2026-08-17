@@ -33,6 +33,7 @@ const formFields: FormFieldDef[] = [
 
 const config: CrudPageConfig<MarcaRequest, MarcaResponse> = {
   title: 'Marcas',
+  singular: 'Marca',
   description: 'Gestión de las marcas de vehículos',
   permission: 'MARCAS_READ',
   api: marcasApi,

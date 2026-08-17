@@ -34,6 +34,7 @@ const formFields: FormFieldDef[] = [
 
 const config: CrudPageConfig<TipoCombustibleRequest, TipoCombustibleResponse> = {
   title: 'Tipos de Combustible',
+  singular: 'Tipo de combustible',
   description: 'Gestión de los tipos de combustible del sistema',
   permission: 'TIPOS_COMBUSTIBLE_READ',
   api: tiposCombustibleApi,

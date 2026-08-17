@@ -26,6 +26,7 @@ const formFields: FormFieldDef[] = [
 
 const config: CrudPageConfig<TipoVehiculoRequest, TipoVehiculoResponse> = {
   title: 'Tipos de Vehículo',
+  singular: 'Tipo de vehículo',
   description: 'Gestión de los tipos de vehículos del sistema',
   permission: 'TIPOS_VEHICULO_READ',
   api: tiposVehiculoApi,

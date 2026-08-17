@@ -34,6 +34,7 @@ const formFields: FormFieldDef[] = [
 
 const config: CrudPageConfig<CategoriaLicenciaRequest, CategoriaLicenciaResponse> = {
   title: 'Categorías de Licencia',
+  singular: 'Categoría de licencia',
   description: 'Gestión de las categorías de licencia de conducir',
   permission: 'CATEGORIAS_LICENCIA_READ',
   api: categoriasLicenciaApi,

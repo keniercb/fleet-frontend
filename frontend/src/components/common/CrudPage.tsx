@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
+import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
@@ -29,6 +30,7 @@ export interface FormFieldDef {
 
 export interface CrudPageConfig<TReq, TRes> {
   title: string;
+  singular: string;
   description: string;
   permission: string;
   api: {
@@ -57,6 +59,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
 }: CrudPageProps<TReq, TRes>) {
   const {
     title,
+    singular,
     description,
     api,
     columns,
@@ -70,11 +73,20 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
   const { data, loading, saving, totalPages, totalElements, page, size, error, setPage, deleteItem } =
     useCrud<TReq, TRes>(api);
 
+  const { addToast } = useToast();
+
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingEntity, setEditingEntity] = useState<TRes | null>(null);
   const [formData, setFormData] = useState<TReq>(getFormDefaultValues());
   const [deleteTarget, setDeleteTarget] = useState<TRes | null>(null);
+
+  // Show error as toast when it changes
+  useEffect(() => {
+    if (error) {
+      addToast({ type: 'error', title: 'Error', message: error });
+    }
+  }, [error, addToast]);
 
   // ---- Handlers ----
 
@@ -99,12 +111,14 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     try {
       if (editingEntity) {
         await api.update(getId(editingEntity), formData);
+        addToast({ type: 'success', title: `${singular} actualizado`, message: 'El registro se ha actualizado correctamente.' });
       } else {
         await api.create(formData);
+        addToast({ type: 'success', title: `${singular} creado`, message: 'El nuevo registro se ha creado correctamente.' });
       }
       setShowForm(false);
     } catch {
-      // error handled by hook
+      // error handled by hook → toast via useEffect
     }
   };
 
@@ -112,9 +126,10 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     if (!deleteTarget) return;
     try {
       await deleteItem(getId(deleteTarget));
+      addToast({ type: 'success', title: `${singular} eliminado`, message: 'El registro se ha eliminado correctamente.' });
       setDeleteTarget(null);
     } catch {
-      // error handled by hook
+      // error handled by hook → toast via useEffect
     }
   };
 
@@ -145,12 +160,6 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
           Nuevo
         </button>
       </PageHeader>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-          {error}
-        </div>
-      )}
 
       {/* Table */}
       <div className="card !p-0 overflow-hidden">
@@ -255,7 +264,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? `Editar ${title.slice(0, -1).toLowerCase()}` : `Nuevo ${title.slice(0, -1).toLowerCase()}`}
+        title={editingEntity ? `Editar ${singular}` : `Nuevo ${singular}`}
         onClose={() => setShowForm(false)}
         size="md"
       >
@@ -338,7 +347,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title={`Eliminar ${title.slice(0, -1).toLowerCase()}`}
+        title={`Eliminar ${singular}`}
         message={`¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}

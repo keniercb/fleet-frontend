@@ -48,6 +48,7 @@ const formFields: FormFieldDef[] = [
 
 const config: CrudPageConfig<EmpresaRequest, EmpresaResponse> = {
   title: 'Empresas',
+  singular: 'Empresa',
   description: 'Gestión de las empresas del sistema',
   permission: 'EMPRESAS_READ',
   api: empresasApi,
