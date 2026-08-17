@@ -270,11 +270,11 @@ export default function VehiculosPage() {
             <thead>
               <tr>
                 <th className="table-header px-4 py-3">Matrícula</th>
-                <th className="table-header px-4 py-3">Modelo</th>
                 <th className="table-header px-4 py-3">No. Motor</th>
                 <th className="table-header px-4 py-3">Empresa</th>
                 <th className="table-header px-4 py-3">Tipo</th>
                 <th className="table-header px-4 py-3">Marca</th>
+                <th className="table-header px-4 py-3">Modelo</th>
                 <th className="table-header px-4 py-3">Combustible</th>
                 <th className="table-header px-4 py-3">Chofer</th>
                 <th className="table-header px-4 py-3 text-right">Odómetro (km)</th>
@@ -305,9 +305,6 @@ export default function VehiculosPage() {
                       <span className="table-cell block font-medium text-gray-900">{item.matricula}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="table-cell block">{item.modelo || '—'}</span>
-                    </td>
-                    <td className="px-4 py-3">
                       <span className="table-cell block">{item.numeroMotor}</span>
                     </td>
                     <td className="px-4 py-3">
@@ -318,6 +315,9 @@ export default function VehiculosPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.marca.nombre}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="table-cell block">{item.modelo || '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.tipoCombustible.denominacion}</span>
