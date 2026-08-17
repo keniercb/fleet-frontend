@@ -243,6 +243,9 @@ export const choferesApi = {
 
   delete: (id: number): Promise<AxiosResponse<void>> =>
     apiClient.delete<void>(`/choferes/${id}`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<ChoferResponse>>> =>
+    apiClient.get<PageResponse<ChoferResponse>>(`/choferes/empresa/${empresaId}`, { params }),
 };
 
 // ---- Categorias Licencia ----

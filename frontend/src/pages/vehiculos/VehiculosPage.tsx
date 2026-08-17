@@ -31,7 +31,6 @@ interface Dropdowns {
   tiposVehiculo: TipoVehiculoResponse[];
   marcas: MarcaResponse[];
   tiposCombustible: TipoCombustibleResponse[];
-  choferes: ChoferResponse[];
 }
 
 interface FormData {
@@ -82,8 +81,11 @@ export default function VehiculosPage() {
     tiposVehiculo: [],
     marcas: [],
     tiposCombustible: [],
-    choferes: [],
   });
+
+  // Choferes filtrados por empresa
+  const [choferes, setChoferes] = useState<ChoferResponse[]>([]);
+  const [loadingChoferes, setLoadingChoferes] = useState(false);
 
   // UI state
   const [search, setSearch] = useState('');
@@ -99,27 +101,42 @@ export default function VehiculosPage() {
     }
   }, [error, addToast]);
 
-  // Fetch all dropdowns
+  // Fetch static dropdowns (no choferes — those are loaded by empresa)
   const fetchDropdowns = useCallback(async () => {
     try {
-      const [empRes, tvRes, marRes, tcRes, choRes] = await Promise.all([
+      const [empRes, tvRes, marRes, tcRes] = await Promise.all([
         empresasApi.findAll({ page: 0, perPage: 200 }),
         tiposVehiculoApi.findAll({ page: 0, perPage: 200 }),
         marcasApi.findAll({ page: 0, perPage: 200 }),
         tiposCombustibleApi.findAll({ page: 0, perPage: 200 }),
-        choferesApi.findAll({ page: 0, perPage: 200 }),
       ]);
       setDropdowns({
         empresas: empRes.data.content.filter((e) => e.activo),
         tiposVehiculo: tvRes.data.content.filter((e) => e.activo),
         marcas: marRes.data.content.filter((e) => e.activo),
         tiposCombustible: tcRes.data.content.filter((e) => e.activo),
-        choferes: choRes.data.content.filter((e) => e.activo),
       });
     } catch {
       addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los datos de los selectores.' });
     }
   }, [addToast]);
+
+  // Fetch choferes filtered by empresa
+  const fetchChoferesByEmpresa = useCallback(async (empresaId: number) => {
+    if (!empresaId) {
+      setChoferes([]);
+      return;
+    }
+    setLoadingChoferes(true);
+    try {
+      const res = await choferesApi.findByEmpresaId(empresaId, { page: 0, perPage: 200 });
+      setChoferes(res.data.content.filter((c) => c.activo));
+    } catch {
+      setChoferes([]);
+    } finally {
+      setLoadingChoferes(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchDropdowns();
@@ -130,11 +147,14 @@ export default function VehiculosPage() {
   const handleOpenCreate = () => {
     setEditingEntity(null);
     setFormData({ ...EMPTY_FORM });
+    setChoferes([]);
     setShowForm(true);
   };
 
-  const handleOpenEdit = (entity: VehiculoResponse) => {
+  const handleOpenEdit = async (entity: VehiculoResponse) => {
     setEditingEntity(entity);
+    // Load choferes for the entity's empresa before setting form data
+    await fetchChoferesByEmpresa(entity.empresa.id);
     setFormData({
       empresaId: entity.empresa.id,
       tipoVehiculoId: entity.tipoVehiculo.id,
@@ -154,7 +174,13 @@ export default function VehiculosPage() {
   };
 
   const handleFieldChange = (key: string, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (key === 'empresaId') {
+      // Reset chofer when empresa changes and reload choferes list
+      setFormData((prev) => ({ ...prev, empresaId: value as number, choferId: 0 }));
+      fetchChoferesByEmpresa(value as number);
+    } else {
+      setFormData((prev) => ({ ...prev, [key]: value }));
+    }
   };
 
   const buildRequestPayload = (): VehiculoRequest => ({
@@ -405,13 +431,26 @@ export default function VehiculosPage() {
               (v) => handleFieldChange('tipoCombustibleId', v),
               dropdowns.tiposCombustible.map((e) => ({ id: e.id, label: `${e.codigo} - ${e.denominacion}` })),
             )}
-            {renderSelect(
-              'choferId', 'Chofer (opcional)', formData.choferId,
-              (v) => handleFieldChange('choferId', v),
-              dropdowns.choferes.map((c) => ({ id: c.id, label: `${c.nombre} ${c.apellidos} — ${c.carneIdentidad}` })),
-              false,
-              'Sin chofer asignado',
-            )}
+            <div>
+              <label htmlFor="choferId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Chofer (opcional)
+              </label>
+              <div className="relative">
+                <select
+                  id="choferId"
+                  value={formData.choferId}
+                  onChange={(e) => handleFieldChange('choferId', Number(e.target.value))}
+                  className="input-field appearance-none pr-8"
+                  disabled={!formData.empresaId || loadingChoferes}
+                >
+                  <option value={0>{!formData.empresaId ? 'Seleccione empresa primero' : loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
+                  {choferes.map((c) => (
+                    <option key={c.id} value={c.id}>{`${c.nombre} ${c.apellidos} — ${c.carneIdentidad}`}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
           </div>
 
           {/* Divider */}
