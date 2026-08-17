@@ -11,6 +11,7 @@ import TipoCombustiblePage from '@/pages/catalogs/TipoCombustiblePage';
 import TipoVehiculoPage from '@/pages/catalogs/TipoVehiculoPage';
 import CategoriaLicenciaPage from '@/pages/catalogs/CategoriaLicenciaPage';
 import MarcaPage from '@/pages/catalogs/MarcaPage';
+import ChoferesPage from '@/pages/choferes/ChoferesPage';
 import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import type { ReactNode } from 'react';
 
@@ -65,7 +66,7 @@ export default function App() {
               path="/choferes"
               element={
                 <ProtectedRoute permission="CHOFERES_READ">
-                  <ComingSoon title="Choferes" />
+                  <ChoferesPage />
                 </ProtectedRoute>
               }
             />
