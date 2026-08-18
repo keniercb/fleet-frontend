@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFilteredNavigation } from '@/utils/navigation';
 import type { NavSection } from '@/utils/navigation';
@@ -14,6 +14,7 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggleCollapse }: SidebarProps) {
   const { hasPermission, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState<string[]>(() => {
     const sections = getFilteredNavigation(hasPermission, isAdmin);
@@ -38,6 +39,11 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
       prev.includes(sectionId) ? prev.filter((id) => id !== sectionId) : [...prev, sectionId]
     );
   };
+
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+    onCloseMobile();
+  }, [navigate, onCloseMobile]);
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
@@ -66,21 +72,18 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {/* Dashboard */}
-        <NavLink
-          to="/"
-          onClick={onCloseMobile}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
-              isActive
-                ? 'bg-blue-600/20 text-blue-400'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
-            } ${collapsed ? 'justify-center' : ''}`
-          }
+        <button
+          onClick={() => handleNavigate('/')}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
+            location.pathname === '/'
+              ? 'bg-blue-600/20 text-blue-400'
+              : 'text-slate-300 hover:text-white hover:bg-white/5'
+          } ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Dashboard' : undefined}
         >
           <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span className="truncate">Dashboard</span>}
-        </NavLink>
+        </button>
 
         {/* Sections */}
         {sections.map((section) => {
@@ -98,19 +101,18 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
                     return (
-                      <NavLink
+                      <button
                         key={item.id}
-                        to={item.path}
-                        onClick={onCloseMobile}
+                        onClick={() => handleNavigate(item.path)}
                         title={item.label}
-                        className={`flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
+                        className={`w-full flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
                           isActive
                             ? 'bg-blue-600/20 text-blue-400'
                             : 'text-slate-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
-                      </NavLink>
+                      </button>
                     );
                   })}
                 </>
@@ -134,22 +136,22 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                   {/* Sub-items with indent and left border */}
                   {isExpanded && (
                     <div className="ml-4 mt-1 space-y-0.5 border-l border-white/10 pl-3">
-                      {section.items.map((item) => (
-                        <NavLink
-                          key={item.id}
-                          to={item.path}
-                          onClick={onCloseMobile}
-                          className={({ isActive }) =>
-                            `block px-3 py-2 rounded-lg text-sm font-normal transition-colors ${
+                      {section.items.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleNavigate(item.path)}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-normal transition-colors ${
                               isActive
                                 ? 'bg-blue-600/20 text-blue-400'
                                 : 'text-slate-400 hover:text-white hover:bg-white/5'
-                            }`
-                          }
-                        >
-                          {item.label}
-                        </NavLink>
-                      ))}
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </>
