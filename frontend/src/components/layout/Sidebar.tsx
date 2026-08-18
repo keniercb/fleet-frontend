@@ -66,7 +66,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                   to={item.path}
                   onClick={onCloseMobile}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-normal transition-all duration-200 group ${
                       isActive
                         ? 'bg-sidebar-active text-sidebar-text-active shadow-lg shadow-primary-900/30'
                         : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
@@ -90,7 +90,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                   to={item.path}
                   onClick={onCloseMobile}
                   className={({ isActive }) =>
-                    `flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                    `flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-normal transition-all duration-200 group ${
                       isActive
                         ? 'bg-sidebar-active text-sidebar-text-active shadow-lg shadow-primary-900/30'
                         : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
@@ -139,7 +139,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
           to="/"
           onClick={onCloseMobile}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-normal transition-all duration-200 group ${
               isActive
                 ? 'bg-sidebar-active text-sidebar-text-active shadow-lg shadow-primary-900/30'
                 : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
