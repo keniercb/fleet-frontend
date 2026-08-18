@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import ToastContainer from '@/components/ui/ToastContainer';
@@ -29,139 +29,143 @@ function PublicOnlyRoute({ children }: { children: ReactNode }) {
     );
   }
   if (isAuthenticated) return <Navigate to="/" replace />;
-  return children;
+  return <>{children}</>;
 }
 
-export default function App() {
+function RootLayout() {
   return (
-    <BrowserRouter>
-      <ToastProvider>
+    <ToastProvider>
       <AuthProvider>
-        <Routes>
-          {/* Public */}
-          <Route
-            path="/login"
-            element={
-              <PublicOnlyRoute>
-                <LoginPage />
-              </PublicOnlyRoute>
-            }
-          />
-
-          {/* Protected with layout */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<DashboardPage />} />
-
-            <Route
-              path="/vehiculos"
-              element={
-                <ProtectedRoute permission="VEHICULOS_READ">
-                  <VehiculosPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/choferes"
-              element={
-                <ProtectedRoute permission="CHOFERES_READ">
-                  <ChoferesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/recorridos"
-              element={
-                <ProtectedRoute permission="RECORRIDOS_READ">
-                  <ComingSoon title="Recorridos" />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/empresas"
-              element={
-                <ProtectedRoute permission="EMPRESAS_READ">
-                  <EmpresaPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/marcas"
-              element={
-                <ProtectedRoute permission="MARCAS_READ">
-                  <MarcaPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tipos-vehiculo"
-              element={
-                <ProtectedRoute permission="TIPOS_VEHICULO_READ">
-                  <TipoVehiculoPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tipos-combustible"
-              element={
-                <ProtectedRoute permission="TIPOS_COMBUSTIBLE_READ">
-                  <TipoCombustiblePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/categorias-licencia"
-              element={
-                <ProtectedRoute permission="CATEGORIAS_LICENCIA_READ">
-                  <CategoriaLicenciaPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/usuarios"
-              element={
-                <ProtectedRoute permission="USUARIOS_READ">
-                  <UsuariosPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/roles"
-              element={
-                <ProtectedRoute permission="ROLES_READ">
-                  <RolesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/permisos"
-              element={
-                <ProtectedRoute permission="PERMISOS_READ">
-                  <PermisosPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/choferes-categorias"
-              element={
-                <ProtectedRoute permission="CHOFERES_CATEGORIAS_READ">
-                  <ComingSoon title="Licencias de Choferes" />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
-
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Outlet />
+        <ToastContainer />
       </AuthProvider>
-      <ToastContainer />
-      </ToastProvider>
-    </BrowserRouter>
+    </ToastProvider>
   );
+}
+
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: '/login',
+        element: (
+          <PublicOnlyRoute>
+            <LoginPage />
+          </PublicOnlyRoute>
+        ),
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <DashboardPage /> },
+          {
+            path: 'vehiculos',
+            element: (
+              <ProtectedRoute permission="VEHICULOS_READ">
+                <VehiculosPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'choferes',
+            element: (
+              <ProtectedRoute permission="CHOFERES_READ">
+                <ChoferesPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'recorridos',
+            element: (
+              <ProtectedRoute permission="RECORRIDOS_READ">
+                <ComingSoon title="Recorridos" />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'empresas',
+            element: (
+              <ProtectedRoute permission="EMPRESAS_READ">
+                <EmpresaPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marcas',
+            element: (
+              <ProtectedRoute permission="MARCAS_READ">
+                <MarcaPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'tipos-vehiculo',
+            element: (
+              <ProtectedRoute permission="TIPOS_VEHICULO_READ">
+                <TipoVehiculoPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'tipos-combustible',
+            element: (
+              <ProtectedRoute permission="TIPOS_COMBUSTIBLE_READ">
+                <TipoCombustiblePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'categorias-licencia',
+            element: (
+              <ProtectedRoute permission="CATEGORIAS_LICENCIA_READ">
+                <CategoriaLicenciaPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'usuarios',
+            element: (
+              <ProtectedRoute permission="USUARIOS_READ">
+                <UsuariosPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <ProtectedRoute permission="ROLES_READ">
+                <RolesPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'permisos',
+            element: (
+              <ProtectedRoute permission="PERMISOS_READ">
+                <PermisosPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'choferes-categorias',
+            element: (
+              <ProtectedRoute permission="CHOFERES_CATEGORIAS_READ">
+                <ComingSoon title="Licencias de Choferes" />
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }
