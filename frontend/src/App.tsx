@@ -56,11 +56,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        element: (
-          <ProtectedRoute>
-            <MainLayout />
-          </ProtectedRoute>
-        ),
+        element: <MainLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
           {
