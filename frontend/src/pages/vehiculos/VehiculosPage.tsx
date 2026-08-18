@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Search, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ChevronDown, Eye } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
 import {
@@ -65,6 +65,23 @@ const EMPTY_FORM: FormData = {
   indiceConsumo: '',
 };
 
+// ---- Componentes auxiliares ----
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  const date = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
+  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium text-gray-500">{label}</dt>
+      <dd className="mt-0.5 text-sm text-gray-900 font-medium">{value}</dd>
+    </div>
+  );
+}
+
 // ---- Component ----
 
 export default function VehiculosPage() {
@@ -90,6 +107,7 @@ export default function VehiculosPage() {
   // UI state
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [viewEntity, setViewEntity] = useState<VehiculoResponse | null>(null);
   const [editingEntity, setEditingEntity] = useState<VehiculoResponse | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<VehiculoResponse | null>(null);
@@ -296,22 +314,21 @@ export default function VehiculosPage() {
             <thead>
               <tr>
                 <th className="table-header px-4 py-3">Matrícula</th>
-                <th className="table-header px-4 py-3">No. Motor</th>
                 <th className="table-header px-4 py-3">Empresa</th>
                 <th className="table-header px-4 py-3">Tipo</th>
                 <th className="table-header px-4 py-3">Marca</th>
                 <th className="table-header px-4 py-3">Modelo</th>
-                <th className="table-header px-4 py-3">Combustible</th>
+                <th className="table-header px-4 py-3">Tipo Combustible</th>
+                <th className="table-header px-4 py-3 text-right">Combustible (L)</th>
                 <th className="table-header px-4 py-3">Chofer</th>
-                <th className="table-header px-4 py-3 text-right">Odómetro (km)</th>
-                <th className="table-header px-4 py-3 text-right">Estado</th>
+                <th className="table-header px-4 py-3 text-right">Odómetro</th>
                 <th className="table-header px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
                       Cargando...
@@ -320,7 +337,7 @@ export default function VehiculosPage() {
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
                     {search ? 'No se encontraron resultados' : 'No hay registros'}
                   </td>
                 </tr>
@@ -329,9 +346,6 @@ export default function VehiculosPage() {
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <span className="table-cell block font-medium text-gray-900">{item.matricula}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="table-cell block">{item.numeroMotor}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.empresa.nombre}</span>
@@ -348,6 +362,9 @@ export default function VehiculosPage() {
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.tipoCombustible.denominacion}</span>
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="table-cell block">{item.combustible}</span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">
                         {item.chofer
@@ -359,12 +376,14 @@ export default function VehiculosPage() {
                       <span className="table-cell block">{item.odometro.toLocaleString()}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {item.activo
-                        ? <span className="badge-active">Activo</span>
-                        : <span className="badge-inactive">Inactivo</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewEntity(item)}
+                          className="p-1.5 hover:bg-green-50 rounded-lg text-gray-400 hover:text-green-600 transition-colors"
+                          title="Ver detalles"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
@@ -587,6 +606,78 @@ export default function VehiculosPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* View Detail Modal */}
+      <Modal
+        open={!!viewEntity}
+        title="Detalles del Vehículo"
+        onClose={() => setViewEntity(null)}
+        size="xl"
+      >
+        {viewEntity && (
+          <div className="space-y-6">
+            {/* Info general */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información General</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <DetailField label="Matrícula" value={viewEntity.matricula} />
+                <DetailField label="Modelo" value={viewEntity.modelo || '—'} />
+                <DetailField label="No. Motor" value={viewEntity.numeroMotor || '—'} />
+                <DetailField label="Marca" value={`${viewEntity.marca.nombre}${viewEntity.marca.paisOrigen ? ` (${viewEntity.marca.paisOrigen})` : ''}`} />
+                <DetailField label="Tipo de Vehículo" value={viewEntity.tipoVehiculo.nombre} />
+                <DetailField label="Tipo de Combustible" value={`${viewEntity.tipoCombustible.codigo} — ${viewEntity.tipoCombustible.denominacion}`} />
+              </div>
+            </div>
+
+            {/* Empresa y Chofer */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Empresa y Chofer</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DetailField label="Empresa" value={viewEntity.empresa.nombre} />
+                <DetailField
+                  label="Chofer"
+                  value={viewEntity.chofer ? `${viewEntity.chofer.nombre} ${viewEntity.chofer.apellidos}` : 'Sin asignar'}
+                />
+              </div>
+            </div>
+
+            {/* Métricas */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Métricas y Combustible</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <DetailField label="Odómetro" value={`${viewEntity.odometro.toLocaleString()} km`} />
+                <DetailField label="Combustible" value={`${viewEntity.combustible} L`} />
+                <DetailField label="Índice de Consumo" value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
+              </div>
+            </div>
+
+            {/* Mantenimiento */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Mantenimiento</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DetailField label="Último Mantenimiento" value={viewEntity.ultimoMantenimiento ? formatDate(viewEntity.ultimoMantenimiento) : '—'} />
+                <DetailField label="Odómetro Ult. Mantenimiento" value={viewEntity.odometroUltimoMantenimiento ? `${viewEntity.odometroUltimoMantenimiento.toLocaleString()} km` : '—'} />
+              </div>
+            </div>
+
+            {/* Estado */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Estado</h3>
+              <div className="flex items-center gap-2">
+                {viewEntity.activo
+                  ? <span className="badge-active">Activo</span>
+                  : <span className="badge-inactive">Inactivo</span>}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-gray-200">
+              <button onClick={() => setViewEntity(null)} className="btn-secondary">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Delete Confirmation */}

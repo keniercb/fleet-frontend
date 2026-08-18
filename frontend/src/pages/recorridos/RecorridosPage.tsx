@@ -212,7 +212,7 @@ export default function RecorridosPage() {
     kilometros: formData.kilometros,
     litrosAbastecidos: formData.litrosAbastecidos ? Number(formData.litrosAbastecidos) : undefined,
     numeroChip: formData.numeroChip || undefined,
-    lugarAbastecimiento: formData.lugarAbastecimiento,
+    lugarAbastecimiento: formData.lugarAbastecimiento || undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -548,7 +548,7 @@ export default function RecorridosPage() {
             {/* Lugar Abastecimiento */}
             <div className="sm:col-span-2">
               <label htmlFor="lugarAbastecimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Lugar de Abastecimiento<span className="text-red-500 ml-0.5">*</span>
+                Lugar de Abastecimiento
               </label>
               <input
                 id="lugarAbastecimiento"
@@ -557,7 +557,6 @@ export default function RecorridosPage() {
                 onChange={(e) => handleFieldChange('lugarAbastecimiento', e.target.value)}
                 className="input-field"
                 placeholder="Ej: Estacion Servi Centro"
-                required
               />
             </div>
           </div>
