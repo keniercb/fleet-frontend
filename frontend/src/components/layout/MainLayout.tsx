@@ -9,15 +9,16 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <TopNavbar
-        mobileMenuOpen={mobileMenuOpen}
-        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
-      />
       <Sidebar
         mobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+      />
+      <TopNavbar
+        mobileMenuOpen={mobileMenuOpen}
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+        sidebarCollapsed={sidebarCollapsed}
       />
       {/* Main content area - offset for sidebar + top navbar */}
       <div
