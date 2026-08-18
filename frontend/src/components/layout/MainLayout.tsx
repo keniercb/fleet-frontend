@@ -1,13 +1,31 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import TopNavbar from './TopNavbar';
 
 export default function MainLayout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-      {/* Main content area - offset for sidebar width */}
-      <div className="lg:pl-64 transition-all duration-300">
-        <main className="p-6 pt-16 lg:pt-6 min-h-screen">
+      <TopNavbar
+        mobileMenuOpen={mobileMenuOpen}
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+      />
+      <Sidebar
+        mobileOpen={mobileMenuOpen}
+        onCloseMobile={() => setMobileMenuOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+      />
+      {/* Main content area - offset for sidebar + top navbar */}
+      <div
+        className={`transition-all duration-300 pt-14 ${
+          sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+        }`}
+      >
+        <main className="p-6 min-h-[calc(100vh-3.5rem)]">
           <Outlet />
         </main>
       </div>
