@@ -23,7 +23,7 @@ export default function MainLayout() {
       {/* Main content area - offset for sidebar + top navbar */}
       <div
         className={`transition-all duration-300 pt-14 ${
-          sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+          sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
         }`}
       >
         <main className="p-6 min-h-[calc(100vh-3.5rem)]">

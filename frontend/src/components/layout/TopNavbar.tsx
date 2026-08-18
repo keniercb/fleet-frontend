@@ -18,7 +18,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
   };
 
   return (
-    <header className={`fixed top-0 right-0 z-30 bg-white border-b border-gray-200 shadow-sm transition-all duration-300 ${sidebarCollapsed ? 'lg:left-[72px]' : 'lg:left-64'}`}>
+    <header className={`fixed top-0 right-0 z-30 bg-white border-b border-gray-200 shadow-sm transition-all duration-300 ${sidebarCollapsed ? 'lg:left-20' : 'lg:left-64'}`}>
       <div className="flex items-center justify-between h-14 px-4 lg:px-6">
         {/* Left: mobile menu toggle */}
         <button
