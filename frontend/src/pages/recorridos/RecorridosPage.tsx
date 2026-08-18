@@ -183,9 +183,21 @@ export default function RecorridosPage() {
 
   // ---- Form helpers ----
 
+  // Vehiculo shown in the modal (from filter when creating, from entity when editing)
+  const modalVehiculo = showForm
+    ? (editingEntity
+        ? editingEntity.vehiculo
+        : selectedVehiculo)
+    : null;
+
+  const selectedVehiculo = filterVehiculoId
+    ? allVehiculos.find((v) => v.id === filterVehiculoId) ?? null
+    : null;
+
   const handleOpenCreate = () => {
+    if (!filterVehiculoId) return;
     setEditingEntity(null);
-    setFormData({ ...EMPTY_FORM, fecha: todayISO() });
+    setFormData({ ...EMPTY_FORM, vehiculoId: filterVehiculoId, fecha: todayISO() });
     setShowForm(true);
   };
 
@@ -258,7 +270,12 @@ export default function RecorridosPage() {
   return (
     <div>
       <PageHeader title="Recorridos" description="Gestion de recorridos y abastecimientos de vehiculos">
-        <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
+        <button
+          onClick={handleOpenCreate}
+          disabled={!filterVehiculoId}
+          className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={!filterVehiculoId ? 'Seleccione un vehiculo en el filtro para adicionar' : 'Nuevo recorrido'}
+        >
           <Plus className="w-4 h-4" />
           Nuevo
         </button>
@@ -457,29 +474,15 @@ export default function RecorridosPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Vehiculo */}
-            <div className="sm:col-span-2">
-              <label htmlFor="vehiculoId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Vehiculo<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  id="vehiculoId"
-                  value={formData.vehiculoId}
-                  onChange={(e) => handleFieldChange('vehiculoId', Number(e.target.value))}
-                  className="input-field appearance-none pr-8"
-                  required
-                >
-                  <option value="0">Seleccionar vehiculo...</option>
-                  {allVehiculos.filter((v) => v.activo).map((v) => (
-                    <option key={v.id} value={v.id}>{vehiculoLabel(v)} ({v.empresa.nombre})</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
+          {/* Vehiculo info */}
+          {modalVehiculo && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+              <p className="text-xs font-medium text-gray-500 mb-0.5">Vehiculo</p>
+              <p className="text-sm font-semibold text-gray-900">{modalVehiculo.matricula} — {modalVehiculo.marca.nombre} {modalVehiculo.modelo || ''}</p>
+              <p className="text-xs text-gray-500">{modalVehiculo.empresa.nombre}</p>
             </div>
-
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Fecha */}
             <div>
               <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 mb-1.5">
