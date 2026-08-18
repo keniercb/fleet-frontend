@@ -443,7 +443,7 @@ export default function VehiculosPage() {
                   className="input-field appearance-none pr-8"
                   disabled={!formData.empresaId || loadingChoferes}
                 >
-                  <option value={0}>{!formData.empresaId ? 'Seleccione empresa primero' : loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
+                  <option value="0">{!formData.empresaId ? 'Seleccione empresa primero' : loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
                   {choferes.map((c) => (
                     <option key={c.id} value={c.id}>{`${c.nombre} ${c.apellidos} — ${c.carneIdentidad}`}</option>
                   ))}
