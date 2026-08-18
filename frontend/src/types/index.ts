@@ -21,6 +21,13 @@ export interface AuthResponseDto {
   email: string;
 }
 
+export interface CambiarPasswordRequest {
+  userId: number;
+  passwordAnterior: string;
+  nuevaPassword: string;
+  confirmacionPassword: string;
+}
+
 // --- Pagination ---
 export interface SortObject {
   empty: boolean;

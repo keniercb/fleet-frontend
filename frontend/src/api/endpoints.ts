@@ -3,6 +3,7 @@ import apiClient from './client';
 import type {
   LoginRequestDto,
   AuthResponseDto,
+  CambiarPasswordRequest,
   UserResponse,
   UserRequest,
   RoleResponse,
@@ -42,6 +43,9 @@ export const authApi = {
 
   getCurrentUser: (): Promise<AxiosResponse<UserResponse>> =>
     apiClient.get<UserResponse>('/auth/me'),
+
+  cambiarPassword: (data: CambiarPasswordRequest): Promise<AxiosResponse<void>> =>
+    apiClient.put<void>('/auth/cambiar-password', data),
 };
 
 // ---- Users ----
