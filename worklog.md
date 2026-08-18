@@ -26,3 +26,23 @@ Stage Summary:
 - Login → Dashboard → Sidebar con menú dinámico por rol
 - Todas las rutas preparadas con placeholder "Coming Soon"
 - Listo para añadir módulos uno a uno
+---
+Task ID: 1
+Agent: main
+Task: Implementar CRUD de Recorridos con select de empresa y vehiculos como filtros en el listado
+
+Work Log:
+- Analizado estructura existente: RecorridosPage.tsx, useCrud.ts, endpoints.ts, types/index.ts
+- Reescrita completa de RecorridosPage.tsx eliminando dependencia de useCrud para manejar filtros personalizados
+- Anadidos select de Empresa y Vehiculo como barra de filtros encima de la tabla
+- Filtro de vehiculo cascada: al seleccionar empresa, el select de vehiculos se filtra automaticamente
+- Filtro de vehiculo es server-side (usa findByVehiculoId), filtro de empresa es client-side
+- Mantenido CRUD completo: crear, editar, eliminar con modales
+- Anadido boton "Limpiar" para quitar filtros activos
+- Anadida columna "Empresa" en la tabla de recorridos
+- Compilacion TypeScript y Vite build exitosos sin errores
+
+Stage Summary:
+- RecorridosPage.tsx reescrita con filtros de empresa y vehiculo en el listado
+- TypeScript y Vite build compilan sin errores
+- No se modifico App.tsx (ya importaba RecorridosPage)
