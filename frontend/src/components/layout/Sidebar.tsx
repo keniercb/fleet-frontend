@@ -40,13 +40,14 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
         ) : (
           <button
             onClick={() => toggleSection(section.id)}
-            className="flex items-center justify-between w-full px-3 pt-4 pb-1.5 group"
+            className="flex items-center gap-2 w-full px-3 pt-4 pb-1.5 group"
           >
+            <section.icon className="w-3.5 h-3.5 text-sidebar-text/60 group-hover:text-sidebar-text transition-colors flex-shrink-0" />
             <span className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-text/60 group-hover:text-sidebar-text transition-colors">
               {section.label}
             </span>
             <ChevronDown
-              className={`w-3.5 h-3.5 text-sidebar-text/40 transition-transform duration-200 ${
+              className={`w-3.5 h-3.5 ml-auto text-sidebar-text/40 transition-transform duration-200 ${
                 isCollapsed ? '-rotate-90' : ''
               }`}
             />

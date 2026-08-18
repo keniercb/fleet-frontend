@@ -12,6 +12,9 @@ import {
   CreditCard,
   Route,
   FileBadge,
+  Settings,
+  BookOpen,
+  Truck,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -25,6 +28,7 @@ export interface NavItem {
 export interface NavSection {
   id: string;
   label: string;
+  icon: LucideIcon;
   items: NavItem[];
 }
 
@@ -32,6 +36,7 @@ export const navigationConfig: NavSection[] = [
   {
     id: 'administracion',
     label: 'Administración',
+    icon: Settings,
     items: [
       {
         id: 'roles',
@@ -59,6 +64,7 @@ export const navigationConfig: NavSection[] = [
   {
     id: 'catalogos',
     label: 'Catálogos',
+    icon: BookOpen,
     items: [
       {
         id: 'empresas',
@@ -100,6 +106,7 @@ export const navigationConfig: NavSection[] = [
   {
     id: 'transporte',
     label: 'Control de Transporte',
+    icon: Truck,
     items: [
       {
         id: 'vehiculos',
