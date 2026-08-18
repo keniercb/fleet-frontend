@@ -9,7 +9,7 @@ import DashboardPage from '@/pages/dashboard/DashboardPage';
 import PermisosPage from '@/pages/admin/PermisosPage';
 import RolesPage from '@/pages/admin/RolesPage';
 import UsuariosPage from '@/pages/admin/UsuariosPage';
-import ComingSoon from '@/components/common/ComingSoon';
+import RecorridosPage from '@/pages/recorridos/RecorridosPage';
 import TipoCombustiblePage from '@/pages/catalogs/TipoCombustiblePage';
 import TipoVehiculoPage from '@/pages/catalogs/TipoVehiculoPage';
 import CategoriaLicenciaPage from '@/pages/catalogs/CategoriaLicenciaPage';
@@ -72,7 +72,7 @@ export default function App() {
                 path="recorridos"
                 element={
                   <ProtectedRoute permission="RECORRIDOS_READ">
-                    <ComingSoon title="Recorridos" />
+                    <RecorridosPage />
                   </ProtectedRoute>
                 }
               />
