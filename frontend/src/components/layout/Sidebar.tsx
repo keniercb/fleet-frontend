@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFilteredNavigation } from '@/utils/navigation';
 import type { NavSection } from '@/utils/navigation';
-import { Car, LayoutDashboard, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Car, LayoutDashboard, PanelLeftClose, PanelLeft, ChevronDown } from 'lucide-react';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -13,42 +14,99 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggleCollapse }: SidebarProps) {
   const { hasPermission, isAdmin } = useAuth();
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
   const sections = getFilteredNavigation(hasPermission, isAdmin);
 
-  const renderSection = (section: NavSection) => (
-    <div key={section.id} className="mb-2">
-      {!collapsed && (
-        <p className="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-text/60">
-          {section.label}
-        </p>
-      )}
-      {collapsed && <div className="my-2 border-t border-white/5" />}
-      <div className="space-y-0.5">
-        {section.items.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.id}
-              to={item.path}
-              onClick={onCloseMobile}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-sidebar-active text-sidebar-text-active shadow-lg shadow-primary-900/30'
-                    : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
-                } ${collapsed ? 'justify-center' : ''}`
-              }
-              title={collapsed ? item.label : undefined}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span className="truncate">{item.label}</span>}
-            </NavLink>
-          );
-        })}
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
+
+  const renderSection = (section: NavSection) => {
+    const isCollapsed = collapsedSections.has(section.id);
+
+    return (
+      <div key={section.id} className="mb-1">
+        {collapsed ? (
+          <div className="my-2 border-t border-white/5" />
+        ) : (
+          <button
+            onClick={() => toggleSection(section.id)}
+            className="flex items-center justify-between w-full px-3 pt-4 pb-1.5 group"
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-text/60 group-hover:text-sidebar-text transition-colors">
+              {section.label}
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-sidebar-text/40 transition-transform duration-200 ${
+                isCollapsed ? '-rotate-90' : ''
+              }`}
+            />
+          </button>
+        )}
+        {!collapsed && (
+          <div
+            className={`space-y-0.5 overflow-hidden transition-all duration-200 ${
+              isCollapsed ? 'max-h-0' : 'max-h-96'
+            }`}
+          >
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.id}
+                  to={item.path}
+                  onClick={onCloseMobile}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                      isActive
+                        ? 'bg-sidebar-active text-sidebar-text-active shadow-lg shadow-primary-900/30'
+                        : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        )}
+        {collapsed && (
+          <div className="space-y-0.5">
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.id}
+                  to={item.path}
+                  onClick={onCloseMobile}
+                  className={({ isActive }) =>
+                    `flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                      isActive
+                        ? 'bg-sidebar-active text-sidebar-text-active shadow-lg shadow-primary-900/30'
+                        : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
+                    }`
+                  }
+                  title={item.label}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                </NavLink>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
