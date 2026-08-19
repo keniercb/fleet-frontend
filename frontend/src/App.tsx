@@ -140,14 +140,6 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="choferes-categorias"
-                element={
-                  <ProtectedRoute permission="CHOFERES_CATEGORIAS_READ">
-                    <ComingSoon title="Licencias de Choferes" />
-                  </ProtectedRoute>
-                }
-              />
             </Route>
 
             {/* Catch all */}
