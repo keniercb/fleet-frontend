@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Search, ChevronDown, FilterX } from 'lucide-react';
+import { Plus, Pencil, Trash2, ChevronDown, FilterX, Search } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { recorridosApi, vehiculosApi, empresasApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
@@ -64,7 +64,8 @@ export default function RecorridosPage() {
   // Filters
   const [filterEmpresaId, setFilterEmpresaId] = useState<number>(0);
   const [filterVehiculoId, setFilterVehiculoId] = useState<number>(0);
-  const [search, setSearch] = useState('');
+  const [filterFechaFrom, setFilterFechaFrom] = useState('');
+  const [filterFechaTo, setFilterFechaTo] = useState('');
 
   // Table data & pagination
   const [data, setData] = useState<RecorridoResponse[]>([]);
@@ -81,8 +82,9 @@ export default function RecorridosPage() {
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<RecorridoResponse | null>(null);
 
-  // Whether both filters are set (required to load data)
+  // Both filters must be set to load data
   const canLoadData = filterEmpresaId > 0 && filterVehiculoId > 0;
+  const hasDateRange = !!filterFechaFrom || !!filterFechaTo;
 
   // ---- Fetch empresas ----
 
@@ -99,7 +101,7 @@ export default function RecorridosPage() {
     fetchEmpresas();
   }, [fetchEmpresas]);
 
-  // ---- Fetch vehiculos when empresa is selected ----
+  // ---- Fetch vehiculos only when empresa is selected ----
 
   const fetchVehiculosByEmpresa = useCallback(async (empresaId: number) => {
     if (!empresaId) {
@@ -122,13 +124,29 @@ export default function RecorridosPage() {
     fetchVehiculosByEmpresa(filterEmpresaId);
   }, [filterEmpresaId, fetchVehiculosByEmpresa]);
 
-  // ---- Fetch recorridos only when both filters are set ----
+  // ---- Fetch recorridos ----
 
-  const fetchRecorridos = useCallback(async (p: number, vId: number) => {
+  const fetchRecorridos = useCallback(async (
+    p: number,
+    vId: number,
+    from?: string,
+    to?: string,
+  ) => {
     setLoading(true);
     try {
-      const res: AxiosResponse<PageResponse<RecorridoResponse>> =
-        await recorridosApi.findByVehiculoId(vId, { page: p, perPage: size });
+      let res: AxiosResponse<PageResponse<RecorridoResponse>>;
+
+      if (from || to) {
+        res = await recorridosApi.findByVehiculoIdAndFechaBetween(vId, {
+          page: p,
+          perPage: size,
+          from: from || undefined,
+          to: to || undefined,
+        });
+      } else {
+        res = await recorridosApi.findByVehiculoId(vId, { page: p, perPage: size });
+      }
+
       const pageData = res.data;
       setData(pageData.content);
       setTotalPages(pageData.totalPages);
@@ -148,20 +166,22 @@ export default function RecorridosPage() {
 
   useEffect(() => {
     if (canLoadData) {
-      fetchRecorridos(page, filterVehiculoId);
+      fetchRecorridos(page, filterVehiculoId, filterFechaFrom || undefined, filterFechaTo || undefined);
     } else {
       setData([]);
       setTotalPages(0);
       setTotalElements(0);
       setLoading(false);
     }
-  }, [page, filterVehiculoId, canLoadData, fetchRecorridos]);
+  }, [page, filterVehiculoId, filterFechaFrom, filterFechaTo, canLoadData, fetchRecorridos]);
 
   // ---- Filter handlers ----
 
   const handleEmpresaChange = (empresaId: number) => {
     setFilterEmpresaId(empresaId);
     setFilterVehiculoId(0);
+    setFilterFechaFrom('');
+    setFilterFechaTo('');
     setPage(0);
   };
 
@@ -170,22 +190,25 @@ export default function RecorridosPage() {
     setPage(0);
   };
 
-  const handleClearFilters = () => {
-    setFilterEmpresaId(0);
-    setFilterVehiculoId(0);
-    setSearch('');
+  const handleFechaFromChange = (val: string) => {
+    setFilterFechaFrom(val);
     setPage(0);
   };
 
-  const hasActiveFilters = filterEmpresaId !== 0 || filterVehiculoId !== 0 || search !== '';
+  const handleFechaToChange = (val: string) => {
+    setFilterFechaTo(val);
+    setPage(0);
+  };
 
-  // Client-side search only
-  const filteredData = search
-    ? data.filter((item) => {
-        const str = `${item.lugarAbastecimiento} ${item.numeroChip} ${item.fecha}`.toLowerCase();
-        return str.includes(search.toLowerCase());
-      })
-    : data;
+  const handleClearFilters = () => {
+    setFilterEmpresaId(0);
+    setFilterVehiculoId(0);
+    setFilterFechaFrom('');
+    setFilterFechaTo('');
+    setPage(0);
+  };
+
+  const hasActiveFilters = filterEmpresaId !== 0 || filterVehiculoId !== 0 || hasDateRange;
 
   // ---- Form helpers ----
 
@@ -193,7 +216,6 @@ export default function RecorridosPage() {
     ? vehiculosByEmpresa.find((v) => v.id === filterVehiculoId) ?? null
     : null;
 
-  // Vehiculo shown in the modal (from filter when creating, from entity when editing)
   const modalVehiculo = showForm
     ? (editingEntity
         ? editingEntity.vehiculo
@@ -246,7 +268,7 @@ export default function RecorridosPage() {
         addToast({ type: 'success', title: 'Recorrido creado', message: 'El nuevo registro se ha creado correctamente.' });
       }
       setShowForm(false);
-      if (canLoadData) fetchRecorridos(page, filterVehiculoId);
+      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom || undefined, filterFechaTo || undefined);
     } catch {
       addToast({ type: 'error', title: 'Error', message: 'Error al guardar el recorrido.' });
     } finally {
@@ -261,7 +283,7 @@ export default function RecorridosPage() {
       await recorridosApi.delete(deleteTarget.id);
       addToast({ type: 'success', title: 'Recorrido eliminado', message: 'El registro se ha eliminado correctamente.' });
       setDeleteTarget(null);
-      if (canLoadData) fetchRecorridos(page, filterVehiculoId);
+      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom || undefined, filterFechaTo || undefined);
     } catch {
       addToast({ type: 'error', title: 'Error', message: 'Error al eliminar el recorrido.' });
     } finally {
@@ -269,8 +291,7 @@ export default function RecorridosPage() {
     }
   };
 
-  // ---- Column count for colSpan ----
-  const colCount = 8;
+  const colCount = 8; // table columns
 
   // ---- Render ----
 
@@ -290,9 +311,9 @@ export default function RecorridosPage() {
 
       {/* Filter Bar */}
       <div className="card mb-4 !py-3">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          {/* Empresa Select */}
-          <div className="relative w-full sm:w-56">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+          {/* Empresa */}
+          <div className="relative w-full sm:w-48">
             <label htmlFor="filter-empresa" className="block text-xs font-medium text-gray-500 mb-1">
               Empresa<span className="text-red-500 ml-0.5">*</span>
             </label>
@@ -310,8 +331,8 @@ export default function RecorridosPage() {
             <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* Vehiculo Select */}
-          <div className="relative w-full sm:w-72">
+          {/* Vehiculo */}
+          <div className="relative w-full sm:w-64">
             <label htmlFor="filter-vehiculo" className="block text-xs font-medium text-gray-500 mb-1">
               Vehiculo<span className="text-red-500 ml-0.5">*</span>
             </label>
@@ -336,28 +357,39 @@ export default function RecorridosPage() {
             <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* Search */}
-          <div className="relative flex-1 w-full sm:w-auto">
-            <label htmlFor="filter-search" className="block text-xs font-medium text-gray-500 mb-1">
-              Buscar
+          {/* Fecha Desde */}
+          <div className="w-full sm:w-40">
+            <label htmlFor="filter-from" className="block text-xs font-medium text-gray-500 mb-1">
+              Fecha desde
             </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                id="filter-search"
-                type="text"
-                placeholder="Lugar, chip, fecha..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="input-field pl-9 py-2 text-sm"
-                disabled={!canLoadData}
-              />
-            </div>
+            <input
+              id="filter-from"
+              type="date"
+              value={filterFechaFrom}
+              onChange={(e) => handleFechaFromChange(e.target.value)}
+              className="input-field py-2 text-sm"
+              disabled={!canLoadData}
+            />
           </div>
 
-          {/* Clear Filters */}
+          {/* Fecha Hasta */}
+          <div className="w-full sm:w-40">
+            <label htmlFor="filter-to" className="block text-xs font-medium text-gray-500 mb-1">
+              Fecha hasta
+            </label>
+            <input
+              id="filter-to"
+              type="date"
+              value={filterFechaTo}
+              onChange={(e) => handleFechaToChange(e.target.value)}
+              className="input-field py-2 text-sm"
+              disabled={!canLoadData}
+            />
+          </div>
+
+          {/* Clear */}
           {hasActiveFilters && (
-            <div className="self-end">
+            <div>
               <button
                 onClick={handleClearFilters}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -406,14 +438,14 @@ export default function RecorridosPage() {
                     </div>
                   </td>
                 </tr>
-              ) : filteredData.length === 0 ? (
+              ) : data.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
-                    {search ? 'No se encontraron resultados' : 'No hay recorridos para este vehiculo'}
+                    {hasDateRange ? 'No se encontraron recorridos en el rango de fechas' : 'No hay recorridos para este vehiculo'}
                   </td>
                 </tr>
               ) : (
-                filteredData.map((item) => (
+                data.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <span className="table-cell block font-medium text-gray-900">{formatDate(item.fecha)}</span>
@@ -461,7 +493,7 @@ export default function RecorridosPage() {
           </table>
         </div>
 
-        {!search && canLoadData && (
+        {canLoadData && (
           <div className="px-4 pb-4">
             <Pagination
               page={page}
@@ -482,7 +514,6 @@ export default function RecorridosPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Vehiculo info */}
           {modalVehiculo && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
               <p className="text-xs font-medium text-gray-500 mb-0.5">Vehiculo</p>
@@ -491,7 +522,6 @@ export default function RecorridosPage() {
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Fecha */}
             <div>
               <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Fecha<span className="text-red-500 ml-0.5">*</span>
@@ -505,8 +535,6 @@ export default function RecorridosPage() {
                 required
               />
             </div>
-
-            {/* Kilometros */}
             <div>
               <label htmlFor="kilometros" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Kilometros Recorridos<span className="text-red-500 ml-0.5">*</span>
@@ -523,8 +551,6 @@ export default function RecorridosPage() {
                 required
               />
             </div>
-
-            {/* Litros Abastecidos */}
             <div>
               <label htmlFor="litrosAbastecidos" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Litros Abastecidos
@@ -540,8 +566,6 @@ export default function RecorridosPage() {
                 placeholder="Ej: 25.5"
               />
             </div>
-
-            {/* Numero Chip */}
             <div>
               <label htmlFor="numeroChip" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Numero de Chip
@@ -555,8 +579,6 @@ export default function RecorridosPage() {
                 placeholder="Ej: CHIP-001"
               />
             </div>
-
-            {/* Lugar Abastecimiento */}
             <div className="sm:col-span-2">
               <label htmlFor="lugarAbastecimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Lugar de Abastecimiento
@@ -571,8 +593,6 @@ export default function RecorridosPage() {
               />
             </div>
           </div>
-
-          {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
