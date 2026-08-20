@@ -28,6 +28,7 @@ import type {
   ChoferCategoriaRequest,
   RecorridoResponse,
   RecorridoRequest,
+  ReporteMovimientoMensualResponse,
   PageParams,
   PageResponse,
 } from '@/types';
@@ -146,6 +147,9 @@ export const vehiculosApi = {
 
   findByChoferId: (choferId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<VehiculoResponse>>> =>
     apiClient.get<PageResponse<VehiculoResponse>>(`/vehiculos/chofer/${choferId}`, { params }),
+
+  reporteMovimientoMensual: (vehiculoId: number, mes: number, anio: number): Promise<AxiosResponse<ReporteMovimientoMensualResponse>> =>
+    apiClient.get<ReporteMovimientoMensualResponse>(`/vehiculos/reporte-movimiento-mensual/${vehiculoId}`, { params: { mes, anio } }),
 };
 
 // ---- Tipos Vehiculo ----

@@ -344,6 +344,40 @@ export interface RecorridoResponse {
   modificadoPor: UserAuditResponse;
 }
 
+// --- Reporte Movimiento Mensual ---
+export interface VehiculoReporteData {
+  marca: string;
+  numeroMotor: string;
+  tipoCombustible: string;
+  normaConsumo: number;
+  matricula: string;
+  chofer: ChoferResponse | null;
+}
+
+export interface LecturaDiariaResponse {
+  dia: number;
+  odometro: number;
+  combustibleEnDeposito: number;
+  combustibleConsumido: number;
+  combustibleAbastecido: number;
+  saldoCombustible: number;
+}
+
+export interface AnalisisConsumoResponse {
+  combustibleInicial: number;
+  combustibleRecibido: number;
+  combustibleConsumido: number;
+  existenciaFinal: number;
+  kilometrosRecorridos: number;
+  consumidoSegunNorma: number;
+}
+
+export interface ReporteMovimientoMensualResponse {
+  vehiculo: VehiculoReporteData;
+  lecturas: LecturaDiariaResponse[];
+  analisis: AnalisisConsumoResponse;
+}
+
 // --- Menu / App Types ---
 export interface MenuItem {
   label: string;

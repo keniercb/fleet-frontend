@@ -1,0 +1,696 @@
+     1→     1→import { useState, useEffect, useCallback } from 'react';
+     2→     2→import { Plus, Pencil, Trash2, Search, ChevronDown, Eye } from 'lucide-react';
+     3→     3→import { useCrud } from '@/hooks/useCrud';
+     4→     4→import { useToast } from '@/contexts/ToastContext';
+     5→     5→import {
+     6→     6→  vehiculosApi,
+     7→     7→  empresasApi,
+     8→     8→  tiposVehiculoApi,
+     9→     9→  marcasApi,
+    10→    10→  tiposCombustibleApi,
+    11→    11→  choferesApi,
+    12→    12→} from '@/api/endpoints';
+    13→    13→import PageHeader from '@/components/common/PageHeader';
+    14→    14→import Pagination from '@/components/common/Pagination';
+    15→    15→import Modal from '@/components/ui/Modal';
+    16→    16→import ConfirmModal from '@/components/ui/ConfirmModal';
+    17→    17→import type {
+    18→    18→  VehiculoRequest,
+    19→    19→  VehiculoResponse,
+    20→    20→  EmpresaResponse,
+    21→    21→  TipoVehiculoResponse,
+    22→    22→  MarcaResponse,
+    23→    23→  TipoCombustibleResponse,
+    24→    24→  ChoferResponse,
+    25→    25→} from '@/types';
+    26→    26→
+    27→    27→// ---- Types ----
+    28→    28→
+    29→    29→interface Dropdowns {
+    30→    30→  empresas: EmpresaResponse[];
+    31→    31→  tiposVehiculo: TipoVehiculoResponse[];
+    32→    32→  marcas: MarcaResponse[];
+    33→    33→  tiposCombustible: TipoCombustibleResponse[];
+    34→    34→}
+    35→    35→
+    36→    36→interface FormData {
+    37→    37→  empresaId: number;
+    38→    38→  tipoVehiculoId: number;
+    39→    39→  marcaId: number;
+    40→    40→  choferId: number;
+    41→    41→  tipoCombustibleId: number;
+    42→    42→  modelo: string;
+    43→    43→  matricula: string;
+    44→    44→  numeroMotor: string;
+    45→    45→  odometro: number;
+    46→    46→  combustible: number;
+    47→    47→  ultimoMantenimiento: string;
+    48→    48→  odometroUltimoMantenimiento: string;
+    49→    49→  indiceConsumo: string;
+    50→    50→}
+    51→    51→
+    52→    52→const EMPTY_FORM: FormData = {
+    53→    53→  empresaId: 0,
+    54→    54→  tipoVehiculoId: 0,
+    55→    55→  marcaId: 0,
+    56→    56→  choferId: 0,
+    57→    57→  tipoCombustibleId: 0,
+    58→    58→  modelo: '',
+    59→    59→  matricula: '',
+    60→    60→  numeroMotor: '',
+    61→    61→  odometro: 0,
+    62→    62→  combustible: 0,
+    63→    63→  ultimoMantenimiento: '',
+    64→    64→  odometroUltimoMantenimiento: '',
+    65→    65→  indiceConsumo: '',
+    66→    66→};
+    67→    67→
+    68→    68→// ---- Componentes auxiliares ----
+    69→    69→
+    70→    70→function formatDate(dateStr: string): string {
+    71→    71→  if (!dateStr) return '—';
+    72→    72→  const date = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
+    73→    73→  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    74→    74→}
+    75→    75→
+    76→    76→function DetailField({ label, value }: { label: string; value: string }) {
+    77→    77→  return (
+    78→    78→    <div>
+    79→    79→      <dt className="text-xs font-medium text-gray-500">{label}</dt>
+    80→    80→      <dd className="mt-0.5 text-sm text-gray-900 font-medium">{value}</dd>
+    81→    81→    </div>
+    82→    82→  );
+    83→    83→}
+    84→    84→
+    85→    85→// ---- Component ----
+    86→    86→
+    87→    87→export default function VehiculosPage() {
+    88→    88→  const {
+    89→    89→    data, loading, saving, totalPages, totalElements, page, size, error,
+    90→    90→    setPage, createItem, updateItem, deleteItem,
+    91→    91→  } = useCrud<VehiculoRequest, VehiculoResponse>(vehiculosApi);
+    92→    92→
+    93→    93→  const { addToast } = useToast();
+    94→    94→
+    95→    95→  // Dropdown data
+    96→    96→  const [dropdowns, setDropdowns] = useState<Dropdowns>({
+    97→    97→    empresas: [],
+    98→    98→    tiposVehiculo: [],
+    99→    99→    marcas: [],
+   100→   100→    tiposCombustible: [],
+   101→   101→  });
+   102→   102→
+   103→   103→  // Choferes filtrados por empresa
+   104→   104→  const [choferes, setChoferes] = useState<ChoferResponse[]>([]);
+   105→   105→  const [loadingChoferes, setLoadingChoferes] = useState(false);
+   106→   106→
+   107→   107→  // UI state
+   108→   108→  const [search, setSearch] = useState('');
+   109→   109→  const [showForm, setShowForm] = useState(false);
+   110→   110→  const [viewEntity, setViewEntity] = useState<VehiculoResponse | null>(null);
+   111→   111→  const [editingEntity, setEditingEntity] = useState<VehiculoResponse | null>(null);
+   112→   112→  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+   113→   113→  const [deleteTarget, setDeleteTarget] = useState<VehiculoResponse | null>(null);
+   114→   114→
+   115→   115→  // Show error as toast
+   116→   116→  useEffect(() => {
+   117→   117→    if (error) {
+   118→   118→      addToast({ type: 'error', title: 'Error', message: error });
+   119→   119→    }
+   120→   120→  }, [error, addToast]);
+   121→   121→
+   122→   122→  // Fetch static dropdowns (no choferes — those are loaded by empresa)
+   123→   123→  const fetchDropdowns = useCallback(async () => {
+   124→   124→    try {
+   125→   125→      const [empRes, tvRes, marRes, tcRes] = await Promise.all([
+   126→   126→        empresasApi.findAll({ page: 0, perPage: 200 }),
+   127→   127→        tiposVehiculoApi.findAll({ page: 0, perPage: 200 }),
+   128→   128→        marcasApi.findAll({ page: 0, perPage: 200 }),
+   129→   129→        tiposCombustibleApi.findAll({ page: 0, perPage: 200 }),
+   130→   130→      ]);
+   131→   131→      setDropdowns({
+   132→   132→        empresas: empRes.data.content.filter((e) => e.activo),
+   133→   133→        tiposVehiculo: tvRes.data.content.filter((e) => e.activo),
+   134→   134→        marcas: marRes.data.content.filter((e) => e.activo),
+   135→   135→        tiposCombustible: tcRes.data.content.filter((e) => e.activo),
+   136→   136→      });
+   137→   137→    } catch {
+   138→   138→      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los datos de los selectores.' });
+   139→   139→    }
+   140→   140→  }, [addToast]);
+   141→   141→
+   142→   142→  // Fetch choferes filtered by empresa
+   143→   143→  const fetchChoferesByEmpresa = useCallback(async (empresaId: number) => {
+   144→   144→    if (!empresaId) {
+   145→   145→      setChoferes([]);
+   146→   146→      return;
+   147→   147→    }
+   148→   148→    setLoadingChoferes(true);
+   149→   149→    try {
+   150→   150→      const res = await choferesApi.findByEmpresaId(empresaId, { page: 0, perPage: 200 });
+   151→   151→      setChoferes(res.data.content.filter((c) => c.activo));
+   152→   152→    } catch {
+   153→   153→      setChoferes([]);
+   154→   154→    } finally {
+   155→   155→      setLoadingChoferes(false);
+   156→   156→    }
+   157→   157→  }, []);
+   158→   158→
+   159→   159→  useEffect(() => {
+   160→   160→    fetchDropdowns();
+   161→   161→  }, [fetchDropdowns]);
+   162→   162→
+   163→   163→  // ---- Form helpers ----
+   164→   164→
+   165→   165→  const handleOpenCreate = () => {
+   166→   166→    setEditingEntity(null);
+   167→   167→    setFormData({ ...EMPTY_FORM });
+   168→   168→    setChoferes([]);
+   169→   169→    setShowForm(true);
+   170→   170→  };
+   171→   171→
+   172→   172→  const handleOpenEdit = async (entity: VehiculoResponse) => {
+   173→   173→    setEditingEntity(entity);
+   174→   174→    // Load choferes for the entity's empresa before setting form data
+   175→   175→    await fetchChoferesByEmpresa(entity.empresa.id);
+   176→   176→    setFormData({
+   177→   177→      empresaId: entity.empresa.id,
+   178→   178→      tipoVehiculoId: entity.tipoVehiculo.id,
+   179→   179→      marcaId: entity.marca.id,
+   180→   180→      choferId: entity.chofer?.id ?? 0,
+   181→   181→      tipoCombustibleId: entity.tipoCombustible.id,
+   182→   182→      modelo: entity.modelo || '',
+   183→   183→      matricula: entity.matricula,
+   184→   184→      numeroMotor: entity.numeroMotor,
+   185→   185→      odometro: entity.odometro,
+   186→   186→      combustible: entity.combustible,
+   187→   187→      ultimoMantenimiento: entity.ultimoMantenimiento || '',
+   188→   188→      odometroUltimoMantenimiento: entity.odometroUltimoMantenimiento ? String(entity.odometroUltimoMantenimiento) : '',
+   189→   189→      indiceConsumo: entity.indiceConsumo ? String(entity.indiceConsumo) : '',
+   190→   190→    });
+   191→   191→    setShowForm(true);
+   192→   192→  };
+   193→   193→
+   194→   194→  const handleFieldChange = (key: string, value: string | number) => {
+   195→   195→    if (key === 'empresaId') {
+   196→   196→      // Reset chofer when empresa changes and reload choferes list
+   197→   197→      setFormData((prev) => ({ ...prev, empresaId: value as number, choferId: 0 }));
+   198→   198→      fetchChoferesByEmpresa(value as number);
+   199→   199→    } else {
+   200→   200→      setFormData((prev) => ({ ...prev, [key]: value }));
+   201→   201→    }
+   202→   202→  };
+   203→   203→
+   204→   204→  const buildRequestPayload = (): VehiculoRequest => ({
+   205→   205→    empresaId: formData.empresaId,
+   206→   206→    tipoVehiculoId: formData.tipoVehiculoId,
+   207→   207→    marcaId: formData.marcaId,
+   208→   208→    choferId: formData.choferId || undefined,
+   209→   209→    tipoCombustibleId: formData.tipoCombustibleId,
+   210→   210→    modelo: formData.modelo || undefined,
+   211→   211→    matricula: formData.matricula,
+   212→   212→    numeroMotor: formData.numeroMotor,
+   213→   213→    odometro: formData.odometro,
+   214→   214→    combustible: formData.combustible,
+   215→   215→    ultimoMantenimiento: formData.ultimoMantenimiento || undefined,
+   216→   216→    odometroUltimoMantenimiento: formData.odometroUltimoMantenimiento ? Number(formData.odometroUltimoMantenimiento) : undefined,
+   217→   217→    indiceConsumo: formData.indiceConsumo ? Number(formData.indiceConsumo) : undefined,
+   218→   218→  });
+   219→   219→
+   220→   220→  const handleSubmit = async (e: React.FormEvent) => {
+   221→   221→    e.preventDefault();
+   222→   222→    try {
+   223→   223→      const payload = buildRequestPayload();
+   224→   224→      if (editingEntity) {
+   225→   225→        await updateItem(editingEntity.id, payload);
+   226→   226→        addToast({ type: 'success', title: 'Vehículo actualizado', message: 'El registro se ha actualizado correctamente.' });
+   227→   227→      } else {
+   228→   228→        await createItem(payload);
+   229→   229→        addToast({ type: 'success', title: 'Vehículo creado', message: 'El nuevo registro se ha creado correctamente.' });
+   230→   230→      }
+   231→   231→      setShowForm(false);
+   232→   232→    } catch {
+   233→   233→      // error handled by useCrud → toast via useEffect
+   234→   234→    }
+   235→   235→  };
+   236→   236→
+   237→   237→  const handleConfirmDelete = async () => {
+   238→   238→    if (!deleteTarget) return;
+   239→   239→    try {
+   240→   240→      await deleteItem(deleteTarget.id);
+   241→   241→      addToast({ type: 'success', title: 'Vehículo eliminado', message: 'El registro se ha eliminado correctamente.' });
+   242→   242→      setDeleteTarget(null);
+   243→   243→    } catch {
+   244→   244→      // error handled by useCrud → toast via useEffect
+   245→   245→    }
+   246→   246→  };
+   247→   247→
+   248→   248→  // Search
+   249→   249→  const filteredData = search
+   250→   250→    ? data.filter((item) => {
+   251→   251→        const searchStr = `${item.matricula} ${item.numeroMotor} ${item.modelo} ${item.empresa.nombre} ${item.marca.nombre} ${item.tipoVehiculo.nombre} ${item.chofer?.nombre ?? ''} ${item.chofer?.apellidos ?? ''}`.toLowerCase();
+   252→   252→        return searchStr.includes(search.toLowerCase());
+   253→   253→      })
+   254→   254→    : data;
+   255→   255→
+   256→   256→  // ---- Render helpers ----
+   257→   257→
+   258→   258→  const renderSelect = (
+   259→   259→    id: string,
+   260→   260→    label: string,
+   261→   261→    value: number,
+   262→   262→    onChange: (v: number) => void,
+   263→   263→    options: { id: number; label: string }[],
+   264→   264→    required = true,
+   265→   265→    placeholder = 'Seleccionar...',
+   266→   266→  ) => (
+   267→   267→    <div>
+   268→   268→      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1.5">
+   269→   269→        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+   270→   270→      </label>
+   271→   271→      <div className="relative">
+   272→   272→        <select
+   273→   273→          id={id}
+   274→   274→          value={value}
+   275→   275→          onChange={(e) => onChange(Number(e.target.value))}
+   276→   276→          className="input-field appearance-none pr-8"
+   277→   277→          required={required}
+   278→   278→        >
+   279→   279→          <option value={0}>{placeholder}</option>
+   280→   280→          {options.map((opt) => (
+   281→   281→            <option key={opt.id} value={opt.id}>{opt.label}</option>
+   282→   282→          ))}
+   283→   283→        </select>
+   284→   284→        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+   285→   285→      </div>
+   286→   286→    </div>
+   287→   287→  );
+   288→   288→
+   289→   289→  // ---- Render ----
+   290→   290→
+   291→   291→  return (
+   292→   292→    <div>
+   293→   293→      <PageHeader title="Vehículos" description="Gestión de los vehículos del sistema">
+   294→   294→        <div className="relative w-64">
+   295→   295→          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+   296→   296→          <input
+   297→   297→            type="text"
+   298→   298→            placeholder="Buscar..."
+   299→   299→            value={search}
+   300→   300→            onChange={(e) => setSearch(e.target.value)}
+   301→   301→            className="input-field pl-9 py-2 text-sm"
+   302→   302→          />
+   303→   303→        </div>
+   304→   304→        <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
+   305→   305→          <Plus className="w-4 h-4" />
+   306→   306→          Nuevo
+   307→   307→        </button>
+   308→   308→      </PageHeader>
+   309→   309→
+   310→   310→      {/* Table */}
+   311→   311→      <div className="card !p-0 overflow-hidden">
+   312→   312→        <div className="overflow-x-auto">
+   313→   313→          <table className="w-full">
+   314→   314→            <thead>
+   315→   315→              <tr>
+   316→   316→                <th className="table-header px-4 py-3">Matrícula</th>
+   317→   317→                <th className="table-header px-4 py-3">Empresa</th>
+   318→   318→                <th className="table-header px-4 py-3">Tipo</th>
+   319→   319→                <th className="table-header px-4 py-3">Marca</th>
+   320→   320→                <th className="table-header px-4 py-3">Modelo</th>
+   321→   321→                <th className="table-header px-4 py-3">Tipo Combustible</th>
+   322→   322→                <th className="table-header px-4 py-3 text-right">Combustible (L)</th>
+   323→   323→                <th className="table-header px-4 py-3">Chofer</th>
+   324→   324→                <th className="table-header px-4 py-3 text-right">Odómetro</th>
+   325→   325→                <th className="table-header px-4 py-3 text-right">Acciones</th>
+   326→   326→              </tr>
+   327→   327→            </thead>
+   328→   328→            <tbody>
+   329→   329→              {loading ? (
+   330→   330→                <tr>
+   331→   331→                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+   332→   332→                    <div className="flex items-center justify-center gap-2">
+   333→   333→                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
+   334→   334→                      Cargando...
+   335→   335→                    </div>
+   336→   336→                  </td>
+   337→   337→                </tr>
+   338→   338→              ) : filteredData.length === 0 ? (
+   339→   339→                <tr>
+   340→   340→                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+   341→   341→                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+   342→   342→                  </td>
+   343→   343→                </tr>
+   344→   344→              ) : (
+   345→   345→                filteredData.map((item) => (
+   346→   346→                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+   347→   347→                    <td className="px-4 py-3">
+   348→   348→                      <span className="table-cell block font-medium text-gray-900">{item.matricula}</span>
+   349→   349→                    </td>
+   350→   350→                    <td className="px-4 py-3">
+   351→   351→                      <span className="table-cell block">{item.empresa.nombre}</span>
+   352→   352→                    </td>
+   353→   353→                    <td className="px-4 py-3">
+   354→   354→                      <span className="table-cell block">{item.tipoVehiculo.nombre}</span>
+   355→   355→                    </td>
+   356→   356→                    <td className="px-4 py-3">
+   357→   357→                      <span className="table-cell block">{item.marca.nombre}</span>
+   358→   358→                    </td>
+   359→   359→                    <td className="px-4 py-3">
+   360→   360→                      <span className="table-cell block">{item.modelo || '—'}</span>
+   361→   361→                    </td>
+   362→   362→                    <td className="px-4 py-3">
+   363→   363→                      <span className="table-cell block">{item.tipoCombustible.denominacion}</span>
+   364→   364→                    </td>
+   365→   365→                    <td className="px-4 py-3 text-right">
+   366→   366→                      <span className="table-cell block">{item.combustible}</span>
+   367→   367→                    </td>
+   368→   368→                    <td className="px-4 py-3">
+   369→   369→                      <span className="table-cell block">
+   370→   370→                        {item.chofer
+   371→   371→                          ? `${item.chofer.nombre} ${item.chofer.apellidos}`
+   372→   372→                          : <span className="text-gray-400">—</span>}
+   373→   373→                      </span>
+   374→   374→                    </td>
+   375→   375→                    <td className="px-4 py-3 text-right">
+   376→   376→                      <span className="table-cell block">{item.odometro.toLocaleString()}</span>
+   377→   377→                    </td>
+   378→   378→                    <td className="px-4 py-3 text-right">
+   379→   379→                      <div className="flex items-center justify-end gap-1">
+   380→   380→                        <button
+   381→   381→                          onClick={() => setViewEntity(item)}
+   382→   382→                          className="p-1.5 hover:bg-green-50 rounded-lg text-gray-400 hover:text-green-600 transition-colors"
+   383→   383→                          title="Ver detalles"
+   384→   384→                        >
+   385→   385→                          <Eye className="w-4 h-4" />
+   386→   386→                        </button>
+   387→   387→                        <button
+   388→   388→                          onClick={() => handleOpenEdit(item)}
+   389→   389→                          className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
+   390→   390→                          title="Editar"
+   391→   391→                        >
+   392→   392→                          <Pencil className="w-4 h-4" />
+   393→   393→                        </button>
+   394→   394→                        <button
+   395→   395→                          onClick={() => setDeleteTarget(item)}
+   396→   396→                          className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+   397→   397→                          title="Eliminar"
+   398→   398→                        >
+   399→   399→                          <Trash2 className="w-4 h-4" />
+   400→   400→                        </button>
+   401→   401→                      </div>
+   402→   402→                    </td>
+   403→   403→                  </tr>
+   404→   404→                ))
+   405→   405→              )}
+   406→   406→            </tbody>
+   407→   407→          </table>
+   408→   408→        </div>
+   409→   409→
+   410→   410→        {!search && (
+   411→   411→          <div className="px-4 pb-4">
+   412→   412→            <Pagination
+   413→   413→              page={page}
+   414→   414→              totalPages={totalPages}
+   415→   415→              totalElements={totalElements}
+   416→   416→              size={size}
+   417→   417→              onPageChange={setPage}
+   418→   418→            />
+   419→   419→          </div>
+   420→   420→        )}
+   421→   421→      </div>
+   422→   422→
+   423→   423→      {/* Create / Edit Modal */}
+   424→   424→      <Modal
+   425→   425→        open={showForm}
+   426→   426→        title={editingEntity ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+   427→   427→        onClose={() => setShowForm(false)}
+   428→   428→        size="xl"
+   429→   429→      >
+   430→   430→        <form onSubmit={handleSubmit} className="space-y-4">
+   431→   431→          {/* Selects de relación */}
+   432→   432→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   433→   433→            {renderSelect(
+   434→   434→              'empresaId', 'Empresa', formData.empresaId,
+   435→   435→              (v) => handleFieldChange('empresaId', v),
+   436→   436→              dropdowns.empresas.map((e) => ({ id: e.id, label: e.nombre })),
+   437→   437→            )}
+   438→   438→            {renderSelect(
+   439→   439→              'tipoVehiculoId', 'Tipo de Vehículo', formData.tipoVehiculoId,
+   440→   440→              (v) => handleFieldChange('tipoVehiculoId', v),
+   441→   441→              dropdowns.tiposVehiculo.map((e) => ({ id: e.id, label: e.nombre })),
+   442→   442→            )}
+   443→   443→            {renderSelect(
+   444→   444→              'marcaId', 'Marca', formData.marcaId,
+   445→   445→              (v) => handleFieldChange('marcaId', v),
+   446→   446→              dropdowns.marcas.map((e) => ({ id: e.id, label: e.nombre })),
+   447→   447→            )}
+   448→   448→            {renderSelect(
+   449→   449→              'tipoCombustibleId', 'Tipo de Combustible', formData.tipoCombustibleId,
+   450→   450→              (v) => handleFieldChange('tipoCombustibleId', v),
+   451→   451→              dropdowns.tiposCombustible.map((e) => ({ id: e.id, label: `${e.codigo} - ${e.denominacion}` })),
+   452→   452→            )}
+   453→   453→            <div>
+   454→   454→              <label htmlFor="choferId" className="block text-sm font-medium text-gray-700 mb-1.5">
+   455→   455→                Chofer (opcional)
+   456→   456→              </label>
+   457→   457→              <div className="relative">
+   458→   458→                <select
+   459→   459→                  id="choferId"
+   460→   460→                  value={formData.choferId}
+   461→   461→                  onChange={(e) => handleFieldChange('choferId', Number(e.target.value))}
+   462→   462→                  className="input-field appearance-none pr-8"
+   463→   463→                  disabled={!formData.empresaId || loadingChoferes}
+   464→   464→                >
+   465→   465→                  <option value="0">{!formData.empresaId ? 'Seleccione empresa primero' : loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
+   466→   466→                  {choferes.map((c) => (
+   467→   467→                    <option key={c.id} value={c.id}>{`${c.nombre} ${c.apellidos} — ${c.carneIdentidad}`}</option>
+   468→   468→                  ))}
+   469→   469→                </select>
+   470→   470→                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+   471→   471→              </div>
+   472→   472→            </div>
+   473→   473→          </div>
+   474→   474→
+   475→   475→          {/* Divider */}
+   476→   476→          <div className="border-t border-gray-200" />
+   477→   477→
+   478→   478→          {/* Datos del vehículo */}
+   479→   479→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   480→   480→            <div>
+   481→   481→              <label htmlFor="modelo" className="block text-sm font-medium text-gray-700 mb-1.5">
+   482→   482→                Modelo
+   483→   483→              </label>
+   484→   484→              <input
+   485→   485→                id="modelo"
+   486→   486→                type="text"
+   487→   487→                value={formData.modelo}
+   488→   488→                onChange={(e) => handleFieldChange('modelo', e.target.value)}
+   489→   489→                className="input-field"
+   490→   490→                placeholder="Ej: Corolla 2024"
+   491→   491→              />
+   492→   492→            </div>
+   493→   493→            <div>
+   494→   494→              <label htmlFor="matricula" className="block text-sm font-medium text-gray-700 mb-1.5">
+   495→   495→                Matrícula<span className="text-red-500 ml-0.5">*</span>
+   496→   496→              </label>
+   497→   497→              <input
+   498→   498→                id="matricula"
+   499→   499→                type="text"
+   500→   500→                value={formData.matricula}
+   501→   501→                onChange={(e) => handleFieldChange('matricula', e.target.value)}
+   502→   502→                className="input-field"
+   503→   503→                placeholder="Ej: A-123-456"
+   504→   504→                required
+   505→   505→              />
+   506→   506→            </div>
+   507→   507→            <div>
+   508→   508→              <label htmlFor="numeroMotor" className="block text-sm font-medium text-gray-700 mb-1.5">
+   509→   509→                No. Motor<span className="text-red-500 ml-0.5">*</span>
+   510→   510→              </label>
+   511→   511→              <input
+   512→   512→                id="numeroMotor"
+   513→   513→                type="text"
+   514→   514→                value={formData.numeroMotor}
+   515→   515→                onChange={(e) => handleFieldChange('numeroMotor', e.target.value)}
+   516→   516→                className="input-field"
+   517→   517→                placeholder="Ej: M20240001"
+   518→   518→                required
+   519→   519→              />
+   520→   520→            </div>
+   521→   521→            <div>
+   522→   522→              <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 mb-1.5">
+   523→   523→                Odómetro (km)<span className="text-red-500 ml-0.5">*</span>
+   524→   524→              </label>
+   525→   525→              <input
+   526→   526→                id="odometro"
+   527→   527→                type="number"
+   528→   528→                min="0"
+   529→   529→                value={formData.odometro}
+   530→   530→                onChange={(e) => handleFieldChange('odometro', e.target.value === '' ? 0 : Number(e.target.value))}
+   531→   531→                className="input-field"
+   532→   532→                placeholder="Ej: 50000"
+   533→   533→                required
+   534→   534→              />
+   535→   535→            </div>
+   536→   536→            <div>
+   537→   537→              <label htmlFor="combustible" className="block text-sm font-medium text-gray-700 mb-1.5">
+   538→   538→                Combustible (L)<span className="text-red-500 ml-0.5">*</span>
+   539→   539→              </label>
+   540→   540→              <input
+   541→   541→                id="combustible"
+   542→   542→                type="number"
+   543→   543→                min="0"
+   544→   544→                step="0.1"
+   545→   545→                value={formData.combustible}
+   546→   546→                onChange={(e) => handleFieldChange('combustible', e.target.value === '' ? 0 : Number(e.target.value))}
+   547→   547→                className="input-field"
+   548→   548→                placeholder="Ej: 40.5"
+   549→   549→                required
+   550→   550→              />
+   551→   551→            </div>
+   552→   552→            <div>
+   553→   553→              <label htmlFor="indiceConsumo" className="block text-sm font-medium text-gray-700 mb-1.5">
+   554→   554→                Índice Consumo (km/L)
+   555→   555→              </label>
+   556→   556→              <input
+   557→   557→                id="indiceConsumo"
+   558→   558→                type="number"
+   559→   559→                min="0"
+   560→   560→                step="0.01"
+   561→   561→                value={formData.indiceConsumo}
+   562→   562→                onChange={(e) => handleFieldChange('indiceConsumo', e.target.value)}
+   563→   563→                className="input-field"
+   564→   564→                placeholder="Ej: 8.5"
+   565→   565→              />
+   566→   566→            </div>
+   567→   567→            <div>
+   568→   568→              <label htmlFor="ultimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
+   569→   569→                Último Mantenimiento
+   570→   570→              </label>
+   571→   571→              <input
+   572→   572→                id="ultimoMantenimiento"
+   573→   573→                type="date"
+   574→   574→                value={formData.ultimoMantenimiento}
+   575→   575→                onChange={(e) => handleFieldChange('ultimoMantenimiento', e.target.value)}
+   576→   576→                className="input-field"
+   577→   577→              />
+   578→   578→            </div>
+   579→   579→            <div>
+   580→   580→              <label htmlFor="odometroUltimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
+   581→   581→                Odómetro Ult. Mantenimiento
+   582→   582→              </label>
+   583→   583→              <input
+   584→   584→                id="odometroUltimoMantenimiento"
+   585→   585→                type="number"
+   586→   586→                min="0"
+   587→   587→                value={formData.odometroUltimoMantenimiento}
+   588→   588→                onChange={(e) => handleFieldChange('odometroUltimoMantenimiento', e.target.value)}
+   589→   589→                className="input-field"
+   590→   590→                placeholder="Ej: 48000"
+   591→   591→              />
+   592→   592→            </div>
+   593→   593→          </div>
+   594→   594→
+   595→   595→          {/* Actions */}
+   596→   596→          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+   597→   597→            <button
+   598→   598→              type="button"
+   599→   599→              onClick={() => setShowForm(false)}
+   600→   600→              className="btn-secondary"
+   601→   601→            >
+   602→   602→              Cancelar
+   603→   603→            </button>
+   604→   604→            <button type="submit" disabled={saving} className="btn-primary">
+   605→   605→              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+   606→   606→            </button>
+   607→   607→          </div>
+   608→   608→        </form>
+   609→   609→      </Modal>
+   610→   610→
+   611→   611→      {/* View Detail Modal */}
+   612→   612→      <Modal
+   613→   613→        open={!!viewEntity}
+   614→   614→        title="Detalles del Vehículo"
+   615→   615→        onClose={() => setViewEntity(null)}
+   616→   616→        size="xl"
+   617→   617→      >
+   618→   618→        {viewEntity && (
+   619→   619→          <div className="space-y-6">
+   620→   620→            {/* Info general */}
+   621→   621→            <div>
+   622→   622→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información General</h3>
+   623→   623→              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   624→   624→                <DetailField label="Matrícula" value={viewEntity.matricula} />
+   625→   625→                <DetailField label="Modelo" value={viewEntity.modelo || '—'} />
+   626→   626→                <DetailField label="No. Motor" value={viewEntity.numeroMotor || '—'} />
+   627→   627→                <DetailField label="Marca" value={`${viewEntity.marca.nombre}${viewEntity.marca.paisOrigen ? ` (${viewEntity.marca.paisOrigen})` : ''}`} />
+   628→   628→                <DetailField label="Tipo de Vehículo" value={viewEntity.tipoVehiculo.nombre} />
+   629→   629→                <DetailField label="Tipo de Combustible" value={`${viewEntity.tipoCombustible.codigo} — ${viewEntity.tipoCombustible.denominacion}`} />
+   630→   630→              </div>
+   631→   631→            </div>
+   632→   632→
+   633→   633→            {/* Empresa y Chofer */}
+   634→   634→            <div>
+   635→   635→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Empresa y Chofer</h3>
+   636→   636→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   637→   637→                <DetailField label="Empresa" value={viewEntity.empresa.nombre} />
+   638→   638→                <DetailField
+   639→   639→                  label="Chofer"
+   640→   640→                  value={viewEntity.chofer ? `${viewEntity.chofer.nombre} ${viewEntity.chofer.apellidos}` : 'Sin asignar'}
+   641→   641→                />
+   642→   642→              </div>
+   643→   643→            </div>
+   644→   644→
+   645→   645→            {/* Métricas */}
+   646→   646→            <div>
+   647→   647→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Métricas y Combustible</h3>
+   648→   648→              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   649→   649→                <DetailField label="Odómetro" value={`${viewEntity.odometro.toLocaleString()} km`} />
+   650→   650→                <DetailField label="Combustible" value={`${viewEntity.combustible} L`} />
+   651→   651→                <DetailField label="Índice de Consumo" value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
+   652→   652→              </div>
+   653→   653→            </div>
+   654→   654→
+   655→   655→            {/* Mantenimiento */}
+   656→   656→            <div>
+   657→   657→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Mantenimiento</h3>
+   658→   658→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   659→   659→                <DetailField label="Último Mantenimiento" value={viewEntity.ultimoMantenimiento ? formatDate(viewEntity.ultimoMantenimiento) : '—'} />
+   660→   660→                <DetailField label="Odómetro Ult. Mantenimiento" value={viewEntity.odometroUltimoMantenimiento ? `${viewEntity.odometroUltimoMantenimiento.toLocaleString()} km` : '—'} />
+   661→   661→              </div>
+   662→   662→            </div>
+   663→   663→
+   664→   664→            {/* Estado */}
+   665→   665→            <div>
+   666→   666→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Estado</h3>
+   667→   667→              <div className="flex items-center gap-2">
+   668→   668→                {viewEntity.activo
+   669→   669→                  ? <span className="badge-active">Activo</span>
+   670→   670→                  : <span className="badge-inactive">Inactivo</span>}
+   671→   671→              </div>
+   672→   672→            </div>
+   673→   673→
+   674→   674→            <div className="flex justify-end pt-4 border-t border-gray-200">
+   675→   675→              <button onClick={() => setViewEntity(null)} className="btn-secondary">
+   676→   676→                Cerrar
+   677→   677→              </button>
+   678→   678→            </div>
+   679→   679→          </div>
+   680→   680→        )}
+   681→   681→      </Modal>
+   682→   682→
+   683→   683→      {/* Delete Confirmation */}
+   684→   684→      <ConfirmModal
+   685→   685→        open={!!deleteTarget}
+   686→   686→        title="Eliminar Vehículo"
+   687→   687→        message="¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+   688→   688→        onConfirm={handleConfirmDelete}
+   689→   689→        onCancel={() => setDeleteTarget(null)}
+   690→   690→        confirmText="Eliminar"
+   691→   691→        danger
+   692→   692→      />
+   693→   693→    </div>
+   694→   694→  );
+   695→   695→}
+   696→   696→

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Search, ChevronDown, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
 import {
@@ -22,6 +22,7 @@ import type {
   MarcaResponse,
   TipoCombustibleResponse,
   ChoferResponse,
+  ReporteMovimientoMensualResponse,
 } from '@/types';
 
 // ---- Types ----
@@ -111,6 +112,51 @@ export default function VehiculosPage() {
   const [editingEntity, setEditingEntity] = useState<VehiculoResponse | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<VehiculoResponse | null>(null);
+
+  // Reporte movimiento mensual
+  const [reporteVehiculo, setReporteVehiculo] = useState<VehiculoResponse | null>(null);
+  const [reporteData, setReporteData] = useState<ReporteMovimientoMensualResponse | null>(null);
+  const [reporteLoading, setReporteLoading] = useState(false);
+  const [reporteMes, setReporteMes] = useState(new Date().getMonth() + 1);
+  const [reporteAnio, setReporteAnio] = useState(new Date().getFullYear());
+
+  const MESES = [
+    { value: 1, label: 'Enero' },
+    { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' },
+    { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' },
+    { value: 12, label: 'Diciembre' },
+  ];
+
+  const anios = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
+
+  const handleOpenReporte = (vehiculo: VehiculoResponse) => {
+    setReporteVehiculo(vehiculo);
+    setReporteData(null);
+    setReporteMes(new Date().getMonth() + 1);
+    setReporteAnio(new Date().getFullYear());
+  };
+
+  const handleBuscarReporte = async () => {
+    if (!reporteVehiculo) return;
+    setReporteLoading(true);
+    setReporteData(null);
+    try {
+      const res = await vehiculosApi.reporteMovimientoMensual(reporteVehiculo.id, reporteMes, reporteAnio);
+      setReporteData(res.data);
+    } catch {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte de movimiento.' });
+    } finally {
+      setReporteLoading(false);
+    }
+  };
 
   // Show error as toast
   useEffect(() => {
@@ -377,6 +423,13 @@ export default function VehiculosPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleOpenReporte(item)}
+                          className="p-1.5 hover:bg-purple-50 rounded-lg text-gray-400 hover:text-purple-600 transition-colors"
+                          title="Reporte de Movimiento"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => setViewEntity(item)}
                           className="p-1.5 hover:bg-green-50 rounded-lg text-gray-400 hover:text-green-600 transition-colors"
@@ -676,6 +729,153 @@ export default function VehiculosPage() {
                 Cerrar
               </button>
             </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Reporte Movimiento Mensual Modal */}
+      <Modal
+        open={!!reporteVehiculo}
+        title={reporteVehiculo ? `Reporte de Movimiento — ${reporteVehiculo.matricula}` : 'Reporte de Movimiento'}
+        onClose={() => { setReporteVehiculo(null); setReporteData(null); }}
+        size="xl"
+      >
+        {reporteVehiculo && (
+          <div className="space-y-5">
+            {/* Filtros: Mes y Año */}
+            <div className="flex flex-col sm:flex-row items-end gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="w-full sm:w-44">
+                <label htmlFor="repo-mes" className="block text-xs font-medium text-gray-500 mb-1">Mes</label>
+                <select
+                  id="repo-mes"
+                  value={reporteMes}
+                  onChange={(e) => setReporteMes(Number(e.target.value))}
+                  className="input-field appearance-none pr-8 py-2 text-sm"
+                >
+                  {MESES.map((m) => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="w-full sm:w-36">
+                <label htmlFor="repo-anio" className="block text-xs font-medium text-gray-500 mb-1">Año</label>
+                <select
+                  id="repo-anio"
+                  value={reporteAnio}
+                  onChange={(e) => setReporteAnio(Number(e.target.value))}
+                  className="input-field appearance-none pr-8 py-2 text-sm"
+                >
+                  {anios.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={handleBuscarReporte}
+                disabled={reporteLoading}
+                className="btn-primary flex items-center gap-2 disabled:opacity-50"
+              >
+                {reporteLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
+                Buscar
+              </button>
+            </div>
+
+            {/* Loading */}
+            {reporteLoading && (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
+                <p className="text-sm">Generando reporte...</p>
+              </div>
+            )}
+
+            {/* Datos del reporte */}
+            {reporteData && !reporteLoading && (
+              <>
+                {/* Sección 1: Datos del Vehículo */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <ChevronRight className="w-4 h-4" />
+                    Datos del Vehículo
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
+                    <DetailField label="Matrícula" value={reporteData.vehiculo.matricula} />
+                    <DetailField label="Marca" value={reporteData.vehiculo.marca} />
+                    <DetailField label="No. Motor" value={reporteData.vehiculo.numeroMotor || '—'} />
+                    <DetailField label="Tipo Combustible" value={reporteData.vehiculo.tipoCombustible} />
+                    <DetailField label="Norma de Consumo" value={`${reporteData.vehiculo.normaConsumo} km/L`} />
+                    <DetailField
+                      label="Chofer"
+                      value={reporteData.vehiculo.chofer
+                        ? `${reporteData.vehiculo.chofer.nombre} ${reporteData.vehiculo.chofer.apellidos}`
+                        : 'Sin asignar'}
+                    />
+                  </div>
+                </div>
+
+                {/* Sección 2: Lecturas Diarias */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <ChevronRight className="w-4 h-4" />
+                    Lecturas Diarias
+                  </h3>
+                  {reporteData.lecturas.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center py-6">No hay lecturas para este periodo.</p>
+                  ) : (
+                    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="table-header px-3 py-2">Día</th>
+                            <th className="table-header px-3 py-2 text-right">Odómetro</th>
+                            <th className="table-header px-3 py-2 text-right">Comb. en Depósito</th>
+                            <th className="table-header px-3 py-2 text-right">Comb. Consumido</th>
+                            <th className="table-header px-3 py-2 text-right">Comb. Abastecido</th>
+                            <th className="table-header px-3 py-2 text-right">Saldo Comb.</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reporteData.lecturas.map((l) => (
+                            <tr key={l.dia} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-3 py-2 font-medium text-gray-900">{l.dia}</td>
+                              <td className="px-3 py-2 text-right">{l.odometro?.toLocaleString() ?? '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.combustibleEnDeposito ?? '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.combustibleConsumido ?? '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.combustibleAbastecido ?? '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.saldoCombustible ?? '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sección 3: Análisis de Consumo */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <ChevronRight className="w-4 h-4" />
+                    Análisis de Consumo
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
+                    <DetailField label="Combustible Inicial" value={`${reporteData.analisis.combustibleInicial} L`} />
+                    <DetailField label="Combustible Recibido" value={`${reporteData.analisis.combustibleRecibido} L`} />
+                    <DetailField label="Combustible Consumido" value={`${reporteData.analisis.combustibleConsumido} L`} />
+                    <DetailField label="Existencia Final" value={`${reporteData.analisis.existenciaFinal} L`} />
+                    <DetailField label="Km Recorridos" value={reporteData.analisis.kilometrosRecorridos.toLocaleString()} />
+                    <DetailField label="Consumido según Norma" value={`${reporteData.analisis.consumidoSegunNorma} L`} />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Sin datos aún */}
+            {!reporteData && !reporteLoading && (
+              <p className="text-sm text-gray-400 text-center py-12">Seleccione mes y año, luego presione Buscar para generar el reporte.</p>
+            )}
           </div>
         )}
       </Modal>
