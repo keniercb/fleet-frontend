@@ -317,9 +317,6 @@ export const recorridosApi = {
   delete: (id: number): Promise<AxiosResponse<void>> =>
     apiClient.delete<void>(`/recorridos/${id}`),
 
-  findByVehiculoId: (vehiculoId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<RecorridoResponse>>> =>
+  findByVehiculoId: (vehiculoId: number, params?: PageParams & { from?: string; to?: string }): Promise<AxiosResponse<PageResponse<RecorridoResponse>>> =>
     apiClient.get<PageResponse<RecorridoResponse>>(`/recorridos/vehiculo/${vehiculoId}`, { params }),
-
-  findByVehiculoIdAndFechaBetween: (vehiculoId: number, params?: PageParams & { from?: string; to?: string }): Promise<AxiosResponse<PageResponse<RecorridoResponse>>> =>
-    apiClient.get<PageResponse<RecorridoResponse>>(`/recorridos/vehiculo/${vehiculoId}/rango`, { params }),
 };

@@ -11,9 +11,7 @@ import type {
   RecorridoResponse,
   VehiculoResponse,
   EmpresaResponse,
-  PageResponse,
 } from '@/types';
-import type { AxiosResponse } from 'axios';
 
 // ---- Types ----
 
@@ -129,23 +127,17 @@ export default function RecorridosPage() {
   const fetchRecorridos = useCallback(async (
     p: number,
     vId: number,
-    from?: string,
-    to?: string,
+    from: string,
+    to: string,
   ) => {
     setLoading(true);
     try {
-      let res: AxiosResponse<PageResponse<RecorridoResponse>>;
-
-      if (from || to) {
-        res = await recorridosApi.findByVehiculoIdAndFechaBetween(vId, {
-          page: p,
-          perPage: size,
-          from: from || undefined,
-          to: to || undefined,
-        });
-      } else {
-        res = await recorridosApi.findByVehiculoId(vId, { page: p, perPage: size });
-      }
+      const res = await recorridosApi.findByVehiculoId(vId, {
+        page: p,
+        perPage: size,
+        from: from || '',
+        to: to || '',
+      });
 
       const pageData = res.data;
       setData(pageData.content);
@@ -166,7 +158,7 @@ export default function RecorridosPage() {
 
   useEffect(() => {
     if (canLoadData) {
-      fetchRecorridos(page, filterVehiculoId, filterFechaFrom || undefined, filterFechaTo || undefined);
+      fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
     } else {
       setData([]);
       setTotalPages(0);
@@ -268,7 +260,7 @@ export default function RecorridosPage() {
         addToast({ type: 'success', title: 'Recorrido creado', message: 'El nuevo registro se ha creado correctamente.' });
       }
       setShowForm(false);
-      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom || undefined, filterFechaTo || undefined);
+      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
     } catch {
       addToast({ type: 'error', title: 'Error', message: 'Error al guardar el recorrido.' });
     } finally {
@@ -283,7 +275,7 @@ export default function RecorridosPage() {
       await recorridosApi.delete(deleteTarget.id);
       addToast({ type: 'success', title: 'Recorrido eliminado', message: 'El registro se ha eliminado correctamente.' });
       setDeleteTarget(null);
-      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom || undefined, filterFechaTo || undefined);
+      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
     } catch {
       addToast({ type: 'error', title: 'Error', message: 'Error al eliminar el recorrido.' });
     } finally {
