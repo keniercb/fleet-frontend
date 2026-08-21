@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   vehiculosApi,
-  empresasApi,
   tiposVehiculoApi,
   marcasApi,
   tiposCombustibleApi,
@@ -17,7 +17,6 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import type {
   VehiculoRequest,
   VehiculoResponse,
-  EmpresaResponse,
   TipoVehiculoResponse,
   MarcaResponse,
   TipoCombustibleResponse,
@@ -28,14 +27,12 @@ import type {
 // ---- Types ----
 
 interface Dropdowns {
-  empresas: EmpresaResponse[];
   tiposVehiculo: TipoVehiculoResponse[];
   marcas: MarcaResponse[];
   tiposCombustible: TipoCombustibleResponse[];
 }
 
 interface FormData {
-  empresaId: number;
   tipoVehiculoId: number;
   marcaId: number;
   choferId: number;
@@ -51,7 +48,6 @@ interface FormData {
 }
 
 const EMPTY_FORM: FormData = {
-  empresaId: 0,
   tipoVehiculoId: 0,
   marcaId: 0,
   choferId: 0,
@@ -92,10 +88,10 @@ export default function VehiculosPage() {
   } = useCrud<VehiculoRequest, VehiculoResponse>(vehiculosApi);
 
   const { addToast } = useToast();
+  const { empresaId } = useAuth();
 
   // Dropdown data
   const [dropdowns, setDropdowns] = useState<Dropdowns>({
-    empresas: [],
     tiposVehiculo: [],
     marcas: [],
     tiposCombustible: [],
@@ -168,14 +164,12 @@ export default function VehiculosPage() {
   // Fetch static dropdowns (no choferes — those are loaded by empresa)
   const fetchDropdowns = useCallback(async () => {
     try {
-      const [empRes, tvRes, marRes, tcRes] = await Promise.all([
-        empresasApi.findAll({ page: 0, perPage: 200 }),
+      const [tvRes, marRes, tcRes] = await Promise.all([
         tiposVehiculoApi.findAll({ page: 0, perPage: 200 }),
         marcasApi.findAll({ page: 0, perPage: 200 }),
         tiposCombustibleApi.findAll({ page: 0, perPage: 200 }),
       ]);
       setDropdowns({
-        empresas: empRes.data.content.filter((e) => e.activo),
         tiposVehiculo: tvRes.data.content.filter((e) => e.activo),
         marcas: marRes.data.content.filter((e) => e.activo),
         tiposCombustible: tcRes.data.content.filter((e) => e.activo),
@@ -211,16 +205,15 @@ export default function VehiculosPage() {
   const handleOpenCreate = () => {
     setEditingEntity(null);
     setFormData({ ...EMPTY_FORM });
-    setChoferes([]);
+    fetchChoferesByEmpresa(empresaId);
     setShowForm(true);
   };
 
   const handleOpenEdit = async (entity: VehiculoResponse) => {
     setEditingEntity(entity);
     // Load choferes for the entity's empresa before setting form data
-    await fetchChoferesByEmpresa(entity.empresa.id);
+    await fetchChoferesByEmpresa(empresaId);
     setFormData({
-      empresaId: entity.empresa.id,
       tipoVehiculoId: entity.tipoVehiculo.id,
       marcaId: entity.marca.id,
       choferId: entity.chofer?.id ?? 0,
@@ -238,17 +231,11 @@ export default function VehiculosPage() {
   };
 
   const handleFieldChange = (key: string, value: string | number) => {
-    if (key === 'empresaId') {
-      // Reset chofer when empresa changes and reload choferes list
-      setFormData((prev) => ({ ...prev, empresaId: value as number, choferId: 0 }));
-      fetchChoferesByEmpresa(value as number);
-    } else {
-      setFormData((prev) => ({ ...prev, [key]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const buildRequestPayload = (): VehiculoRequest => ({
-    empresaId: formData.empresaId,
+    empresaId,
     tipoVehiculoId: formData.tipoVehiculoId,
     marcaId: formData.marcaId,
     choferId: formData.choferId || undefined,
@@ -374,7 +361,7 @@ export default function VehiculosPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
                       Cargando...
@@ -383,7 +370,7 @@ export default function VehiculosPage() {
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     {search ? 'No se encontraron resultados' : 'No hay registros'}
                   </td>
                 </tr>
@@ -483,11 +470,6 @@ export default function VehiculosPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Selects de relación */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {renderSelect(
-              'empresaId', 'Empresa', formData.empresaId,
-              (v) => handleFieldChange('empresaId', v),
-              dropdowns.empresas.map((e) => ({ id: e.id, label: e.nombre })),
-            )}
             {renderSelect(
               'tipoVehiculoId', 'Tipo de Vehículo', formData.tipoVehiculoId,
               (v) => handleFieldChange('tipoVehiculoId', v),

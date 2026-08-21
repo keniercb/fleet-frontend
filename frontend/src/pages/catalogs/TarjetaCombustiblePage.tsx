@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Search, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
-import { tarjetasCombustibleApi, currenciesApi, empresasApi } from '@/api/endpoints';
+import { useAuth } from '@/contexts/AuthContext';
+import { tarjetasCombustibleApi, currenciesApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
@@ -11,7 +12,6 @@ import type {
   TarjetaCombustibleRequest,
   TarjetaCombustibleResponse,
   CurrencyResponse,
-  EmpresaResponse,
 } from '@/types';
 
 // ---- Types ----
@@ -20,14 +20,12 @@ interface FormData {
   numero: string;
   saldo: string;
   currencyId: number;
-  empresaId: number;
 }
 
 const EMPTY_FORM: FormData = {
   numero: '',
   saldo: '',
   currencyId: 0,
-  empresaId: 0,
 };
 
 // ---- Component ----
@@ -39,6 +37,7 @@ export default function TarjetaCombustiblePage() {
   } = useCrud<TarjetaCombustibleRequest, TarjetaCombustibleResponse>(tarjetasCombustibleApi);
 
   const { addToast } = useToast();
+  const { empresaId } = useAuth();
 
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -48,7 +47,6 @@ export default function TarjetaCombustiblePage() {
 
   // Dropdowns
   const [currencies, setCurrencies] = useState<CurrencyResponse[]>([]);
-  const [empresas, setEmpresas] = useState<EmpresaResponse[]>([]);
 
   useEffect(() => {
     if (error) {
@@ -65,19 +63,9 @@ export default function TarjetaCombustiblePage() {
     }
   }, [addToast]);
 
-  const fetchEmpresas = useCallback(async () => {
-    try {
-      const res = await empresasApi.findAll({ page: 0, perPage: 500 });
-      setEmpresas(res.data.content.filter((e) => e.activo));
-    } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las empresas.' });
-    }
-  }, [addToast]);
-
   useEffect(() => {
     fetchCurrencies();
-    fetchEmpresas();
-  }, [fetchCurrencies, fetchEmpresas]);
+  }, [fetchCurrencies]);
 
   // ---- Handlers ----
 
@@ -93,7 +81,6 @@ export default function TarjetaCombustiblePage() {
       numero: entity.numero,
       saldo: String(entity.saldo),
       currencyId: entity.currency.id,
-      empresaId: entity.empresa.id,
     });
     setShowForm(true);
   };
@@ -109,7 +96,7 @@ export default function TarjetaCombustiblePage() {
         numero: formData.numero,
         saldo: formData.saldo ? Number(formData.saldo) : 0,
         currencyId: formData.currencyId,
-        empresaId: formData.empresaId,
+        empresaId,
       };
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);
@@ -274,26 +261,6 @@ export default function TarjetaCombustiblePage() {
                 placeholder="Ej: TC-001"
                 required
               />
-            </div>
-            <div>
-              <label htmlFor="empresaId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Empresa<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  id="empresaId"
-                  value={formData.empresaId}
-                  onChange={(e) => handleFieldChange('empresaId', Number(e.target.value))}
-                  className="input-field appearance-none pr-8"
-                  required
-                >
-                  <option value="0">Seleccionar empresa...</option>
-                  {empresas.map((e) => (
-                    <option key={e.id} value={e.id}>{e.nombre}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
             </div>
             <div>
               <label htmlFor="currencyId" className="block text-sm font-medium text-gray-700 mb-1.5">

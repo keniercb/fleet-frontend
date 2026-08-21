@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Search, X, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
-import { choferesApi, empresasApi, categoriasLicenciaApi } from '@/api/endpoints';
+import { useAuth } from '@/contexts/AuthContext';
+import { choferesApi, categoriasLicenciaApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import type { ChoferRequest, ChoferResponse, EmpresaResponse, CategoriaLicenciaResponse } from '@/types';
+import type { ChoferRequest, ChoferResponse, CategoriaLicenciaResponse } from '@/types';
 
 // ---- Types ----
 
@@ -18,7 +19,6 @@ interface CategoriaFormRow {
 }
 
 interface FormData {
-  empresaId: number;
   nombre: string;
   apellidos: string;
   carneIdentidad: string;
@@ -28,8 +28,7 @@ interface FormData {
 }
 
 const EMPTY_FORM: FormData = {
-  empresaId: 0,
-  nombre: '',
+  nombre: ','
   apellidos: '',
   carneIdentidad: '',
   numeroLicencia: '',
@@ -51,9 +50,9 @@ export default function ChoferesPage() {
   } = useCrud<ChoferRequest, ChoferResponse>(choferesApi);
 
   const { addToast } = useToast();
+  const { empresaId } = useAuth();
 
   // Dropdown data
-  const [empresas, setEmpresas] = useState<EmpresaResponse[]>([]);
   const [categoriasLicencia, setCategoriasLicencia] = useState<CategoriaLicenciaResponse[]>([]);
 
   // UI state
@@ -73,14 +72,12 @@ export default function ChoferesPage() {
   // Fetch dropdown data on mount
   const fetchDropdowns = useCallback(async () => {
     try {
-      const [empRes, catRes] = await Promise.all([
-        empresasApi.findAll({ page: 0, perPage: 200 }),
+      const [catRes] = await Promise.all([
         categoriasLicenciaApi.findAll({ page: 0, perPage: 200 }),
       ]);
-      setEmpresas(empRes.data.content);
       setCategoriasLicencia(catRes.data.content);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las empresas o categorías de licencia.' });
+      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las categorías de licencia.' });
     }
   }, [addToast]);
 
@@ -99,7 +96,6 @@ export default function ChoferesPage() {
   const handleOpenEdit = (entity: ChoferResponse) => {
     setEditingEntity(entity);
     setFormData({
-      empresaId: entity.empresa.id,
       nombre: entity.nombre,
       apellidos: entity.apellidos,
       carneIdentidad: entity.carneIdentidad,
@@ -154,7 +150,7 @@ export default function ChoferesPage() {
       }));
 
     return {
-      empresaId: formData.empresaId,
+      empresaId,
       nombre: formData.nombre,
       apellidos: formData.apellidos,
       carneIdentidad: formData.carneIdentidad,
@@ -241,7 +237,7 @@ export default function ChoferesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
                       Cargando...
@@ -250,7 +246,7 @@ export default function ChoferesPage() {
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
                     {search ? 'No se encontraron resultados' : 'No hay registros'}
                   </td>
                 </tr>
@@ -344,48 +340,8 @@ export default function ChoferesPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Empresa */}
+          {/* Datos personales */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="empresaId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Empresa<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  id="empresaId"
-                  value={formData.empresaId}
-                  onChange={(e) => handleFieldChange('empresaId', Number(e.target.value))}
-                  className="input-field appearance-none pr-8"
-                  required
-                >
-                  <option value={0}>Seleccionar...</option>
-                  {empresas
-                    .filter((emp) => emp.activo)
-                    .map((emp) => (
-                      <option key={emp.id} value={emp.id}>
-                        {emp.nombre}
-                      </option>
-                    ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Fecha Nacimiento */}
-            <div>
-              <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Fecha de Nacimiento<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <input
-                id="fechaNacimiento"
-                type="date"
-                value={formData.fechaNacimiento}
-                onChange={(e) => handleFieldChange('fechaNacimiento', e.target.value)}
-                className="input-field"
-                required
-              />
-            </div>
-
             {/* Nombre */}
             <div>
               <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1.5">

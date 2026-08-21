@@ -70,12 +70,14 @@ export interface UserRequest {
   email: string;
   password: string;
   roleIds?: number[];
+  empresaId?: number;
 }
 
 export interface UserResponse {
   id: number;
   email: string;
   roles: RoleResponse[];
+  empresa: EmpresaResponse | null;
   activo: boolean;
   fechaCreacion: string;
   fechaActualizacion: string;

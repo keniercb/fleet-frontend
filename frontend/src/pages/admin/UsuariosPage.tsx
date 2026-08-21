@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
 import { usersApi, rolesApi } from '@/api/endpoints';
@@ -32,6 +33,7 @@ export default function UsuariosPage() {
   } = useCrud<UserRequest, UserResponse>(usersApi);
 
   const { addToast } = useToast();
+  const { empresaId } = useAuth();
 
   // Roles for the multi-select
   const [allRoles, setAllRoles] = useState<RoleResponse[]>([]);
@@ -107,6 +109,7 @@ export default function UsuariosPage() {
         email: formData.email,
         password: formData.password || undefined,
         roleIds: formData.roleIds.length > 0 ? formData.roleIds : undefined,
+        empresaId,
       };
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);

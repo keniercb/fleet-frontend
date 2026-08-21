@@ -1,0 +1,898 @@
+     1→import { useState, useEffect, useCallback } from 'react';
+     2→import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight } from 'lucide-react';
+     3→import { useCrud } from '@/hooks/useCrud';
+     4→import { useToast } from '@/contexts/ToastContext';
+     5→import {
+     6→  vehiculosApi,
+     7→  empresasApi,
+     8→  tiposVehiculoApi,
+     9→  marcasApi,
+    10→  tiposCombustibleApi,
+    11→  choferesApi,
+    12→} from '@/api/endpoints';
+    13→import PageHeader from '@/components/common/PageHeader';
+    14→import Pagination from '@/components/common/Pagination';
+    15→import Modal from '@/components/ui/Modal';
+    16→import ConfirmModal from '@/components/ui/ConfirmModal';
+    17→import type {
+    18→  VehiculoRequest,
+    19→  VehiculoResponse,
+    20→  EmpresaResponse,
+    21→  TipoVehiculoResponse,
+    22→  MarcaResponse,
+    23→  TipoCombustibleResponse,
+    24→  ChoferResponse,
+    25→  ReporteMovimientoMensualResponse,
+    26→} from '@/types';
+    27→
+    28→// ---- Types ----
+    29→
+    30→interface Dropdowns {
+    31→  empresas: EmpresaResponse[];
+    32→  tiposVehiculo: TipoVehiculoResponse[];
+    33→  marcas: MarcaResponse[];
+    34→  tiposCombustible: TipoCombustibleResponse[];
+    35→}
+    36→
+    37→interface FormData {
+    38→  empresaId: number;
+    39→  tipoVehiculoId: number;
+    40→  marcaId: number;
+    41→  choferId: number;
+    42→  tipoCombustibleId: number;
+    43→  modelo: string;
+    44→  matricula: string;
+    45→  numeroMotor: string;
+    46→  odometro: number;
+    47→  combustible: number;
+    48→  ultimoMantenimiento: string;
+    49→  odometroUltimoMantenimiento: string;
+    50→  indiceConsumo: string;
+    51→}
+    52→
+    53→const EMPTY_FORM: FormData = {
+    54→  empresaId: 0,
+    55→  tipoVehiculoId: 0,
+    56→  marcaId: 0,
+    57→  choferId: 0,
+    58→  tipoCombustibleId: 0,
+    59→  modelo: '',
+    60→  matricula: '',
+    61→  numeroMotor: '',
+    62→  odometro: 0,
+    63→  combustible: 0,
+    64→  ultimoMantenimiento: '',
+    65→  odometroUltimoMantenimiento: '',
+    66→  indiceConsumo: '',
+    67→};
+    68→
+    69→// ---- Componentes auxiliares ----
+    70→
+    71→function formatDate(dateStr: string): string {
+    72→  if (!dateStr) return '—';
+    73→  const date = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
+    74→  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    75→}
+    76→
+    77→function DetailField({ label, value }: { label: string; value: string }) {
+    78→  return (
+    79→    <div>
+    80→      <dt className="text-xs font-medium text-gray-500">{label}</dt>
+    81→      <dd className="mt-0.5 text-sm text-gray-900 font-medium">{value}</dd>
+    82→    </div>
+    83→  );
+    84→}
+    85→
+    86→// ---- Component ----
+    87→
+    88→export default function VehiculosPage() {
+    89→  const {
+    90→    data, loading, saving, totalPages, totalElements, page, size, error,
+    91→    setPage, createItem, updateItem, deleteItem,
+    92→  } = useCrud<VehiculoRequest, VehiculoResponse>(vehiculosApi);
+    93→
+    94→  const { addToast } = useToast();
+    95→
+    96→  // Dropdown data
+    97→  const [dropdowns, setDropdowns] = useState<Dropdowns>({
+    98→    empresas: [],
+    99→    tiposVehiculo: [],
+   100→    marcas: [],
+   101→    tiposCombustible: [],
+   102→  });
+   103→
+   104→  // Choferes filtrados por empresa
+   105→  const [choferes, setChoferes] = useState<ChoferResponse[]>([]);
+   106→  const [loadingChoferes, setLoadingChoferes] = useState(false);
+   107→
+   108→  // UI state
+   109→  const [search, setSearch] = useState('');
+   110→  const [showForm, setShowForm] = useState(false);
+   111→  const [viewEntity, setViewEntity] = useState<VehiculoResponse | null>(null);
+   112→  const [editingEntity, setEditingEntity] = useState<VehiculoResponse | null>(null);
+   113→  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+   114→  const [deleteTarget, setDeleteTarget] = useState<VehiculoResponse | null>(null);
+   115→
+   116→  // Reporte movimiento mensual
+   117→  const [reporteVehiculo, setReporteVehiculo] = useState<VehiculoResponse | null>(null);
+   118→  const [reporteData, setReporteData] = useState<ReporteMovimientoMensualResponse | null>(null);
+   119→  const [reporteLoading, setReporteLoading] = useState(false);
+   120→  const [reporteMes, setReporteMes] = useState(new Date().getMonth() + 1);
+   121→  const [reporteAnio, setReporteAnio] = useState(new Date().getFullYear());
+   122→
+   123→  const MESES = [
+   124→    { value: 1, label: 'Enero' },
+   125→    { value: 2, label: 'Febrero' },
+   126→    { value: 3, label: 'Marzo' },
+   127→    { value: 4, label: 'Abril' },
+   128→    { value: 5, label: 'Mayo' },
+   129→    { value: 6, label: 'Junio' },
+   130→    { value: 7, label: 'Julio' },
+   131→    { value: 8, label: 'Agosto' },
+   132→    { value: 9, label: 'Septiembre' },
+   133→    { value: 10, label: 'Octubre' },
+   134→    { value: 11, label: 'Noviembre' },
+   135→    { value: 12, label: 'Diciembre' },
+   136→  ];
+   137→
+   138→  const anios = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
+   139→
+   140→  const handleOpenReporte = (vehiculo: VehiculoResponse) => {
+   141→    setReporteVehiculo(vehiculo);
+   142→    setReporteData(null);
+   143→    setReporteMes(new Date().getMonth() + 1);
+   144→    setReporteAnio(new Date().getFullYear());
+   145→  };
+   146→
+   147→  const handleBuscarReporte = async () => {
+   148→    if (!reporteVehiculo) return;
+   149→    setReporteLoading(true);
+   150→    setReporteData(null);
+   151→    try {
+   152→      const res = await vehiculosApi.reporteMovimientoMensual(reporteVehiculo.id, reporteMes, reporteAnio);
+   153→      setReporteData(res.data);
+   154→    } catch {
+   155→      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte de movimiento.' });
+   156→    } finally {
+   157→      setReporteLoading(false);
+   158→    }
+   159→  };
+   160→
+   161→  // Show error as toast
+   162→  useEffect(() => {
+   163→    if (error) {
+   164→      addToast({ type: 'error', title: 'Error', message: error });
+   165→    }
+   166→  }, [error, addToast]);
+   167→
+   168→  // Fetch static dropdowns (no choferes — those are loaded by empresa)
+   169→  const fetchDropdowns = useCallback(async () => {
+   170→    try {
+   171→      const [empRes, tvRes, marRes, tcRes] = await Promise.all([
+   172→        empresasApi.findAll({ page: 0, perPage: 200 }),
+   173→        tiposVehiculoApi.findAll({ page: 0, perPage: 200 }),
+   174→        marcasApi.findAll({ page: 0, perPage: 200 }),
+   175→        tiposCombustibleApi.findAll({ page: 0, perPage: 200 }),
+   176→      ]);
+   177→      setDropdowns({
+   178→        empresas: empRes.data.content.filter((e) => e.activo),
+   179→        tiposVehiculo: tvRes.data.content.filter((e) => e.activo),
+   180→        marcas: marRes.data.content.filter((e) => e.activo),
+   181→        tiposCombustible: tcRes.data.content.filter((e) => e.activo),
+   182→      });
+   183→    } catch {
+   184→      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los datos de los selectores.' });
+   185→    }
+   186→  }, [addToast]);
+   187→
+   188→  // Fetch choferes filtered by empresa
+   189→  const fetchChoferesByEmpresa = useCallback(async (empresaId: number) => {
+   190→    if (!empresaId) {
+   191→      setChoferes([]);
+   192→      return;
+   193→    }
+   194→    setLoadingChoferes(true);
+   195→    try {
+   196→      const res = await choferesApi.findByEmpresaId(empresaId, { page: 0, perPage: 200 });
+   197→      setChoferes(res.data.content.filter((c) => c.activo));
+   198→    } catch {
+   199→      setChoferes([]);
+   200→    } finally {
+   201→      setLoadingChoferes(false);
+   202→    }
+   203→  }, []);
+   204→
+   205→  useEffect(() => {
+   206→    fetchDropdowns();
+   207→  }, [fetchDropdowns]);
+   208→
+   209→  // ---- Form helpers ----
+   210→
+   211→  const handleOpenCreate = () => {
+   212→    setEditingEntity(null);
+   213→    setFormData({ ...EMPTY_FORM });
+   214→    setChoferes([]);
+   215→    setShowForm(true);
+   216→  };
+   217→
+   218→  const handleOpenEdit = async (entity: VehiculoResponse) => {
+   219→    setEditingEntity(entity);
+   220→    // Load choferes for the entity's empresa before setting form data
+   221→    await fetchChoferesByEmpresa(entity.empresa.id);
+   222→    setFormData({
+   223→      empresaId: entity.empresa.id,
+   224→      tipoVehiculoId: entity.tipoVehiculo.id,
+   225→      marcaId: entity.marca.id,
+   226→      choferId: entity.chofer?.id ?? 0,
+   227→      tipoCombustibleId: entity.tipoCombustible.id,
+   228→      modelo: entity.modelo || '',
+   229→      matricula: entity.matricula,
+   230→      numeroMotor: entity.numeroMotor,
+   231→      odometro: entity.odometro,
+   232→      combustible: entity.combustible,
+   233→      ultimoMantenimiento: entity.ultimoMantenimiento || '',
+   234→      odometroUltimoMantenimiento: entity.odometroUltimoMantenimiento ? String(entity.odometroUltimoMantenimiento) : '',
+   235→      indiceConsumo: entity.indiceConsumo ? String(entity.indiceConsumo) : '',
+   236→    });
+   237→    setShowForm(true);
+   238→  };
+   239→
+   240→  const handleFieldChange = (key: string, value: string | number) => {
+   241→    if (key === 'empresaId') {
+   242→      // Reset chofer when empresa changes and reload choferes list
+   243→      setFormData((prev) => ({ ...prev, empresaId: value as number, choferId: 0 }));
+   244→      fetchChoferesByEmpresa(value as number);
+   245→    } else {
+   246→      setFormData((prev) => ({ ...prev, [key]: value }));
+   247→    }
+   248→  };
+   249→
+   250→  const buildRequestPayload = (): VehiculoRequest => ({
+   251→    empresaId: formData.empresaId,
+   252→    tipoVehiculoId: formData.tipoVehiculoId,
+   253→    marcaId: formData.marcaId,
+   254→    choferId: formData.choferId || undefined,
+   255→    tipoCombustibleId: formData.tipoCombustibleId,
+   256→    modelo: formData.modelo || undefined,
+   257→    matricula: formData.matricula,
+   258→    numeroMotor: formData.numeroMotor,
+   259→    odometro: formData.odometro,
+   260→    combustible: formData.combustible,
+   261→    ultimoMantenimiento: formData.ultimoMantenimiento || undefined,
+   262→    odometroUltimoMantenimiento: formData.odometroUltimoMantenimiento ? Number(formData.odometroUltimoMantenimiento) : undefined,
+   263→    indiceConsumo: formData.indiceConsumo ? Number(formData.indiceConsumo) : undefined,
+   264→  });
+   265→
+   266→  const handleSubmit = async (e: React.FormEvent) => {
+   267→    e.preventDefault();
+   268→    try {
+   269→      const payload = buildRequestPayload();
+   270→      if (editingEntity) {
+   271→        await updateItem(editingEntity.id, payload);
+   272→        addToast({ type: 'success', title: 'Vehículo actualizado', message: 'El registro se ha actualizado correctamente.' });
+   273→      } else {
+   274→        await createItem(payload);
+   275→        addToast({ type: 'success', title: 'Vehículo creado', message: 'El nuevo registro se ha creado correctamente.' });
+   276→      }
+   277→      setShowForm(false);
+   278→    } catch {
+   279→      // error handled by useCrud → toast via useEffect
+   280→    }
+   281→  };
+   282→
+   283→  const handleConfirmDelete = async () => {
+   284→    if (!deleteTarget) return;
+   285→    try {
+   286→      await deleteItem(deleteTarget.id);
+   287→      addToast({ type: 'success', title: 'Vehículo eliminado', message: 'El registro se ha eliminado correctamente.' });
+   288→      setDeleteTarget(null);
+   289→    } catch {
+   290→      // error handled by useCrud → toast via useEffect
+   291→    }
+   292→  };
+   293→
+   294→  // Search
+   295→  const filteredData = search
+   296→    ? data.filter((item) => {
+   297→        const searchStr = `${item.matricula} ${item.numeroMotor} ${item.modelo} ${item.empresa.nombre} ${item.marca.nombre} ${item.tipoVehiculo.nombre} ${item.chofer?.nombre ?? ''} ${item.chofer?.apellidos ?? ''}`.toLowerCase();
+   298→        return searchStr.includes(search.toLowerCase());
+   299→      })
+   300→    : data;
+   301→
+   302→  // ---- Render helpers ----
+   303→
+   304→  const renderSelect = (
+   305→    id: string,
+   306→    label: string,
+   307→    value: number,
+   308→    onChange: (v: number) => void,
+   309→    options: { id: number; label: string }[],
+   310→    required = true,
+   311→    placeholder = 'Seleccionar...',
+   312→  ) => (
+   313→    <div>
+   314→      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1.5">
+   315→        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+   316→      </label>
+   317→      <div className="relative">
+   318→        <select
+   319→          id={id}
+   320→          value={value}
+   321→          onChange={(e) => onChange(Number(e.target.value))}
+   322→          className="input-field appearance-none pr-8"
+   323→          required={required}
+   324→        >
+   325→          <option value={0}>{placeholder}</option>
+   326→          {options.map((opt) => (
+   327→            <option key={opt.id} value={opt.id}>{opt.label}</option>
+   328→          ))}
+   329→        </select>
+   330→        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+   331→      </div>
+   332→    </div>
+   333→  );
+   334→
+   335→  // ---- Render ----
+   336→
+   337→  return (
+   338→    <div>
+   339→      <PageHeader title="Vehículos" description="Gestión de los vehículos del sistema">
+   340→        <div className="relative w-64">
+   341→          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+   342→          <input
+   343→            type="text"
+   344→            placeholder="Buscar..."
+   345→            value={search}
+   346→            onChange={(e) => setSearch(e.target.value)}
+   347→            className="input-field pl-9 py-2 text-sm"
+   348→          />
+   349→        </div>
+   350→        <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
+   351→          <Plus className="w-4 h-4" />
+   352→          Nuevo
+   353→        </button>
+   354→      </PageHeader>
+   355→
+   356→      {/* Table */}
+   357→      <div className="card !p-0 overflow-hidden">
+   358→        <div className="overflow-x-auto">
+   359→          <table className="w-full">
+   360→            <thead>
+   361→              <tr>
+   362→                <th className="table-header px-4 py-3">Matrícula</th>
+   363→                <th className="table-header px-4 py-3">Empresa</th>
+   364→                <th className="table-header px-4 py-3">Tipo</th>
+   365→                <th className="table-header px-4 py-3">Marca</th>
+   366→                <th className="table-header px-4 py-3">Modelo</th>
+   367→                <th className="table-header px-4 py-3">Tipo Combustible</th>
+   368→                <th className="table-header px-4 py-3 text-right">Combustible (L)</th>
+   369→                <th className="table-header px-4 py-3">Chofer</th>
+   370→                <th className="table-header px-4 py-3 text-right">Odómetro</th>
+   371→                <th className="table-header px-4 py-3 text-right">Acciones</th>
+   372→              </tr>
+   373→            </thead>
+   374→            <tbody>
+   375→              {loading ? (
+   376→                <tr>
+   377→                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+   378→                    <div className="flex items-center justify-center gap-2">
+   379→                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
+   380→                      Cargando...
+   381→                    </div>
+   382→                  </td>
+   383→                </tr>
+   384→              ) : filteredData.length === 0 ? (
+   385→                <tr>
+   386→                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+   387→                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+   388→                  </td>
+   389→                </tr>
+   390→              ) : (
+   391→                filteredData.map((item) => (
+   392→                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+   393→                    <td className="px-4 py-3">
+   394→                      <span className="table-cell block font-medium text-gray-900">{item.matricula}</span>
+   395→                    </td>
+   396→                    <td className="px-4 py-3">
+   397→                      <span className="table-cell block">{item.empresa.nombre}</span>
+   398→                    </td>
+   399→                    <td className="px-4 py-3">
+   400→                      <span className="table-cell block">{item.tipoVehiculo.nombre}</span>
+   401→                    </td>
+   402→                    <td className="px-4 py-3">
+   403→                      <span className="table-cell block">{item.marca.nombre}</span>
+   404→                    </td>
+   405→                    <td className="px-4 py-3">
+   406→                      <span className="table-cell block">{item.modelo || '—'}</span>
+   407→                    </td>
+   408→                    <td className="px-4 py-3">
+   409→                      <span className="table-cell block">{item.tipoCombustible.denominacion}</span>
+   410→                    </td>
+   411→                    <td className="px-4 py-3 text-right">
+   412→                      <span className="table-cell block">{item.combustible}</span>
+   413→                    </td>
+   414→                    <td className="px-4 py-3">
+   415→                      <span className="table-cell block">
+   416→                        {item.chofer
+   417→                          ? `${item.chofer.nombre} ${item.chofer.apellidos}`
+   418→                          : <span className="text-gray-400">—</span>}
+   419→                      </span>
+   420→                    </td>
+   421→                    <td className="px-4 py-3 text-right">
+   422→                      <span className="table-cell block">{item.odometro.toLocaleString()}</span>
+   423→                    </td>
+   424→                    <td className="px-4 py-3 text-right">
+   425→                      <div className="flex items-center justify-end gap-1">
+   426→                        <button
+   427→                          onClick={() => handleOpenReporte(item)}
+   428→                          className="p-1.5 hover:bg-purple-50 rounded-lg text-gray-400 hover:text-purple-600 transition-colors"
+   429→                          title="Reporte de Movimiento"
+   430→                        >
+   431→                          <BarChart3 className="w-4 h-4" />
+   432→                        </button>
+   433→                        <button
+   434→                          onClick={() => setViewEntity(item)}
+   435→                          className="p-1.5 hover:bg-green-50 rounded-lg text-gray-400 hover:text-green-600 transition-colors"
+   436→                          title="Ver detalles"
+   437→                        >
+   438→                          <Eye className="w-4 h-4" />
+   439→                        </button>
+   440→                        <button
+   441→                          onClick={() => handleOpenEdit(item)}
+   442→                          className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
+   443→                          title="Editar"
+   444→                        >
+   445→                          <Pencil className="w-4 h-4" />
+   446→                        </button>
+   447→                        <button
+   448→                          onClick={() => setDeleteTarget(item)}
+   449→                          className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+   450→                          title="Eliminar"
+   451→                        >
+   452→                          <Trash2 className="w-4 h-4" />
+   453→                        </button>
+   454→                      </div>
+   455→                    </td>
+   456→                  </tr>
+   457→                ))
+   458→              )}
+   459→            </tbody>
+   460→          </table>
+   461→        </div>
+   462→
+   463→        {!search && (
+   464→          <div className="px-4 pb-4">
+   465→            <Pagination
+   466→              page={page}
+   467→              totalPages={totalPages}
+   468→              totalElements={totalElements}
+   469→              size={size}
+   470→              onPageChange={setPage}
+   471→            />
+   472→          </div>
+   473→        )}
+   474→      </div>
+   475→
+   476→      {/* Create / Edit Modal */}
+   477→      <Modal
+   478→        open={showForm}
+   479→        title={editingEntity ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+   480→        onClose={() => setShowForm(false)}
+   481→        size="xl"
+   482→      >
+   483→        <form onSubmit={handleSubmit} className="space-y-4">
+   484→          {/* Selects de relación */}
+   485→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   486→            {renderSelect(
+   487→              'empresaId', 'Empresa', formData.empresaId,
+   488→              (v) => handleFieldChange('empresaId', v),
+   489→              dropdowns.empresas.map((e) => ({ id: e.id, label: e.nombre })),
+   490→            )}
+   491→            {renderSelect(
+   492→              'tipoVehiculoId', 'Tipo de Vehículo', formData.tipoVehiculoId,
+   493→              (v) => handleFieldChange('tipoVehiculoId', v),
+   494→              dropdowns.tiposVehiculo.map((e) => ({ id: e.id, label: e.nombre })),
+   495→            )}
+   496→            {renderSelect(
+   497→              'marcaId', 'Marca', formData.marcaId,
+   498→              (v) => handleFieldChange('marcaId', v),
+   499→              dropdowns.marcas.map((e) => ({ id: e.id, label: e.nombre })),
+   500→            )}
+   501→            {renderSelect(
+   502→              'tipoCombustibleId', 'Tipo de Combustible', formData.tipoCombustibleId,
+   503→              (v) => handleFieldChange('tipoCombustibleId', v),
+   504→              dropdowns.tiposCombustible.map((e) => ({ id: e.id, label: `${e.codigo} - ${e.denominacion}` })),
+   505→            )}
+   506→            <div>
+   507→              <label htmlFor="choferId" className="block text-sm font-medium text-gray-700 mb-1.5">
+   508→                Chofer (opcional)
+   509→              </label>
+   510→              <div className="relative">
+   511→                <select
+   512→                  id="choferId"
+   513→                  value={formData.choferId}
+   514→                  onChange={(e) => handleFieldChange('choferId', Number(e.target.value))}
+   515→                  className="input-field appearance-none pr-8"
+   516→                  disabled={!formData.empresaId || loadingChoferes}
+   517→                >
+   518→                  <option value="0">{!formData.empresaId ? 'Seleccione empresa primero' : loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
+   519→                  {choferes.map((c) => (
+   520→                    <option key={c.id} value={c.id}>{`${c.nombre} ${c.apellidos} — ${c.carneIdentidad}`}</option>
+   521→                  ))}
+   522→                </select>
+   523→                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+   524→              </div>
+   525→            </div>
+   526→          </div>
+   527→
+   528→          {/* Divider */}
+   529→          <div className="border-t border-gray-200" />
+   530→
+   531→          {/* Datos del vehículo */}
+   532→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   533→            <div>
+   534→              <label htmlFor="modelo" className="block text-sm font-medium text-gray-700 mb-1.5">
+   535→                Modelo
+   536→              </label>
+   537→              <input
+   538→                id="modelo"
+   539→                type="text"
+   540→                value={formData.modelo}
+   541→                onChange={(e) => handleFieldChange('modelo', e.target.value)}
+   542→                className="input-field"
+   543→                placeholder="Ej: Corolla 2024"
+   544→              />
+   545→            </div>
+   546→            <div>
+   547→              <label htmlFor="matricula" className="block text-sm font-medium text-gray-700 mb-1.5">
+   548→                Matrícula<span className="text-red-500 ml-0.5">*</span>
+   549→              </label>
+   550→              <input
+   551→                id="matricula"
+   552→                type="text"
+   553→                value={formData.matricula}
+   554→                onChange={(e) => handleFieldChange('matricula', e.target.value)}
+   555→                className="input-field"
+   556→                placeholder="Ej: A-123-456"
+   557→                required
+   558→              />
+   559→            </div>
+   560→            <div>
+   561→              <label htmlFor="numeroMotor" className="block text-sm font-medium text-gray-700 mb-1.5">
+   562→                No. Motor<span className="text-red-500 ml-0.5">*</span>
+   563→              </label>
+   564→              <input
+   565→                id="numeroMotor"
+   566→                type="text"
+   567→                value={formData.numeroMotor}
+   568→                onChange={(e) => handleFieldChange('numeroMotor', e.target.value)}
+   569→                className="input-field"
+   570→                placeholder="Ej: M20240001"
+   571→                required
+   572→              />
+   573→            </div>
+   574→            <div>
+   575→              <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 mb-1.5">
+   576→                Odómetro (km)<span className="text-red-500 ml-0.5">*</span>
+   577→              </label>
+   578→              <input
+   579→                id="odometro"
+   580→                type="number"
+   581→                min="0"
+   582→                value={formData.odometro}
+   583→                onChange={(e) => handleFieldChange('odometro', e.target.value === '' ? 0 : Number(e.target.value))}
+   584→                className="input-field"
+   585→                placeholder="Ej: 50000"
+   586→                required
+   587→              />
+   588→            </div>
+   589→            <div>
+   590→              <label htmlFor="combustible" className="block text-sm font-medium text-gray-700 mb-1.5">
+   591→                Combustible (L)<span className="text-red-500 ml-0.5">*</span>
+   592→              </label>
+   593→              <input
+   594→                id="combustible"
+   595→                type="number"
+   596→                min="0"
+   597→                step="0.1"
+   598→                value={formData.combustible}
+   599→                onChange={(e) => handleFieldChange('combustible', e.target.value === '' ? 0 : Number(e.target.value))}
+   600→                className="input-field"
+   601→                placeholder="Ej: 40.5"
+   602→                required
+   603→              />
+   604→            </div>
+   605→            <div>
+   606→              <label htmlFor="indiceConsumo" className="block text-sm font-medium text-gray-700 mb-1.5">
+   607→                Índice Consumo (km/L)
+   608→              </label>
+   609→              <input
+   610→                id="indiceConsumo"
+   611→                type="number"
+   612→                min="0"
+   613→                step="0.01"
+   614→                value={formData.indiceConsumo}
+   615→                onChange={(e) => handleFieldChange('indiceConsumo', e.target.value)}
+   616→                className="input-field"
+   617→                placeholder="Ej: 8.5"
+   618→              />
+   619→            </div>
+   620→            <div>
+   621→              <label htmlFor="ultimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
+   622→                Último Mantenimiento
+   623→              </label>
+   624→              <input
+   625→                id="ultimoMantenimiento"
+   626→                type="date"
+   627→                value={formData.ultimoMantenimiento}
+   628→                onChange={(e) => handleFieldChange('ultimoMantenimiento', e.target.value)}
+   629→                className="input-field"
+   630→              />
+   631→            </div>
+   632→            <div>
+   633→              <label htmlFor="odometroUltimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
+   634→                Odómetro Ult. Mantenimiento
+   635→              </label>
+   636→              <input
+   637→                id="odometroUltimoMantenimiento"
+   638→                type="number"
+   639→                min="0"
+   640→                value={formData.odometroUltimoMantenimiento}
+   641→                onChange={(e) => handleFieldChange('odometroUltimoMantenimiento', e.target.value)}
+   642→                className="input-field"
+   643→                placeholder="Ej: 48000"
+   644→              />
+   645→            </div>
+   646→          </div>
+   647→
+   648→          {/* Actions */}
+   649→          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+   650→            <button
+   651→              type="button"
+   652→              onClick={() => setShowForm(false)}
+   653→              className="btn-secondary"
+   654→            >
+   655→              Cancelar
+   656→            </button>
+   657→            <button type="submit" disabled={saving} className="btn-primary">
+   658→              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+   659→            </button>
+   660→          </div>
+   661→        </form>
+   662→      </Modal>
+   663→
+   664→      {/* View Detail Modal */}
+   665→      <Modal
+   666→        open={!!viewEntity}
+   667→        title="Detalles del Vehículo"
+   668→        onClose={() => setViewEntity(null)}
+   669→        size="xl"
+   670→      >
+   671→        {viewEntity && (
+   672→          <div className="space-y-6">
+   673→            {/* Info general */}
+   674→            <div>
+   675→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información General</h3>
+   676→              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   677→                <DetailField label="Matrícula" value={viewEntity.matricula} />
+   678→                <DetailField label="Modelo" value={viewEntity.modelo || '—'} />
+   679→                <DetailField label="No. Motor" value={viewEntity.numeroMotor || '—'} />
+   680→                <DetailField label="Marca" value={`${viewEntity.marca.nombre}${viewEntity.marca.paisOrigen ? ` (${viewEntity.marca.paisOrigen})` : ''}`} />
+   681→                <DetailField label="Tipo de Vehículo" value={viewEntity.tipoVehiculo.nombre} />
+   682→                <DetailField label="Tipo de Combustible" value={`${viewEntity.tipoCombustible.codigo} — ${viewEntity.tipoCombustible.denominacion}`} />
+   683→              </div>
+   684→            </div>
+   685→
+   686→            {/* Empresa y Chofer */}
+   687→            <div>
+   688→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Empresa y Chofer</h3>
+   689→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   690→                <DetailField label="Empresa" value={viewEntity.empresa.nombre} />
+   691→                <DetailField
+   692→                  label="Chofer"
+   693→                  value={viewEntity.chofer ? `${viewEntity.chofer.nombre} ${viewEntity.chofer.apellidos}` : 'Sin asignar'}
+   694→                />
+   695→              </div>
+   696→            </div>
+   697→
+   698→            {/* Métricas */}
+   699→            <div>
+   700→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Métricas y Combustible</h3>
+   701→              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   702→                <DetailField label="Odómetro" value={`${viewEntity.odometro.toLocaleString()} km`} />
+   703→                <DetailField label="Combustible" value={`${viewEntity.combustible} L`} />
+   704→                <DetailField label="Índice de Consumo" value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
+   705→              </div>
+   706→            </div>
+   707→
+   708→            {/* Mantenimiento */}
+   709→            <div>
+   710→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Mantenimiento</h3>
+   711→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   712→                <DetailField label="Último Mantenimiento" value={viewEntity.ultimoMantenimiento ? formatDate(viewEntity.ultimoMantenimiento) : '—'} />
+   713→                <DetailField label="Odómetro Ult. Mantenimiento" value={viewEntity.odometroUltimoMantenimiento ? `${viewEntity.odometroUltimoMantenimiento.toLocaleString()} km` : '—'} />
+   714→              </div>
+   715→            </div>
+   716→
+   717→            {/* Estado */}
+   718→            <div>
+   719→              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Estado</h3>
+   720→              <div className="flex items-center gap-2">
+   721→                {viewEntity.activo
+   722→                  ? <span className="badge-active">Activo</span>
+   723→                  : <span className="badge-inactive">Inactivo</span>}
+   724→              </div>
+   725→            </div>
+   726→
+   727→            <div className="flex justify-end pt-4 border-t border-gray-200">
+   728→              <button onClick={() => setViewEntity(null)} className="btn-secondary">
+   729→                Cerrar
+   730→              </button>
+   731→            </div>
+   732→          </div>
+   733→        )}
+   734→      </Modal>
+   735→
+   736→      {/* Reporte Movimiento Mensual Modal */}
+   737→      <Modal
+   738→        open={!!reporteVehiculo}
+   739→        title={reporteVehiculo ? `Reporte de Movimiento — ${reporteVehiculo.matricula}` : 'Reporte de Movimiento'}
+   740→        onClose={() => { setReporteVehiculo(null); setReporteData(null); }}
+   741→        size="xl"
+   742→      >
+   743→        {reporteVehiculo && (
+   744→          <div className="space-y-5">
+   745→            {/* Filtros: Mes y Año */}
+   746→            <div className="flex flex-col sm:flex-row items-end gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+   747→              <div className="w-full sm:w-44">
+   748→                <label htmlFor="repo-mes" className="block text-xs font-medium text-gray-500 mb-1">Mes</label>
+   749→                <select
+   750→                  id="repo-mes"
+   751→                  value={reporteMes}
+   752→                  onChange={(e) => setReporteMes(Number(e.target.value))}
+   753→                  className="input-field appearance-none pr-8 py-2 text-sm"
+   754→                >
+   755→                  {MESES.map((m) => (
+   756→                    <option key={m.value} value={m.value}>{m.label}</option>
+   757→                  ))}
+   758→                </select>
+   759→              </div>
+   760→              <div className="w-full sm:w-36">
+   761→                <label htmlFor="repo-anio" className="block text-xs font-medium text-gray-500 mb-1">Año</label>
+   762→                <select
+   763→                  id="repo-anio"
+   764→                  value={reporteAnio}
+   765→                  onChange={(e) => setReporteAnio(Number(e.target.value))}
+   766→                  className="input-field appearance-none pr-8 py-2 text-sm"
+   767→                >
+   768→                  {anios.map((a) => (
+   769→                    <option key={a} value={a}>{a}</option>
+   770→                  ))}
+   771→                </select>
+   772→              </div>
+   773→              <button
+   774→                onClick={handleBuscarReporte}
+   775→                disabled={reporteLoading}
+   776→                className="btn-primary flex items-center gap-2 disabled:opacity-50"
+   777→              >
+   778→                {reporteLoading ? (
+   779→                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+   780→                ) : (
+   781→                  <Search className="w-4 h-4" />
+   782→                )}
+   783→                Buscar
+   784→              </button>
+   785→            </div>
+   786→
+   787→            {/* Loading */}
+   788→            {reporteLoading && (
+   789→              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+   790→                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
+   791→                <p className="text-sm">Generando reporte...</p>
+   792→              </div>
+   793→            )}
+   794→
+   795→            {/* Datos del reporte */}
+   796→            {reporteData && !reporteLoading && (
+   797→              <>
+   798→                {/* Sección 1: Datos del Vehículo */}
+   799→                <div>
+   800→                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+   801→                    <ChevronRight className="w-4 h-4" />
+   802→                    Datos del Vehículo
+   803→                  </h3>
+   804→                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
+   805→                    <DetailField label="Matrícula" value={reporteData.vehiculo.matricula} />
+   806→                    <DetailField label="Marca" value={reporteData.vehiculo.marca} />
+   807→                    <DetailField label="No. Motor" value={reporteData.vehiculo.numeroMotor || '—'} />
+   808→                    <DetailField label="Tipo Combustible" value={reporteData.vehiculo.tipoCombustible} />
+   809→                    <DetailField label="Norma de Consumo" value={`${reporteData.vehiculo.normaConsumo} km/L`} />
+   810→                    <DetailField
+   811→                      label="Chofer"
+   812→                      value={reporteData.vehiculo.chofer
+   813→                        ? `${reporteData.vehiculo.chofer.nombre} ${reporteData.vehiculo.chofer.apellidos}`
+   814→                        : 'Sin asignar'}
+   815→                    />
+   816→                  </div>
+   817→                </div>
+   818→
+   819→                {/* Sección 2: Lecturas Diarias */}
+   820→                <div>
+   821→                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+   822→                    <ChevronRight className="w-4 h-4" />
+   823→                    Lecturas Diarias
+   824→                  </h3>
+   825→                  {reporteData.lecturas.length === 0 ? (
+   826→                    <p className="text-sm text-gray-400 text-center py-6">No hay lecturas para este periodo.</p>
+   827→                  ) : (
+   828→                    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+   829→                      <table className="w-full text-sm">
+   830→                        <thead>
+   831→                          <tr className="bg-gray-50">
+   832→                            <th className="table-header px-3 py-2">Día</th>
+   833→                            <th className="table-header px-3 py-2 text-right">Odómetro</th>
+   834→                            <th className="table-header px-3 py-2 text-right">Km Recorridos</th>
+   835→                            <th className="table-header px-3 py-2 text-right">Comb. en Depósito</th>
+   836→                            <th className="table-header px-3 py-2 text-right">Comb. Consumido</th>
+   837→                            <th className="table-header px-3 py-2 text-right">Comb. Abastecido</th>
+   838→                            <th className="table-header px-3 py-2 text-right">Saldo Comb.</th>
+   839→                          </tr>
+   840→                        </thead>
+   841→                        <tbody>
+   842→                          {reporteData.lecturas.map((l) => (
+   843→                            <tr key={l.dia} className="hover:bg-gray-50 transition-colors">
+   844→                              <td className="px-3 py-2 font-medium text-gray-900">{l.dia}</td>
+   845→                              <td className="px-3 py-2 text-right">{l.odometro?.toLocaleString() ?? '—'}</td>
+   846→                              <td className="px-3 py-2 text-right">{l.kilometrosRecorridos?.toLocaleString() ?? '—'}</td>
+   847→                              <td className="px-3 py-2 text-right">{l.combustibleEnDeposito ?? '—'}</td>
+   848→                              <td className="px-3 py-2 text-right">{l.combustibleConsumido ?? '—'}</td>
+   849→                              <td className="px-3 py-2 text-right">{l.combustibleAbastecido ?? '—'}</td>
+   850→                              <td className="px-3 py-2 text-right">{l.saldoCombustible ?? '—'}</td>
+   851→                            </tr>
+   852→                          ))}
+   853→                        </tbody>
+   854→                      </table>
+   855→                    </div>
+   856→                  )}
+   857→                </div>
+   858→
+   859→                {/* Sección 3: Análisis de Consumo */}
+   860→                <div>
+   861→                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+   862→                    <ChevronRight className="w-4 h-4" />
+   863→                    Análisis de Consumo
+   864→                  </h3>
+   865→                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
+   866→                    <DetailField label="Combustible Inicial" value={`${reporteData.analisis.combustibleInicial} L`} />
+   867→                    <DetailField label="Combustible Recibido" value={`${reporteData.analisis.combustibleRecibido} L`} />
+   868→                    <DetailField label="Combustible Consumido" value={`${reporteData.analisis.combustibleConsumido} L`} />
+   869→                    <DetailField label="Existencia Final" value={`${reporteData.analisis.existenciaFinal} L`} />
+   870→                    <DetailField label="Km Recorridos" value={reporteData.analisis.kilometrosRecorridos.toLocaleString()} />
+   871→                    <DetailField label="Consumido según Norma" value={`${reporteData.analisis.consumidoSegunNorma} L`} />
+   872→                  </div>
+   873→                </div>
+   874→              </>
+   875→            )}
+   876→
+   877→            {/* Sin datos aún */}
+   878→            {!reporteData && !reporteLoading && (
+   879→              <p className="text-sm text-gray-400 text-center py-12">Seleccione mes y año, luego presione Buscar para generar el reporte.</p>
+   880→            )}
+   881→          </div>
+   882→        )}
+   883→      </Modal>
+   884→
+   885→      {/* Delete Confirmation */}
+   886→      <ConfirmModal
+   887→        open={!!deleteTarget}
+   888→        title="Eliminar Vehículo"
+   889→        message="¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+   890→        onConfirm={handleConfirmDelete}
+   891→        onCancel={() => setDeleteTarget(null)}
+   892→        confirmText="Eliminar"
+   893→        danger
+   894→      />
+   895→    </div>
+   896→  );
+   897→}
+   898→

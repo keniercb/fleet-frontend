@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import type { UserResponse, AuthResponseDto } from '@/types';
+import type { UserResponse, AuthResponseDto, EmpresaResponse } from '@/types';
 import { authApi } from '@/api/endpoints';
 
 interface AuthContextType {
   user: UserResponse | null;
   loading: boolean;
   permissions: string[];
+  empresa: EmpresaResponse | null;
+  empresaId: number;
   login: (email: string, password: string) => Promise<AuthResponseDto>;
   logout: () => Promise<void>;
   hasPermission: (permissionName: string) => boolean;
@@ -20,6 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState<string[]>([]);
+
+  const empresa = user?.empresa ?? null;
+  const empresaId = user?.empresa?.id ?? 0;
 
   const loadUser = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -92,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         permissions,
+        empresa,
+        empresaId,
         login,
         logout,
         hasPermission,

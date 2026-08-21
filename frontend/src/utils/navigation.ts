@@ -61,13 +61,6 @@ export const navigationConfig: NavSection[] = [
         icon: Key,
         permission: 'PERMISOS_READ',
       },
-    ],
-  },
-  {
-    id: 'catalogos',
-    label: 'Catálogos',
-    icon: BookOpen,
-    items: [
       {
         id: 'empresas',
         label: 'Empresas',
@@ -75,6 +68,13 @@ export const navigationConfig: NavSection[] = [
         icon: Building2,
         permission: 'EMPRESAS_READ',
       },
+    ],
+  },
+  {
+    id: 'catalogos',
+    label: 'Catálogos',
+    icon: BookOpen,
+    items: [
       {
         id: 'marcas',
         label: 'Marcas',

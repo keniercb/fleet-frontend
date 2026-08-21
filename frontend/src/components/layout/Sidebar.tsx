@@ -23,20 +23,19 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
 
   const sections = getFilteredNavigation(hasPermission, isAdmin);
 
-  // Auto-expand when route changes
+  // Auto-expand when route changes (accordion: only one section open)
   useEffect(() => {
-    setExpandedSections((prev) => {
-      const shouldExpand = sections
-        .filter((s) => s.items.some((i) => location.pathname === i.path))
-        .map((s) => s.id);
-      const merged = new Set([...prev, ...shouldExpand]);
-      return [...merged];
-    });
+    const shouldExpand = sections
+      .filter((s) => s.items.some((i) => location.pathname === i.path))
+      .map((s) => s.id);
+    if (shouldExpand.length > 0) {
+      setExpandedSections(shouldExpand);
+    }
   }, [location.pathname, sections]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) =>
-      prev.includes(sectionId) ? prev.filter((id) => id !== sectionId) : [...prev, sectionId]
+      prev.includes(sectionId) ? [] : [sectionId]
     );
   };
 
