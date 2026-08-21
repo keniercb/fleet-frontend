@@ -28,7 +28,7 @@ interface FormData {
 }
 
 const EMPTY_FORM: FormData = {
-  nombre: ','
+  nombre: '',
   apellidos: '',
   carneIdentidad: '',
   numeroLicencia: '',
@@ -237,7 +237,7 @@ export default function ChoferesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
                       Cargando...
@@ -246,7 +246,7 @@ export default function ChoferesPage() {
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     {search ? 'No se encontraron resultados' : 'No hay registros'}
                   </td>
                 </tr>
