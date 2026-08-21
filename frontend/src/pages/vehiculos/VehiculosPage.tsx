@@ -831,6 +831,7 @@ export default function VehiculosPage() {
                           <tr className="bg-gray-50">
                             <th className="table-header px-3 py-2">Día</th>
                             <th className="table-header px-3 py-2 text-right">Odómetro</th>
+                            <th className="table-header px-3 py-2 text-right">Km Recorridos</th>
                             <th className="table-header px-3 py-2 text-right">Comb. en Depósito</th>
                             <th className="table-header px-3 py-2 text-right">Comb. Consumido</th>
                             <th className="table-header px-3 py-2 text-right">Comb. Abastecido</th>
@@ -842,6 +843,7 @@ export default function VehiculosPage() {
                             <tr key={l.dia} className="hover:bg-gray-50 transition-colors">
                               <td className="px-3 py-2 font-medium text-gray-900">{l.dia}</td>
                               <td className="px-3 py-2 text-right">{l.odometro?.toLocaleString() ?? '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.kilometrosRecorridos?.toLocaleString() ?? '—'}</td>
                               <td className="px-3 py-2 text-right">{l.combustibleEnDeposito ?? '—'}</td>
                               <td className="px-3 py-2 text-right">{l.combustibleConsumido ?? '—'}</td>
                               <td className="px-3 py-2 text-right">{l.combustibleAbastecido ?? '—'}</td>

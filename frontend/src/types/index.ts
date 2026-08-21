@@ -357,6 +357,7 @@ export interface VehiculoReporteData {
 export interface LecturaDiariaResponse {
   dia: number;
   odometro: number;
+  kilometrosRecorridos: number;
   combustibleEnDeposito: number;
   combustibleConsumido: number;
   combustibleAbastecido: number;
