@@ -308,7 +308,7 @@ export default function RecorridosPage() {
     }
   };
 
-  const colCount = 9; // table columns
+  const colCount = 10; // table columns
 
   // ---- Render ----
 
