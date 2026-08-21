@@ -218,7 +218,7 @@ export default function TarjetaCombustiblePage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
+                          className="p-1.5 hover:bg-violet-50 rounded-lg text-gray-400 hover:text-violet-600 transition-colors"
                           title="Editar"
                         >
                           <Pencil className="w-4 h-4" />

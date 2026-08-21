@@ -12,7 +12,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
 
   const stats: StatCard[] = [
-    { label: 'Vehículos', value: '--', icon: Car, color: 'bg-blue-500' },
+    { label: 'Vehículos', value: '--', icon: Car, color: 'bg-violet-500' },
     { label: 'Choferes', value: '--', icon: Users, color: 'bg-emerald-500' },
     { label: 'Recorridos', value: '--', icon: Route, color: 'bg-amber-500' },
     { label: 'Empresas', value: '--', icon: Building2, color: 'bg-purple-500' },

@@ -12,14 +12,14 @@ const styleMap: Record<ToastType, string> = {
   success: 'bg-green-50 border-green-200 text-green-800',
   error: 'bg-red-50 border-red-200 text-red-800',
   warning: 'bg-amber-50 border-amber-200 text-amber-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
+  info: 'bg-violet-50 border-violet-200 text-violet-800',
 };
 
 const iconColorMap: Record<ToastType, string> = {
   success: 'text-green-500',
   error: 'text-red-500',
   warning: 'text-amber-500',
-  info: 'text-blue-500',
+  info: 'text-violet-500',
 };
 
 export default function ToastContainer() {

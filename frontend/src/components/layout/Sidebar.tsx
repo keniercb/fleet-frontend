@@ -50,18 +50,18 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
       {/* Brand */}
       <div className="h-16 flex items-center px-4 border-b border-white/10">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center">
+          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center">
             <Car className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="text-sm font-bold text-white truncate">Gestión Vehicular</h1>
-              <p className="text-[10px] text-slate-400 truncate">Sistema de Control</p>
+              <p className="text-[10px] text-zinc-500 truncate">Sistema de Control</p>
             </div>
           )}
           <button
             onClick={onToggleCollapse}
-            className={`hidden lg:flex ml-auto flex-shrink-0 w-7 h-7 items-center justify-center rounded-md text-slate-400 hover:bg-white/5 hover:text-white transition-colors ${collapsed ? 'ml-0' : ''}`}
+            className={`hidden lg:flex ml-auto flex-shrink-0 w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:bg-white/5 hover:text-white transition-colors ${collapsed ? 'ml-0' : ''}`}
             title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
           >
             {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
@@ -76,8 +76,8 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
           onClick={() => handleNavigate('/')}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
             location.pathname === '/'
-              ? 'bg-blue-600/20 text-blue-400'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
+              ? 'bg-primary-600/20 text-primary-400'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
           } ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Dashboard' : undefined}
         >
@@ -107,8 +107,8 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                         title={item.label}
                         className={`w-full flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
                           isActive
-                            ? 'bg-blue-600/20 text-blue-400'
-                            : 'text-slate-300 hover:text-white hover:bg-white/5'
+                            ? 'bg-primary-600/20 text-primary-400'
+                            : 'text-zinc-400 hover:text-white hover:bg-white/5'
                         }`}
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
@@ -120,7 +120,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                 <>
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-colors ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors ${
                       hasActiveChild ? 'text-white' : ''
                     }`}
                   >
@@ -144,8 +144,8 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                             onClick={() => handleNavigate(item.path)}
                             className={`w-full text-left px-3 py-2 rounded-lg text-sm font-normal transition-colors ${
                               isActive
-                                ? 'bg-blue-600/20 text-blue-400'
-                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                ? 'bg-primary-600/20 text-primary-400'
+                                : 'text-zinc-400 hover:text-white hover:bg-white/5'
                             }`}
                           >
                             {item.label}
@@ -164,7 +164,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
       {/* Footer */}
       {!collapsed && (
         <div className="p-4 border-t border-white/10">
-          <p className="text-[10px] text-slate-500 text-center">
+          <p className="text-[10px] text-zinc-600 text-center">
             v1.0.0 — Gestión Vehicular
           </p>
         </div>
@@ -184,7 +184,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
 
       {/* Sidebar - Mobile */}
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 transform transition-transform duration-300 ${
+        className={`lg:hidden fixed inset-y-0 left-0 z-40 w-64 bg-zinc-900 transform transition-transform duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -193,7 +193,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
 
       {/* Sidebar - Desktop */}
       <aside
-        className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-20 bg-slate-900 transition-all duration-300 ${
+        className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-20 bg-zinc-900 transition-all duration-300 ${
           collapsed ? 'w-20' : 'w-64'
         }`}
       >
