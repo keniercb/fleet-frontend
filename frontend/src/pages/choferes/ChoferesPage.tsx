@@ -283,7 +283,7 @@ export default function ChoferesPage() {
                               .map((c) => (
                                 <span
                                   key={c.id}
-                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-700"
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-700"
                                 >
                                   {c.categoriaLicencia.codigo}
                                 </span>
@@ -302,7 +302,7 @@ export default function ChoferesPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 hover:bg-violet-50 rounded-lg text-gray-400 hover:text-violet-600 transition-colors"
+                          className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
                           title="Editar"
                         >
                           <Pencil className="w-4 h-4" />
