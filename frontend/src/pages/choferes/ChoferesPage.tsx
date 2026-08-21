@@ -418,6 +418,21 @@ export default function ChoferesPage() {
                 required
               />
             </div>
+
+            {/* Fecha de Nacimiento */}
+            <div>
+              <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Fecha de Nacimiento<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <input
+                id="fechaNacimiento"
+                type="date"
+                value={formData.fechaNacimiento}
+                onChange={(e) => handleFieldChange('fechaNacimiento', e.target.value)}
+                className="input-field"
+                required
+              />
+            </div>
           </div>
 
           {/* Categorías de Licencia - Sub-form */}
