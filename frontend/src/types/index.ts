@@ -339,6 +339,7 @@ export interface TarjetaCombustibleRequest {
   numero: string;
   saldo: number;
   currencyId: number;
+  empresaId: number;
 }
 
 export interface TarjetaCombustibleResponse {
@@ -346,6 +347,7 @@ export interface TarjetaCombustibleResponse {
   numero: string;
   saldo: number;
   currency: CurrencyResponse;
+  empresa: EmpresaResponse;
   activo: boolean;
   fechaCreacion: string;
   fechaActualizacion: string;

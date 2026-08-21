@@ -349,6 +349,9 @@ export const tarjetasCombustibleApi = {
 
   findByNumero: (numero: string): Promise<AxiosResponse<TarjetaCombustibleResponse>> =>
     apiClient.get<TarjetaCombustibleResponse>(`/tarjetas-combustible/numero/${numero}`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<TarjetaCombustibleResponse>>> =>
+    apiClient.get<PageResponse<TarjetaCombustibleResponse>>(`/tarjetas-combustible/empresa/${empresaId}`, { params }),
 };
 
 // ---- Recorridos ----

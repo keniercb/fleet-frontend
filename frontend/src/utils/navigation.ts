@@ -110,13 +110,6 @@ export const navigationConfig: NavSection[] = [
         icon: Banknote,
         permission: 'CURRENCIES_READ',
       },
-      {
-        id: 'tarjetas-combustible',
-        label: 'Tarjetas de Combustible',
-        path: '/tarjetas-combustible',
-        icon: Wallet,
-        permission: 'TARJETAS_COMBUSTIBLE_READ',
-      },
     ],
   },
   {
@@ -144,6 +137,13 @@ export const navigationConfig: NavSection[] = [
         path: '/recorridos',
         icon: Route,
         permission: 'RECORRIDOS_READ',
+      },
+      {
+        id: 'tarjetas-combustible',
+        label: 'Tarjetas de Combustible',
+        path: '/tarjetas-combustible',
+        icon: Wallet,
+        permission: 'TARJETAS_COMBUSTIBLE_READ',
       },
     ],
   },

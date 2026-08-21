@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Search, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
-import { tarjetasCombustibleApi, currenciesApi } from '@/api/endpoints';
+import { tarjetasCombustibleApi, currenciesApi, empresasApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
@@ -11,6 +11,7 @@ import type {
   TarjetaCombustibleRequest,
   TarjetaCombustibleResponse,
   CurrencyResponse,
+  EmpresaResponse,
 } from '@/types';
 
 // ---- Types ----
@@ -19,12 +20,14 @@ interface FormData {
   numero: string;
   saldo: string;
   currencyId: number;
+  empresaId: number;
 }
 
 const EMPTY_FORM: FormData = {
   numero: '',
   saldo: '',
   currencyId: 0,
+  empresaId: 0,
 };
 
 // ---- Component ----
@@ -43,8 +46,9 @@ export default function TarjetaCombustiblePage() {
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<TarjetaCombustibleResponse | null>(null);
 
-  // Currencies dropdown
+  // Dropdowns
   const [currencies, setCurrencies] = useState<CurrencyResponse[]>([]);
+  const [empresas, setEmpresas] = useState<EmpresaResponse[]>([]);
 
   useEffect(() => {
     if (error) {
@@ -61,9 +65,19 @@ export default function TarjetaCombustiblePage() {
     }
   }, [addToast]);
 
+  const fetchEmpresas = useCallback(async () => {
+    try {
+      const res = await empresasApi.findAll({ page: 0, perPage: 500 });
+      setEmpresas(res.data.content.filter((e) => e.activo));
+    } catch {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las empresas.' });
+    }
+  }, [addToast]);
+
   useEffect(() => {
     fetchCurrencies();
-  }, [fetchCurrencies]);
+    fetchEmpresas();
+  }, [fetchCurrencies, fetchEmpresas]);
 
   // ---- Handlers ----
 
@@ -79,6 +93,7 @@ export default function TarjetaCombustiblePage() {
       numero: entity.numero,
       saldo: String(entity.saldo),
       currencyId: entity.currency.id,
+      empresaId: entity.empresa.id,
     });
     setShowForm(true);
   };
@@ -94,6 +109,7 @@ export default function TarjetaCombustiblePage() {
         numero: formData.numero,
         saldo: formData.saldo ? Number(formData.saldo) : 0,
         currencyId: formData.currencyId,
+        empresaId: formData.empresaId,
       };
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);
@@ -121,11 +137,13 @@ export default function TarjetaCombustiblePage() {
 
   const filteredData = search
     ? data.filter((item) =>
-        [item.numero, item.currency?.isoCode, item.currency?.descripcion].some(
+        [item.numero, item.currency?.isoCode, item.currency?.descripcion, item.empresa?.nombre].some(
           (val) => val != null && String(val).toLowerCase().includes(search.toLowerCase())
         )
       )
     : data;
+
+  const colCount = 6;
 
   return (
     <div>
@@ -153,6 +171,7 @@ export default function TarjetaCombustiblePage() {
             <thead>
               <tr>
                 <th className="table-header px-4 py-3">Número</th>
+                <th className="table-header px-4 py-3">Empresa</th>
                 <th className="table-header px-4 py-3">Moneda</th>
                 <th className="table-header px-4 py-3 text-right">Saldo</th>
                 <th className="table-header px-4 py-3 text-right">Estado</th>
@@ -162,7 +181,7 @@ export default function TarjetaCombustiblePage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
                       Cargando...
@@ -171,7 +190,7 @@ export default function TarjetaCombustiblePage() {
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
                     {search ? 'No se encontraron resultados' : 'No hay registros'}
                   </td>
                 </tr>
@@ -180,6 +199,9 @@ export default function TarjetaCombustiblePage() {
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <span className="table-cell block font-medium text-gray-900">{item.numero}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="table-cell block">{item.empresa?.nombre || '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.currency?.isoCode} — {item.currency?.descripcion}</span>
@@ -252,6 +274,26 @@ export default function TarjetaCombustiblePage() {
                 placeholder="Ej: TC-001"
                 required
               />
+            </div>
+            <div>
+              <label htmlFor="empresaId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Empresa<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  id="empresaId"
+                  value={formData.empresaId}
+                  onChange={(e) => handleFieldChange('empresaId', Number(e.target.value))}
+                  className="input-field appearance-none pr-8"
+                  required
+                >
+                  <option value="0">Seleccionar empresa...</option>
+                  {empresas.map((e) => (
+                    <option key={e.id} value={e.id}>{e.nombre}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
             <div>
               <label htmlFor="currencyId" className="block text-sm font-medium text-gray-700 mb-1.5">

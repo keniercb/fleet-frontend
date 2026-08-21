@@ -85,21 +85,25 @@ export default function RecorridosPage() {
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<RecorridoResponse | null>(null);
 
-  // Tarjetas de combustible dropdown
+  // Tarjetas de combustible dropdown (filtered by empresa)
   const [tarjetas, setTarjetas] = useState<TarjetaCombustibleResponse[]>([]);
 
-  const fetchTarjetas = useCallback(async () => {
+  const fetchTarjetasByEmpresa = useCallback(async (empresaId: number) => {
+    if (!empresaId) {
+      setTarjetas([]);
+      return;
+    }
     try {
-      const res = await tarjetasCombustibleApi.findAll({ page: 0, perPage: 500 });
+      const res = await tarjetasCombustibleApi.findByEmpresaId(empresaId, { page: 0, perPage: 500 });
       setTarjetas(res.data.content.filter((t) => t.activo));
     } catch {
-      // silent
+      setTarjetas([]);
     }
   }, []);
 
   useEffect(() => {
-    fetchTarjetas();
-  }, [fetchTarjetas]);
+    fetchTarjetasByEmpresa(filterEmpresaId);
+  }, [filterEmpresaId, fetchTarjetasByEmpresa]);
 
   // Both filters must be set to load data
   const canLoadData = filterEmpresaId > 0 && filterVehiculoId > 0;
@@ -195,6 +199,7 @@ export default function RecorridosPage() {
     setFilterVehiculoId(0);
     setFilterFechaFrom('');
     setFilterFechaTo('');
+    setTarjetas([]);
     setPage(0);
   };
 
