@@ -214,19 +214,20 @@ export default function VehiculosPage() {
     fetchDropdowns();
   }, [fetchDropdowns]);
 
+  useEffect(() => {
+    fetchChoferesByEmpresa(empresaId);
+  }, [empresaId]);
+
   // ---- Form helpers ----
 
   const handleOpenCreate = () => {
     setEditingEntity(null);
     setFormData({ ...EMPTY_FORM });
-    fetchChoferesByEmpresa(empresaId);
     setShowForm(true);
   };
 
   const handleOpenEdit = async (entity: VehiculoResponse) => {
     setEditingEntity(entity);
-    // Load choferes for the entity's empresa before setting form data
-    await fetchChoferesByEmpresa(empresaId);
     setFormData({
       tipoVehiculoId: entity.tipoVehiculo.id,
       marcaId: entity.marca.id,
