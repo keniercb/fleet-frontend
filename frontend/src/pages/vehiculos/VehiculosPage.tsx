@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -22,6 +22,7 @@ import type {
   TipoCombustibleResponse,
   ChoferResponse,
   ReporteMovimientoMensualResponse,
+  PageParams,
 } from '@/types';
 
 // ---- Types ----
@@ -82,13 +83,26 @@ function DetailField({ label, value }: { label: string; value: string }) {
 // ---- Component ----
 
 export default function VehiculosPage() {
-  const {
-    data, loading, saving, totalPages, totalElements, page, size, error,
-    setPage, createItem, updateItem, deleteItem,
-  } = useCrud<VehiculoRequest, VehiculoResponse>(vehiculosApi);
-
   const { addToast } = useToast();
   const { empresaId } = useAuth();
+
+  const vehiculosApiScoped = useMemo(() => ({
+    ...vehiculosApi,
+    findAll: (params?: PageParams) => vehiculosApi.findByEmpresaId(empresaId, params),
+  }), [empresaId]);
+
+  const {
+    data, loading, saving, totalPages, totalElements, page, size, error,
+    setPage, createItem, updateItem, deleteItem, fetchData,
+  } = useCrud<VehiculoRequest, VehiculoResponse>(vehiculosApiScoped);
+
+  // Re-fetch when empresaId changes
+  useEffect(() => {
+    if (empresaId) {
+      setPage(0);
+      fetchData();
+    }
+  }, [empresaId]);
 
   // Dropdown data
   const [dropdowns, setDropdowns] = useState<Dropdowns>({

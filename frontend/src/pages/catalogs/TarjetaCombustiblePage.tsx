@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Search, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -12,6 +12,7 @@ import type {
   TarjetaCombustibleRequest,
   TarjetaCombustibleResponse,
   CurrencyResponse,
+  PageParams,
 } from '@/types';
 
 // ---- Types ----
@@ -31,19 +32,32 @@ const EMPTY_FORM: FormData = {
 // ---- Component ----
 
 export default function TarjetaCombustiblePage() {
-  const {
-    data, loading, saving, totalPages, totalElements, page, size, error,
-    setPage, createItem, updateItem, deleteItem,
-  } = useCrud<TarjetaCombustibleRequest, TarjetaCombustibleResponse>(tarjetasCombustibleApi);
-
   const { addToast } = useToast();
   const { empresaId } = useAuth();
+
+  const tarjetasApiScoped = useMemo(() => ({
+    ...tarjetasCombustibleApi,
+    findAll: (params?: PageParams) => tarjetasCombustibleApi.findByEmpresaId(empresaId, params),
+  }), [empresaId]);
+
+  const {
+    data, loading, saving, totalPages, totalElements, page, size, error,
+    setPage, createItem, updateItem, deleteItem, fetchData,
+  } = useCrud<TarjetaCombustibleRequest, TarjetaCombustibleResponse>(tarjetasApiScoped);
 
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingEntity, setEditingEntity] = useState<TarjetaCombustibleResponse | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<TarjetaCombustibleResponse | null>(null);
+
+  // Re-fetch when empresaId changes
+  useEffect(() => {
+    if (empresaId) {
+      setPage(0);
+      fetchData();
+    }
+  }, [empresaId]);
 
   // Dropdowns
   const [currencies, setCurrencies] = useState<CurrencyResponse[]>([]);

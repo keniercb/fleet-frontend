@@ -154,6 +154,9 @@ export const vehiculosApi = {
 
   reporteMovimientoMensual: (vehiculoId: number, mes: number, anio: number): Promise<AxiosResponse<ReporteMovimientoMensualResponse>> =>
     apiClient.get<ReporteMovimientoMensualResponse>(`/vehiculos/reporte-movimiento-mensual/${vehiculoId}`, { params: { mes, anio } }),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<VehiculoResponse>>> =>
+    apiClient.get<PageResponse<VehiculoResponse>>(`/vehiculos/empresa/${empresaId}`, { params }),
 };
 
 // ---- Tipos Vehiculo ----

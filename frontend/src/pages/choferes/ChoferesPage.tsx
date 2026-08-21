@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Search, X, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -8,7 +8,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import type { ChoferRequest, ChoferResponse, CategoriaLicenciaResponse } from '@/types';
+import type { ChoferRequest, ChoferResponse, CategoriaLicenciaResponse, PageParams } from '@/types';
 
 // ---- Types ----
 
@@ -44,13 +44,26 @@ function getTempId() {
 // ---- Component ----
 
 export default function ChoferesPage() {
-  const {
-    data, loading, saving, totalPages, totalElements, page, size, error,
-    setPage, createItem, updateItem, deleteItem,
-  } = useCrud<ChoferRequest, ChoferResponse>(choferesApi);
-
   const { addToast } = useToast();
   const { empresaId } = useAuth();
+
+  const choferesApiScoped = useMemo(() => ({
+    ...choferesApi,
+    findAll: (params?: PageParams) => choferesApi.findByEmpresaId(empresaId, params),
+  }), [empresaId]);
+
+  const {
+    data, loading, saving, totalPages, totalElements, page, size, error,
+    setPage, createItem, updateItem, deleteItem, fetchData,
+  } = useCrud<ChoferRequest, ChoferResponse>(choferesApiScoped);
+
+  // Re-fetch when empresaId changes
+  useEffect(() => {
+    if (empresaId) {
+      setPage(0);
+      fetchData();
+    }
+  }, [empresaId]);
 
   // Dropdown data
   const [categoriasLicencia, setCategoriasLicencia] = useState<CategoriaLicenciaResponse[]>([]);

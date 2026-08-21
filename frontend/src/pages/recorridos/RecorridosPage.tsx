@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, ChevronDown, FilterX, Search } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { recorridosApi, vehiculosApi, empresasApi, tarjetasCombustibleApi } from '@/api/endpoints';
+import { useAuth } from '@/contexts/AuthContext';
+import { recorridosApi, vehiculosApi, tarjetasCombustibleApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
@@ -10,7 +11,6 @@ import type {
   RecorridoRequest,
   RecorridoResponse,
   VehiculoResponse,
-  EmpresaResponse,
   TarjetaCombustibleResponse,
 } from '@/types';
 
@@ -58,14 +58,13 @@ function vehiculoLabel(v: VehiculoResponse): string {
 
 export default function RecorridosPage() {
   const { addToast } = useToast();
+  const { empresaId } = useAuth();
 
   // Dropdown data
-  const [empresas, setEmpresas] = useState<EmpresaResponse[]>([]);
   const [vehiculosByEmpresa, setVehiculosByEmpresa] = useState<VehiculoResponse[]>([]);
   const [loadingVehiculos, setLoadingVehiculos] = useState(false);
 
   // Filters
-  const [filterEmpresaId, setFilterEmpresaId] = useState<number>(0);
   const [filterVehiculoId, setFilterVehiculoId] = useState<number>(0);
   const [filterFechaFrom, setFilterFechaFrom] = useState('');
   const [filterFechaTo, setFilterFechaTo] = useState('');
@@ -88,7 +87,7 @@ export default function RecorridosPage() {
   // Tarjetas de combustible dropdown (filtered by empresa)
   const [tarjetas, setTarjetas] = useState<TarjetaCombustibleResponse[]>([]);
 
-  const fetchTarjetasByEmpresa = useCallback(async (empresaId: number) => {
+  const fetchTarjetasByEmpresa = useCallback(async () => {
     if (!empresaId) {
       setTarjetas([]);
       return;
@@ -99,53 +98,38 @@ export default function RecorridosPage() {
     } catch {
       setTarjetas([]);
     }
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => {
-    fetchTarjetasByEmpresa(filterEmpresaId);
-  }, [filterEmpresaId, fetchTarjetasByEmpresa]);
+    fetchTarjetasByEmpresa();
+  }, [fetchTarjetasByEmpresa]);
 
-  // Both filters must be set to load data
-  const canLoadData = filterEmpresaId > 0 && filterVehiculoId > 0;
+  // Vehiculo filter must be set to load data
+  const canLoadData = filterVehiculoId > 0;
   const hasDateRange = !!filterFechaFrom || !!filterFechaTo;
 
-  // ---- Fetch empresas ----
+  // ---- Fetch vehiculos by empresa from context ----
 
-  const fetchEmpresas = useCallback(async () => {
-    try {
-      const res = await empresasApi.findAll({ page: 0, perPage: 500 });
-      setEmpresas(res.data.content.filter((e) => e.activo));
-    } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las empresas.' });
-    }
-  }, [addToast]);
-
-  useEffect(() => {
-    fetchEmpresas();
-  }, [fetchEmpresas]);
-
-  // ---- Fetch vehiculos only when empresa is selected ----
-
-  const fetchVehiculosByEmpresa = useCallback(async (empresaId: number) => {
+  const fetchVehiculosByEmpresa = useCallback(async () => {
     if (!empresaId) {
       setVehiculosByEmpresa([]);
       return;
     }
     setLoadingVehiculos(true);
     try {
-      const res = await vehiculosApi.findAll({ page: 0, perPage: 500 });
-      setVehiculosByEmpresa(res.data.content.filter((v) => v.empresa.id === empresaId && v.activo));
+      const res = await vehiculosApi.findByEmpresaId(empresaId, { page: 0, perPage: 500 });
+      setVehiculosByEmpresa(res.data.content.filter((v) => v.activo));
     } catch {
       setVehiculosByEmpresa([]);
       addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los vehiculos.' });
     } finally {
       setLoadingVehiculos(false);
     }
-  }, [addToast]);
+  }, [empresaId, addToast]);
 
   useEffect(() => {
-    fetchVehiculosByEmpresa(filterEmpresaId);
-  }, [filterEmpresaId, fetchVehiculosByEmpresa]);
+    fetchVehiculosByEmpresa();
+  }, [fetchVehiculosByEmpresa]);
 
   // ---- Fetch recorridos ----
 
@@ -194,15 +178,6 @@ export default function RecorridosPage() {
 
   // ---- Filter handlers ----
 
-  const handleEmpresaChange = (empresaId: number) => {
-    setFilterEmpresaId(empresaId);
-    setFilterVehiculoId(0);
-    setFilterFechaFrom('');
-    setFilterFechaTo('');
-    setTarjetas([]);
-    setPage(0);
-  };
-
   const handleVehiculoChange = (vehiculoId: number) => {
     setFilterVehiculoId(vehiculoId);
     setPage(0);
@@ -219,14 +194,13 @@ export default function RecorridosPage() {
   };
 
   const handleClearFilters = () => {
-    setFilterEmpresaId(0);
     setFilterVehiculoId(0);
     setFilterFechaFrom('');
     setFilterFechaTo('');
     setPage(0);
   };
 
-  const hasActiveFilters = filterEmpresaId !== 0 || filterVehiculoId !== 0 || hasDateRange;
+  const hasActiveFilters = filterVehiculoId !== 0 || hasDateRange;
 
   // ---- Form helpers ----
 
@@ -334,25 +308,6 @@ export default function RecorridosPage() {
       {/* Filter Bar */}
       <div className="card mb-4 !py-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
-          {/* Empresa */}
-          <div className="relative w-full sm:w-48">
-            <label htmlFor="filter-empresa" className="block text-xs font-medium text-gray-500 mb-1">
-              Empresa<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="filter-empresa"
-              value={filterEmpresaId}
-              onChange={(e) => handleEmpresaChange(Number(e.target.value))}
-              className="input-field appearance-none pr-8 py-2 text-sm"
-            >
-              <option value="0">Seleccionar empresa...</option>
-              {empresas.map((emp) => (
-                <option key={emp.id} value={emp.id}>{emp.nombre}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
           {/* Vehiculo */}
           <div className="relative w-full sm:w-64">
             <label htmlFor="filter-vehiculo" className="block text-xs font-medium text-gray-500 mb-1">
@@ -363,14 +318,12 @@ export default function RecorridosPage() {
               value={filterVehiculoId}
               onChange={(e) => handleVehiculoChange(Number(e.target.value))}
               className="input-field appearance-none pr-8 py-2 text-sm"
-              disabled={!filterEmpresaId || loadingVehiculos}
+              disabled={loadingVehiculos}
             >
               <option value="0">
-                {!filterEmpresaId
-                  ? 'Seleccione empresa primero'
-                  : loadingVehiculos
-                    ? 'Cargando...'
-                    : 'Seleccionar vehiculo...'}
+                {loadingVehiculos
+                  ? 'Cargando...'
+                  : 'Seleccionar vehiculo...'}
               </option>
               {vehiculosByEmpresa.map((v) => (
                 <option key={v.id} value={v.id}>{vehiculoLabel(v)}</option>
@@ -449,7 +402,7 @@ export default function RecorridosPage() {
                   <td colSpan={colCount} className="px-4 py-16 text-center text-gray-400">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-8 h-8 text-gray-300" />
-                      <p className="text-sm">Seleccione una empresa y un vehiculo para ver los recorridos</p>
+                      <p className="text-sm">Seleccione un vehiculo para ver los recorridos</p>
                     </div>
                   </td>
                 </tr>

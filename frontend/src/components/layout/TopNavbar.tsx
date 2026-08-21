@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, Menu, X, ChevronDown, KeyRound, UserCircle } from 'lucide-react';
+import { LogOut, User, Menu, X, ChevronDown, KeyRound, UserCircle, Building2 } from 'lucide-react';
 import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 
 interface TopNavbarProps {
@@ -11,7 +11,7 @@ interface TopNavbarProps {
 }
 
 export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarCollapsed }: TopNavbarProps) {
-  const { user, logout } = useAuth();
+  const { user, empresa, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -52,6 +52,15 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
+
+          {/* Center: empresa info */
+          }
+          {empresa && (
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-50">
+              <Building2 className="w-4 h-4 text-primary-600" />
+              <span className="text-sm font-medium text-primary-800 truncate max-w-[250px]">{empresa.nombre}</span>
+            </div>
+          )}
 
           {/* Right: user dropdown */}
           <div className="flex items-center ml-auto">

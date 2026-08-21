@@ -1,0 +1,688 @@
+     1→import { useState, useEffect, useCallback } from 'react';
+     2→import { Plus, Pencil, Trash2, ChevronDown, FilterX, Search } from 'lucide-react';
+     3→import { useToast } from '@/contexts/ToastContext';
+     4→import { recorridosApi, vehiculosApi, empresasApi, tarjetasCombustibleApi } from '@/api/endpoints';
+     5→import PageHeader from '@/components/common/PageHeader';
+     6→import Pagination from '@/components/common/Pagination';
+     7→import Modal from '@/components/ui/Modal';
+     8→import ConfirmModal from '@/components/ui/ConfirmModal';
+     9→import type {
+    10→  RecorridoRequest,
+    11→  RecorridoResponse,
+    12→  VehiculoResponse,
+    13→  EmpresaResponse,
+    14→  TarjetaCombustibleResponse,
+    15→} from '@/types';
+    16→
+    17→// ---- Types ----
+    18→
+    19→interface FormData {
+    20→  vehiculoId: number;
+    21→  fecha: string;
+    22→  kilometros: number;
+    23→  litrosAbastecidos: string;
+    24→  numeroChip: string;
+    25→  lugarAbastecimiento: string;
+    26→  tarjetaCombustibleId: number;
+    27→  importeAbastecido: string;
+    28→}
+    29→
+    30→const EMPTY_FORM: FormData = {
+    31→  vehiculoId: 0,
+    32→  fecha: '',
+    33→  kilometros: 0,
+    34→  litrosAbastecidos: '',
+    35→  numeroChip: '',
+    36→  lugarAbastecimiento: '',
+    37→  tarjetaCombustibleId: 0,
+    38→  importeAbastecido: '',
+    39→};
+    40→
+    41→// ---- Helpers ----
+    42→
+    43→function formatDate(dateStr: string): string {
+    44→  if (!dateStr) return '—';
+    45→  const date = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
+    46→  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    47→}
+    48→
+    49→function todayISO(): string {
+    50→  return new Date().toISOString().split('T')[0];
+    51→}
+    52→
+    53→function vehiculoLabel(v: VehiculoResponse): string {
+    54→  return `${v.matricula} — ${v.marca.nombre} ${v.modelo || ''}`;
+    55→}
+    56→
+    57→// ---- Component ----
+    58→
+    59→export default function RecorridosPage() {
+    60→  const { addToast } = useToast();
+    61→
+    62→  // Dropdown data
+    63→  const [empresas, setEmpresas] = useState<EmpresaResponse[]>([]);
+    64→  const [vehiculosByEmpresa, setVehiculosByEmpresa] = useState<VehiculoResponse[]>([]);
+    65→  const [loadingVehiculos, setLoadingVehiculos] = useState(false);
+    66→
+    67→  // Filters
+    68→  const [filterEmpresaId, setFilterEmpresaId] = useState<number>(0);
+    69→  const [filterVehiculoId, setFilterVehiculoId] = useState<number>(0);
+    70→  const [filterFechaFrom, setFilterFechaFrom] = useState('');
+    71→  const [filterFechaTo, setFilterFechaTo] = useState('');
+    72→
+    73→  // Table data & pagination
+    74→  const [data, setData] = useState<RecorridoResponse[]>([]);
+    75→  const [loading, setLoading] = useState(false);
+    76→  const [saving, setSaving] = useState(false);
+    77→  const [totalPages, setTotalPages] = useState(0);
+    78→  const [totalElements, setTotalElements] = useState(0);
+    79→  const [page, setPage] = useState(0);
+    80→  const [size] = useState(15);
+    81→
+    82→  // Form modal state
+    83→  const [showForm, setShowForm] = useState(false);
+    84→  const [editingEntity, setEditingEntity] = useState<RecorridoResponse | null>(null);
+    85→  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+    86→  const [deleteTarget, setDeleteTarget] = useState<RecorridoResponse | null>(null);
+    87→
+    88→  // Tarjetas de combustible dropdown (filtered by empresa)
+    89→  const [tarjetas, setTarjetas] = useState<TarjetaCombustibleResponse[]>([]);
+    90→
+    91→  const fetchTarjetasByEmpresa = useCallback(async (empresaId: number) => {
+    92→    if (!empresaId) {
+    93→      setTarjetas([]);
+    94→      return;
+    95→    }
+    96→    try {
+    97→      const res = await tarjetasCombustibleApi.findByEmpresaId(empresaId, { page: 0, perPage: 500 });
+    98→      setTarjetas(res.data.content.filter((t) => t.activo));
+    99→    } catch {
+   100→      setTarjetas([]);
+   101→    }
+   102→  }, []);
+   103→
+   104→  useEffect(() => {
+   105→    fetchTarjetasByEmpresa(filterEmpresaId);
+   106→  }, [filterEmpresaId, fetchTarjetasByEmpresa]);
+   107→
+   108→  // Both filters must be set to load data
+   109→  const canLoadData = filterEmpresaId > 0 && filterVehiculoId > 0;
+   110→  const hasDateRange = !!filterFechaFrom || !!filterFechaTo;
+   111→
+   112→  // ---- Fetch empresas ----
+   113→
+   114→  const fetchEmpresas = useCallback(async () => {
+   115→    try {
+   116→      const res = await empresasApi.findAll({ page: 0, perPage: 500 });
+   117→      setEmpresas(res.data.content.filter((e) => e.activo));
+   118→    } catch {
+   119→      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las empresas.' });
+   120→    }
+   121→  }, [addToast]);
+   122→
+   123→  useEffect(() => {
+   124→    fetchEmpresas();
+   125→  }, [fetchEmpresas]);
+   126→
+   127→  // ---- Fetch vehiculos only when empresa is selected ----
+   128→
+   129→  const fetchVehiculosByEmpresa = useCallback(async (empresaId: number) => {
+   130→    if (!empresaId) {
+   131→      setVehiculosByEmpresa([]);
+   132→      return;
+   133→    }
+   134→    setLoadingVehiculos(true);
+   135→    try {
+   136→      const res = await vehiculosApi.findAll({ page: 0, perPage: 500 });
+   137→      setVehiculosByEmpresa(res.data.content.filter((v) => v.empresa.id === empresaId && v.activo));
+   138→    } catch {
+   139→      setVehiculosByEmpresa([]);
+   140→      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los vehiculos.' });
+   141→    } finally {
+   142→      setLoadingVehiculos(false);
+   143→    }
+   144→  }, [addToast]);
+   145→
+   146→  useEffect(() => {
+   147→    fetchVehiculosByEmpresa(filterEmpresaId);
+   148→  }, [filterEmpresaId, fetchVehiculosByEmpresa]);
+   149→
+   150→  // ---- Fetch recorridos ----
+   151→
+   152→  const fetchRecorridos = useCallback(async (
+   153→    p: number,
+   154→    vId: number,
+   155→    from: string,
+   156→    to: string,
+   157→  ) => {
+   158→    setLoading(true);
+   159→    try {
+   160→      const res = await recorridosApi.findByVehiculoId(vId, {
+   161→        page: p,
+   162→        perPage: size,
+   163→        from: from || '',
+   164→        to: to || '',
+   165→      });
+   166→
+   167→      const pageData = res.data;
+   168→      setData(pageData.content);
+   169→      setTotalPages(pageData.totalPages);
+   170→      setTotalElements(pageData.totalElements);
+   171→    } catch (err) {
+   172→      const message =
+   173→        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+   174→        'Error al cargar los recorridos';
+   175→      addToast({ type: 'error', title: 'Error', message });
+   176→      setData([]);
+   177→      setTotalPages(0);
+   178→      setTotalElements(0);
+   179→    } finally {
+   180→      setLoading(false);
+   181→    }
+   182→  }, [size, addToast]);
+   183→
+   184→  useEffect(() => {
+   185→    if (canLoadData) {
+   186→      fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
+   187→    } else {
+   188→      setData([]);
+   189→      setTotalPages(0);
+   190→      setTotalElements(0);
+   191→      setLoading(false);
+   192→    }
+   193→  }, [page, filterVehiculoId, filterFechaFrom, filterFechaTo, canLoadData, fetchRecorridos]);
+   194→
+   195→  // ---- Filter handlers ----
+   196→
+   197→  const handleEmpresaChange = (empresaId: number) => {
+   198→    setFilterEmpresaId(empresaId);
+   199→    setFilterVehiculoId(0);
+   200→    setFilterFechaFrom('');
+   201→    setFilterFechaTo('');
+   202→    setTarjetas([]);
+   203→    setPage(0);
+   204→  };
+   205→
+   206→  const handleVehiculoChange = (vehiculoId: number) => {
+   207→    setFilterVehiculoId(vehiculoId);
+   208→    setPage(0);
+   209→  };
+   210→
+   211→  const handleFechaFromChange = (val: string) => {
+   212→    setFilterFechaFrom(val);
+   213→    setPage(0);
+   214→  };
+   215→
+   216→  const handleFechaToChange = (val: string) => {
+   217→    setFilterFechaTo(val);
+   218→    setPage(0);
+   219→  };
+   220→
+   221→  const handleClearFilters = () => {
+   222→    setFilterEmpresaId(0);
+   223→    setFilterVehiculoId(0);
+   224→    setFilterFechaFrom('');
+   225→    setFilterFechaTo('');
+   226→    setPage(0);
+   227→  };
+   228→
+   229→  const hasActiveFilters = filterEmpresaId !== 0 || filterVehiculoId !== 0 || hasDateRange;
+   230→
+   231→  // ---- Form helpers ----
+   232→
+   233→  const selectedVehiculo = filterVehiculoId
+   234→    ? vehiculosByEmpresa.find((v) => v.id === filterVehiculoId) ?? null
+   235→    : null;
+   236→
+   237→  const modalVehiculo = showForm
+   238→    ? (editingEntity
+   239→        ? editingEntity.vehiculo
+   240→        : selectedVehiculo)
+   241→    : null;
+   242→
+   243→  const handleOpenCreate = () => {
+   244→    if (!filterVehiculoId) return;
+   245→    setEditingEntity(null);
+   246→    setFormData({ ...EMPTY_FORM, vehiculoId: filterVehiculoId, fecha: todayISO() });
+   247→    setShowForm(true);
+   248→  };
+   249→
+   250→  const handleOpenEdit = (entity: RecorridoResponse) => {
+   251→    setEditingEntity(entity);
+   252→    setFormData({
+   253→      vehiculoId: entity.vehiculo.id,
+   254→      fecha: entity.fecha ? entity.fecha.split('T')[0] : '',
+   255→      kilometros: entity.kilometros,
+   256→      litrosAbastecidos: entity.litrosAbastecidos ? String(entity.litrosAbastecidos) : '',
+   257→      numeroChip: entity.numeroChip || '',
+   258→      lugarAbastecimiento: entity.lugarAbastecimiento || '',
+   259→      tarjetaCombustibleId: entity.tarjetaCombustible?.id || 0,
+   260→      importeAbastecido: entity.importeAbastecido ? String(entity.importeAbastecido) : '',
+   261→    });
+   262→    setShowForm(true);
+   263→  };
+   264→
+   265→  const handleFieldChange = (key: keyof FormData, value: string | number) => {
+   266→    setFormData((prev) => ({ ...prev, [key]: value }));
+   267→  };
+   268→
+   269→  const buildRequestPayload = (): RecorridoRequest => ({
+   270→    vehiculoId: formData.vehiculoId,
+   271→    fecha: formData.fecha,
+   272→    kilometros: formData.kilometros,
+   273→    litrosAbastecidos: formData.litrosAbastecidos ? Number(formData.litrosAbastecidos) : undefined,
+   274→    numeroChip: formData.numeroChip || undefined,
+   275→    lugarAbastecimiento: formData.lugarAbastecimiento || undefined,
+   276→    tarjetaCombustibleId: formData.tarjetaCombustibleId || undefined,
+   277→    importeAbastecido: formData.importeAbastecido ? Number(formData.importeAbastecido) : undefined,
+   278→  });
+   279→
+   280→  const handleSubmit = async (e: React.FormEvent) => {
+   281→    e.preventDefault();
+   282→    setSaving(true);
+   283→    try {
+   284→      const payload = buildRequestPayload();
+   285→      if (editingEntity) {
+   286→        await recorridosApi.update(editingEntity.id, payload);
+   287→        addToast({ type: 'success', title: 'Recorrido actualizado', message: 'El registro se ha actualizado correctamente.' });
+   288→      } else {
+   289→        await recorridosApi.create(payload);
+   290→        addToast({ type: 'success', title: 'Recorrido creado', message: 'El nuevo registro se ha creado correctamente.' });
+   291→      }
+   292→      setShowForm(false);
+   293→      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
+   294→    } catch {
+   295→      addToast({ type: 'error', title: 'Error', message: 'Error al guardar el recorrido.' });
+   296→    } finally {
+   297→      setSaving(false);
+   298→    }
+   299→  };
+   300→
+   301→  const handleConfirmDelete = async () => {
+   302→    if (!deleteTarget) return;
+   303→    setSaving(true);
+   304→    try {
+   305→      await recorridosApi.delete(deleteTarget.id);
+   306→      addToast({ type: 'success', title: 'Recorrido eliminado', message: 'El registro se ha eliminado correctamente.' });
+   307→      setDeleteTarget(null);
+   308→      if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
+   309→    } catch {
+   310→      addToast({ type: 'error', title: 'Error', message: 'Error al eliminar el recorrido.' });
+   311→    } finally {
+   312→      setSaving(false);
+   313→    }
+   314→  };
+   315→
+   316→  const colCount = 10; // table columns
+   317→
+   318→  // ---- Render ----
+   319→
+   320→  return (
+   321→    <div>
+   322→      <PageHeader title="Recorridos" description="Gestion de recorridos y abastecimientos de vehiculos">
+   323→        <button
+   324→          onClick={handleOpenCreate}
+   325→          disabled={!filterVehiculoId}
+   326→          className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+   327→          title={!filterVehiculoId ? 'Seleccione un vehiculo para adicionar' : 'Nuevo recorrido'}
+   328→        >
+   329→          <Plus className="w-4 h-4" />
+   330→          Nuevo
+   331→        </button>
+   332→      </PageHeader>
+   333→
+   334→      {/* Filter Bar */}
+   335→      <div className="card mb-4 !py-3">
+   336→        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+   337→          {/* Empresa */}
+   338→          <div className="relative w-full sm:w-48">
+   339→            <label htmlFor="filter-empresa" className="block text-xs font-medium text-gray-500 mb-1">
+   340→              Empresa<span className="text-red-500 ml-0.5">*</span>
+   341→            </label>
+   342→            <select
+   343→              id="filter-empresa"
+   344→              value={filterEmpresaId}
+   345→              onChange={(e) => handleEmpresaChange(Number(e.target.value))}
+   346→              className="input-field appearance-none pr-8 py-2 text-sm"
+   347→            >
+   348→              <option value="0">Seleccionar empresa...</option>
+   349→              {empresas.map((emp) => (
+   350→                <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+   351→              ))}
+   352→            </select>
+   353→            <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+   354→          </div>
+   355→
+   356→          {/* Vehiculo */}
+   357→          <div className="relative w-full sm:w-64">
+   358→            <label htmlFor="filter-vehiculo" className="block text-xs font-medium text-gray-500 mb-1">
+   359→              Vehiculo<span className="text-red-500 ml-0.5">*</span>
+   360→            </label>
+   361→            <select
+   362→              id="filter-vehiculo"
+   363→              value={filterVehiculoId}
+   364→              onChange={(e) => handleVehiculoChange(Number(e.target.value))}
+   365→              className="input-field appearance-none pr-8 py-2 text-sm"
+   366→              disabled={!filterEmpresaId || loadingVehiculos}
+   367→            >
+   368→              <option value="0">
+   369→                {!filterEmpresaId
+   370→                  ? 'Seleccione empresa primero'
+   371→                  : loadingVehiculos
+   372→                    ? 'Cargando...'
+   373→                    : 'Seleccionar vehiculo...'}
+   374→              </option>
+   375→              {vehiculosByEmpresa.map((v) => (
+   376→                <option key={v.id} value={v.id}>{vehiculoLabel(v)}</option>
+   377→              ))}
+   378→            </select>
+   379→            <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+   380→          </div>
+   381→
+   382→          {/* Fecha Desde */}
+   383→          <div className="w-full sm:w-40">
+   384→            <label htmlFor="filter-from" className="block text-xs font-medium text-gray-500 mb-1">
+   385→              Fecha desde
+   386→            </label>
+   387→            <input
+   388→              id="filter-from"
+   389→              type="date"
+   390→              value={filterFechaFrom}
+   391→              onChange={(e) => handleFechaFromChange(e.target.value)}
+   392→              className="input-field py-2 text-sm"
+   393→              disabled={!canLoadData}
+   394→            />
+   395→          </div>
+   396→
+   397→          {/* Fecha Hasta */}
+   398→          <div className="w-full sm:w-40">
+   399→            <label htmlFor="filter-to" className="block text-xs font-medium text-gray-500 mb-1">
+   400→              Fecha hasta
+   401→            </label>
+   402→            <input
+   403→              id="filter-to"
+   404→              type="date"
+   405→              value={filterFechaTo}
+   406→              onChange={(e) => handleFechaToChange(e.target.value)}
+   407→              className="input-field py-2 text-sm"
+   408→              disabled={!canLoadData}
+   409→            />
+   410→          </div>
+   411→
+   412→          {/* Clear */}
+   413→          {hasActiveFilters && (
+   414→            <div>
+   415→              <button
+   416→                onClick={handleClearFilters}
+   417→                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+   418→                title="Limpiar filtros"
+   419→              >
+   420→                <FilterX className="w-4 h-4" />
+   421→                Limpiar
+   422→              </button>
+   423→            </div>
+   424→          )}
+   425→        </div>
+   426→      </div>
+   427→
+   428→      {/* Table */}
+   429→      <div className="card !p-0 overflow-hidden">
+   430→        <div className="overflow-x-auto">
+   431→          <table className="w-full">
+   432→            <thead>
+   433→              <tr>
+   434→                <th className="table-header px-4 py-3">Fecha</th>
+   435→                <th className="table-header px-4 py-3 text-right">Km Recorridos</th>
+   436→                <th className="table-header px-4 py-3 text-right">Odometro Inicial</th>
+   437→                <th className="table-header px-4 py-3 text-right">Consumo</th>
+   438→                <th className="table-header px-4 py-3 text-right">Litros</th>
+   439→                <th className="table-header px-4 py-3">N Chip</th>
+   440→                <th className="table-header px-4 py-3">Lugar</th>
+   441→                <th className="table-header px-4 py-3">Tarjeta</th>
+   442→                <th className="table-header px-4 py-3 text-right">Importe</th>
+   443→                <th className="table-header px-4 py-3 text-right">Acciones</th>
+   444→              </tr>
+   445→            </thead>
+   446→            <tbody>
+   447→              {!canLoadData ? (
+   448→                <tr>
+   449→                  <td colSpan={colCount} className="px-4 py-16 text-center text-gray-400">
+   450→                    <div className="flex flex-col items-center gap-2">
+   451→                      <Search className="w-8 h-8 text-gray-300" />
+   452→                      <p className="text-sm">Seleccione una empresa y un vehiculo para ver los recorridos</p>
+   453→                    </div>
+   454→                  </td>
+   455→                </tr>
+   456→              ) : loading ? (
+   457→                <tr>
+   458→                  <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
+   459→                    <div className="flex items-center justify-center gap-2">
+   460→                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
+   461→                      Cargando...
+   462→                    </div>
+   463→                  </td>
+   464→                </tr>
+   465→              ) : data.length === 0 ? (
+   466→                <tr>
+   467→                  <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
+   468→                    {hasDateRange ? 'No se encontraron recorridos en el rango de fechas' : 'No hay recorridos para este vehiculo'}
+   469→                  </td>
+   470→                </tr>
+   471→              ) : (
+   472→                data.map((item) => (
+   473→                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+   474→                    <td className="px-4 py-3">
+   475→                      <span className="table-cell block font-medium text-gray-900">{formatDate(item.fecha)}</span>
+   476→                    </td>
+   477→                    <td className="px-4 py-3 text-right">
+   478→                      <span className="table-cell block">{item.kilometros.toLocaleString()}</span>
+   479→                    </td>
+   480→                    <td className="px-4 py-3 text-right">
+   481→                      <span className="table-cell block">{item.odometroInicial.toLocaleString()}</span>
+   482→                    </td>
+   483→                    <td className="px-4 py-3 text-right">
+   484→                      <span className="table-cell block">{item.consumo} km/L</span>
+   485→                    </td>
+   486→                    <td className="px-4 py-3 text-right">
+   487→                      <span className="table-cell block">{item.litrosAbastecidos || '—'}</span>
+   488→                    </td>
+   489→                    <td className="px-4 py-3">
+   490→                      <span className="table-cell block">{item.numeroChip || '—'}</span>
+   491→                    </td>
+   492→                    <td className="px-4 py-3">
+   493→                      <span className="table-cell block">{item.lugarAbastecimiento || '—'}</span>
+   494→                    </td>
+   495→                    <td className="px-4 py-3">
+   496→                      <span className="table-cell block">{item.tarjetaCombustible?.numero || '—'}</span>
+   497→                    </td>
+   498→                    <td className="px-4 py-3 text-right">
+   499→                      <span className="table-cell block">{item.importeAbastecido ? `${item.importeAbastecido.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}</span>
+   500→                    </td>
+   501→                    <td className="px-4 py-3 text-right">
+   502→                      <div className="flex items-center justify-end gap-1">
+   503→                        <button
+   504→                          onClick={() => handleOpenEdit(item)}
+   505→                          className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
+   506→                          title="Editar"
+   507→                        >
+   508→                          <Pencil className="w-4 h-4" />
+   509→                        </button>
+   510→                        <button
+   511→                          onClick={() => setDeleteTarget(item)}
+   512→                          className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+   513→                          title="Eliminar"
+   514→                        >
+   515→                          <Trash2 className="w-4 h-4" />
+   516→                        </button>
+   517→                      </div>
+   518→                    </td>
+   519→                  </tr>
+   520→                ))
+   521→              )}
+   522→            </tbody>
+   523→          </table>
+   524→        </div>
+   525→
+   526→        {canLoadData && (
+   527→          <div className="px-4 pb-4">
+   528→            <Pagination
+   529→              page={page}
+   530→              totalPages={totalPages}
+   531→              totalElements={totalElements}
+   532→              size={size}
+   533→              onPageChange={setPage}
+   534→            />
+   535→          </div>
+   536→        )}
+   537→      </div>
+   538→
+   539→      {/* Create / Edit Modal */}
+   540→      <Modal
+   541→        open={showForm}
+   542→        title={editingEntity ? 'Editar Recorrido' : 'Nuevo Recorrido'}
+   543→        onClose={() => setShowForm(false)}
+   544→        size="lg"
+   545→      >
+   546→        <form onSubmit={handleSubmit} className="space-y-4">
+   547→          {modalVehiculo && (
+   548→            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+   549→              <p className="text-xs font-medium text-gray-500 mb-0.5">Vehiculo</p>
+   550→              <p className="text-sm font-semibold text-gray-900">{modalVehiculo.matricula} — {modalVehiculo.marca.nombre} {modalVehiculo.modelo || ''}</p>
+   551→              <p className="text-xs text-gray-500">{modalVehiculo.empresa.nombre}</p>
+   552→            </div>
+   553→          )}
+   554→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   555→            <div>
+   556→              <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 mb-1.5">
+   557→                Fecha<span className="text-red-500 ml-0.5">*</span>
+   558→              </label>
+   559→              <input
+   560→                id="fecha"
+   561→                type="date"
+   562→                value={formData.fecha}
+   563→                onChange={(e) => handleFieldChange('fecha', e.target.value)}
+   564→                className="input-field"
+   565→                required
+   566→              />
+   567→            </div>
+   568→            <div>
+   569→              <label htmlFor="kilometros" className="block text-sm font-medium text-gray-700 mb-1.5">
+   570→                Kilometros Recorridos<span className="text-red-500 ml-0.5">*</span>
+   571→              </label>
+   572→              <input
+   573→                id="kilometros"
+   574→                type="number"
+   575→                min="0"
+   576→                step="0.1"
+   577→                value={formData.kilometros}
+   578→                onChange={(e) => handleFieldChange('kilometros', e.target.value === '' ? 0 : Number(e.target.value))}
+   579→                className="input-field"
+   580→                placeholder="Ej: 150.5"
+   581→                required
+   582→              />
+   583→            </div>
+   584→            <div>
+   585→              <label htmlFor="litrosAbastecidos" className="block text-sm font-medium text-gray-700 mb-1.5">
+   586→                Litros Abastecidos
+   587→              </label>
+   588→              <input
+   589→                id="litrosAbastecidos"
+   590→                type="number"
+   591→                min="0"
+   592→                step="0.01"
+   593→                value={formData.litrosAbastecidos}
+   594→                onChange={(e) => handleFieldChange('litrosAbastecidos', e.target.value)}
+   595→                className="input-field"
+   596→                placeholder="Ej: 25.5"
+   597→              />
+   598→            </div>
+   599→            <div>
+   600→              <label htmlFor="numeroChip" className="block text-sm font-medium text-gray-700 mb-1.5">
+   601→                Numero de Chip
+   602→              </label>
+   603→              <input
+   604→                id="numeroChip"
+   605→                type="text"
+   606→                value={formData.numeroChip}
+   607→                onChange={(e) => handleFieldChange('numeroChip', e.target.value)}
+   608→                className="input-field"
+   609→                placeholder="Ej: CHIP-001"
+   610→              />
+   611→            </div>
+   612→            <div className="sm:col-span-2">
+   613→              <label htmlFor="lugarAbastecimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
+   614→                Lugar de Abastecimiento
+   615→              </label>
+   616→              <input
+   617→                id="lugarAbastecimiento"
+   618→                type="text"
+   619→                value={formData.lugarAbastecimiento}
+   620→                onChange={(e) => handleFieldChange('lugarAbastecimiento', e.target.value)}
+   621→                className="input-field"
+   622→                placeholder="Ej: Estacion Servi Centro"
+   623→              />
+   624→            </div>
+   625→            <div>
+   626→              <label htmlFor="tarjetaCombustibleId" className="block text-sm font-medium text-gray-700 mb-1.5">
+   627→                Tarjeta de Combustible
+   628→              </label>
+   629→              <div className="relative">
+   630→                <select
+   631→                  id="tarjetaCombustibleId"
+   632→                  value={formData.tarjetaCombustibleId}
+   633→                  onChange={(e) => handleFieldChange('tarjetaCombustibleId', Number(e.target.value))}
+   634→                  className="input-field appearance-none pr-8"
+   635→                >
+   636→                  <option value="0">Sin tarjeta</option>
+   637→                  {tarjetas.map((t) => (
+   638→                    <option key={t.id} value={t.id}>{t.numero} ({t.currency.isoCode})</option>
+   639→                  ))}
+   640→                </select>
+   641→                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+   642→              </div>
+   643→            </div>
+   644→            <div>
+   645→              <label htmlFor="importeAbastecido" className="block text-sm font-medium text-gray-700 mb-1.5">
+   646→                Importe Abastecido
+   647→              </label>
+   648→              <input
+   649→                id="importeAbastecido"
+   650→                type="number"
+   651→                min="0"
+   652→                step="0.01"
+   653→                value={formData.importeAbastecido}
+   654→                onChange={(e) => handleFieldChange('importeAbastecido', e.target.value)}
+   655→                className="input-field"
+   656→                placeholder="Ej: 1500.00"
+   657→              />
+   658→            </div>
+   659→          </div>
+   660→          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+   661→            <button
+   662→              type="button"
+   663→              onClick={() => setShowForm(false)}
+   664→              className="btn-secondary"
+   665→            >
+   666→              Cancelar
+   667→            </button>
+   668→            <button type="submit" disabled={saving} className="btn-primary">
+   669→              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+   670→            </button>
+   671→          </div>
+   672→        </form>
+   673→      </Modal>
+   674→
+   675→      {/* Delete Confirmation */}
+   676→      <ConfirmModal
+   677→        open={!!deleteTarget}
+   678→        title="Eliminar Recorrido"
+   679→        message="Esta seguro que desea eliminar este recorrido? Esta accion no se puede deshacer."
+   680→        onConfirm={handleConfirmDelete}
+   681→        onCancel={() => setDeleteTarget(null)}
+   682→        confirmText="Eliminar"
+   683→        danger
+   684→      />
+   685→    </div>
+   686→  );
+   687→}
+   688→
