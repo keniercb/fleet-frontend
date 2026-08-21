@@ -510,9 +510,9 @@ export default function VehiculosPage() {
                   value={formData.choferId}
                   onChange={(e) => handleFieldChange('choferId', Number(e.target.value))}
                   className="input-field appearance-none pr-8"
-                  disabled={!formData.empresaId || loadingChoferes}
+                  disabled={loadingChoferes}
                 >
-                  <option value="0">{!formData.empresaId ? 'Seleccione empresa primero' : loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
+                  <option value="0">{loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
                   {choferes.map((c) => (
                     <option key={c.id} value={c.id}>{`${c.nombre} ${c.apellidos} — ${c.carneIdentidad}`}</option>
                   ))}
