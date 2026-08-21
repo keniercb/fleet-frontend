@@ -317,26 +317,69 @@ export interface CategoriaLicenciaResponse {
   modificadoPor: UserAuditResponse;
 }
 
+// --- Currency ---
+export interface CurrencyRequest {
+  isoCode: string;
+  descripcion: string;
+}
+
+export interface CurrencyResponse {
+  id: number;
+  isoCode: string;
+  descripcion: string;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Tarjeta Combustible (Fuel Card) ---
+export interface TarjetaCombustibleRequest {
+  numero: string;
+  saldo: number;
+  currencyId: number;
+}
+
+export interface TarjetaCombustibleResponse {
+  id: number;
+  numero: string;
+  saldo: number;
+  currency: CurrencyResponse;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
 // --- Recorridos (Trips) ---
 export interface RecorridoRequest {
   vehiculoId: number;
+  choferId?: number;
   fecha: string;
   kilometros: number;
   litrosAbastecidos?: number;
   numeroChip?: string;
-  lugarAbastecimiento: string;
+  lugarAbastecimiento?: string;
+  tarjetaCombustibleId?: number;
+  importeAbastecido?: number;
 }
 
 export interface RecorridoResponse {
   id: number;
   vehiculo: VehiculoResponse;
+  chofer: ChoferResponse | null;
   fecha: string;
   kilometros: number;
   odometroInicial: number;
+  combustibleInicial: number;
   consumo: number;
   litrosAbastecidos: number;
   numeroChip: string;
   lugarAbastecimiento: string;
+  tarjetaCombustible: TarjetaCombustibleResponse | null;
+  importeAbastecido: number;
   activo: boolean;
   fechaCreacion: string;
   fechaActualizacion: string;

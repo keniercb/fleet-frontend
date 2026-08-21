@@ -15,6 +15,8 @@ import {
   Settings,
   BookOpen,
   Truck,
+  Banknote,
+  Wallet,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -100,6 +102,20 @@ export const navigationConfig: NavSection[] = [
         path: '/categorias-licencia',
         icon: FileBadge,
         permission: 'CATEGORIAS_LICENCIA_READ',
+      },
+      {
+        id: 'monedas',
+        label: 'Monedas',
+        path: '/monedas',
+        icon: Banknote,
+        permission: 'CURRENCIES_READ',
+      },
+      {
+        id: 'tarjetas-combustible',
+        label: 'Tarjetas de Combustible',
+        path: '/tarjetas-combustible',
+        icon: Wallet,
+        permission: 'TARJETAS_COMBUSTIBLE_READ',
       },
     ],
   },

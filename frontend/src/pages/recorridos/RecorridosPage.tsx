@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, ChevronDown, FilterX, Search } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { recorridosApi, vehiculosApi, empresasApi } from '@/api/endpoints';
+import { recorridosApi, vehiculosApi, empresasApi, tarjetasCombustibleApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
@@ -11,6 +11,7 @@ import type {
   RecorridoResponse,
   VehiculoResponse,
   EmpresaResponse,
+  TarjetaCombustibleResponse,
 } from '@/types';
 
 // ---- Types ----
@@ -22,6 +23,8 @@ interface FormData {
   litrosAbastecidos: string;
   numeroChip: string;
   lugarAbastecimiento: string;
+  tarjetaCombustibleId: number;
+  importeAbastecido: string;
 }
 
 const EMPTY_FORM: FormData = {
@@ -31,6 +34,8 @@ const EMPTY_FORM: FormData = {
   litrosAbastecidos: '',
   numeroChip: '',
   lugarAbastecimiento: '',
+  tarjetaCombustibleId: 0,
+  importeAbastecido: '',
 };
 
 // ---- Helpers ----
@@ -79,6 +84,22 @@ export default function RecorridosPage() {
   const [editingEntity, setEditingEntity] = useState<RecorridoResponse | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<RecorridoResponse | null>(null);
+
+  // Tarjetas de combustible dropdown
+  const [tarjetas, setTarjetas] = useState<TarjetaCombustibleResponse[]>([]);
+
+  const fetchTarjetas = useCallback(async () => {
+    try {
+      const res = await tarjetasCombustibleApi.findAll({ page: 0, perPage: 500 });
+      setTarjetas(res.data.content.filter((t) => t.activo));
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTarjetas();
+  }, [fetchTarjetas]);
 
   // Both filters must be set to load data
   const canLoadData = filterEmpresaId > 0 && filterVehiculoId > 0;
@@ -230,6 +251,8 @@ export default function RecorridosPage() {
       litrosAbastecidos: entity.litrosAbastecidos ? String(entity.litrosAbastecidos) : '',
       numeroChip: entity.numeroChip || '',
       lugarAbastecimiento: entity.lugarAbastecimiento || '',
+      tarjetaCombustibleId: entity.tarjetaCombustible?.id || 0,
+      importeAbastecido: entity.importeAbastecido ? String(entity.importeAbastecido) : '',
     });
     setShowForm(true);
   };
@@ -245,6 +268,8 @@ export default function RecorridosPage() {
     litrosAbastecidos: formData.litrosAbastecidos ? Number(formData.litrosAbastecidos) : undefined,
     numeroChip: formData.numeroChip || undefined,
     lugarAbastecimiento: formData.lugarAbastecimiento || undefined,
+    tarjetaCombustibleId: formData.tarjetaCombustibleId || undefined,
+    importeAbastecido: formData.importeAbastecido ? Number(formData.importeAbastecido) : undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -283,7 +308,7 @@ export default function RecorridosPage() {
     }
   };
 
-  const colCount = 8; // table columns
+  const colCount = 9; // table columns
 
   // ---- Render ----
 
@@ -408,6 +433,8 @@ export default function RecorridosPage() {
                 <th className="table-header px-4 py-3 text-right">Litros</th>
                 <th className="table-header px-4 py-3">N Chip</th>
                 <th className="table-header px-4 py-3">Lugar</th>
+                <th className="table-header px-4 py-3">Tarjeta</th>
+                <th className="table-header px-4 py-3 text-right">Importe</th>
                 <th className="table-header px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
@@ -459,6 +486,12 @@ export default function RecorridosPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="table-cell block">{item.lugarAbastecimiento || '—'}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="table-cell block">{item.tarjetaCombustible?.numero || '—'}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="table-cell block">{item.importeAbastecido ? `${item.importeAbastecido.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -582,6 +615,40 @@ export default function RecorridosPage() {
                 onChange={(e) => handleFieldChange('lugarAbastecimiento', e.target.value)}
                 className="input-field"
                 placeholder="Ej: Estacion Servi Centro"
+              />
+            </div>
+            <div>
+              <label htmlFor="tarjetaCombustibleId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tarjeta de Combustible
+              </label>
+              <div className="relative">
+                <select
+                  id="tarjetaCombustibleId"
+                  value={formData.tarjetaCombustibleId}
+                  onChange={(e) => handleFieldChange('tarjetaCombustibleId', Number(e.target.value))}
+                  className="input-field appearance-none pr-8"
+                >
+                  <option value="0">Sin tarjeta</option>
+                  {tarjetas.map((t) => (
+                    <option key={t.id} value={t.id}>{t.numero} ({t.currency.isoCode})</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="importeAbastecido" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Importe Abastecido
+              </label>
+              <input
+                id="importeAbastecido"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.importeAbastecido}
+                onChange={(e) => handleFieldChange('importeAbastecido', e.target.value)}
+                className="input-field"
+                placeholder="Ej: 1500.00"
               />
             </div>
           </div>

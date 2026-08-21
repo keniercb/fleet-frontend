@@ -17,6 +17,8 @@ import MarcaPage from '@/pages/catalogs/MarcaPage';
 import VehiculosPage from '@/pages/vehiculos/VehiculosPage';
 import ChoferesPage from '@/pages/choferes/ChoferesPage';
 import EmpresaPage from '@/pages/catalogs/EmpresaPage';
+import CurrencyPage from '@/pages/catalogs/CurrencyPage';
+import TarjetaCombustiblePage from '@/pages/catalogs/TarjetaCombustiblePage';
 import type { ReactNode } from 'react';
 
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -137,6 +139,22 @@ export default function App() {
                 element={
                   <ProtectedRoute permission="PERMISOS_READ">
                     <PermisosPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="monedas"
+                element={
+                  <ProtectedRoute permission="CURRENCIES_READ">
+                    <CurrencyPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="tarjetas-combustible"
+                element={
+                  <ProtectedRoute permission="TARJETAS_COMBUSTIBLE_READ">
+                    <TarjetaCombustiblePage />
                   </ProtectedRoute>
                 }
               />

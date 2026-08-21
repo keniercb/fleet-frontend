@@ -29,6 +29,10 @@ import type {
   RecorridoResponse,
   RecorridoRequest,
   ReporteMovimientoMensualResponse,
+  CurrencyResponse,
+  CurrencyRequest,
+  TarjetaCombustibleResponse,
+  TarjetaCombustibleRequest,
   PageParams,
   PageResponse,
 } from '@/types';
@@ -301,6 +305,50 @@ export const choferesCategoriasApi = {
 
   findByCategoriaLicenciaId: (categoriaLicenciaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<ChoferCategoriaResponse>>> =>
     apiClient.get<PageResponse<ChoferCategoriaResponse>>(`/choferes-categorias/categoria/${categoriaLicenciaId}`, { params }),
+};
+
+// ---- Currencies ----
+
+export const currenciesApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<CurrencyResponse>>> =>
+    apiClient.get<PageResponse<CurrencyResponse>>('/currencies', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<CurrencyResponse>> =>
+    apiClient.get<CurrencyResponse>(`/currencies/${id}`),
+
+  create: (data: CurrencyRequest): Promise<AxiosResponse<CurrencyResponse>> =>
+    apiClient.post<CurrencyResponse>('/currencies', data),
+
+  update: (id: number, data: CurrencyRequest): Promise<AxiosResponse<CurrencyResponse>> =>
+    apiClient.put<CurrencyResponse>(`/currencies/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/currencies/${id}`),
+
+  findByIsoCode: (isoCode: string): Promise<AxiosResponse<CurrencyResponse>> =>
+    apiClient.get<CurrencyResponse>(`/currencies/iso-code/${isoCode}`),
+};
+
+// ---- Tarjetas Combustible ----
+
+export const tarjetasCombustibleApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<TarjetaCombustibleResponse>>> =>
+    apiClient.get<PageResponse<TarjetaCombustibleResponse>>('/tarjetas-combustible', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<TarjetaCombustibleResponse>> =>
+    apiClient.get<TarjetaCombustibleResponse>(`/tarjetas-combustible/${id}`),
+
+  create: (data: TarjetaCombustibleRequest): Promise<AxiosResponse<TarjetaCombustibleResponse>> =>
+    apiClient.post<TarjetaCombustibleResponse>('/tarjetas-combustible', data),
+
+  update: (id: number, data: TarjetaCombustibleRequest): Promise<AxiosResponse<TarjetaCombustibleResponse>> =>
+    apiClient.put<TarjetaCombustibleResponse>(`/tarjetas-combustible/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/tarjetas-combustible/${id}`),
+
+  findByNumero: (numero: string): Promise<AxiosResponse<TarjetaCombustibleResponse>> =>
+    apiClient.get<TarjetaCombustibleResponse>(`/tarjetas-combustible/numero/${numero}`),
 };
 
 // ---- Recorridos ----
