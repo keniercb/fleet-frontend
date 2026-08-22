@@ -73,6 +73,9 @@ export const usersApi = {
 
   findByEmail: (email: string): Promise<AxiosResponse<UserResponse>> =>
     apiClient.get<UserResponse>(`/users/email/${email}`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<UserResponse>>> =>
+    apiClient.get<PageResponse<UserResponse>>(`/users/empresa/${empresaId}`, { params }),
 };
 
 // ---- Roles ----

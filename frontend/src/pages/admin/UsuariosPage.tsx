@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCrud } from '@/hooks/useCrud';
@@ -8,7 +8,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import type { UserRequest, UserResponse, RoleResponse } from '@/types';
+import type { UserRequest, UserResponse, RoleResponse, PageParams } from '@/types';
 
 // ---- Types ----
 
@@ -27,13 +27,18 @@ const EMPTY_FORM: FormData = {
 // ---- Component ----
 
 export default function UsuariosPage() {
-  const {
-    data, loading, saving, totalPages, totalElements, page, size, error,
-    setPage, createItem, updateItem, deleteItem,
-  } = useCrud<UserRequest, UserResponse>(usersApi);
-
   const { addToast } = useToast();
   const { empresaId } = useAuth();
+
+  const usersApiScoped = useMemo(() => ({
+    ...usersApi,
+    findAll: (params?: PageParams) => usersApi.findByEmpresaId(empresaId, params),
+  }), [empresaId]);
+
+  const {
+    data, loading, saving, totalPages, totalElements, page, size, error,
+    setPage, createItem, updateItem, deleteItem, fetchData,
+  } = useCrud<UserRequest, UserResponse>(usersApiScoped);
 
   // Roles for the multi-select
   const [allRoles, setAllRoles] = useState<RoleResponse[]>([]);
@@ -48,6 +53,14 @@ export default function UsuariosPage() {
   const [editingEntity, setEditingEntity] = useState<UserResponse | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState<UserResponse | null>(null);
+
+  // Re-fetch when empresaId changes
+  useEffect(() => {
+    if (empresaId) {
+      setPage(0);
+      fetchData();
+    }
+  }, [empresaId]);
 
   // Show error as toast
   useEffect(() => {
