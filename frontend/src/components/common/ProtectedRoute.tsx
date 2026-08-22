@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, permission }: ProtectedRouteProps) {
-  const { isAuthenticated, hasPermission, isAdmin, loading } = useAuth();
+  const { isAuthenticated, hasPermission, isAdmin, isSuperAdmin, loading } = useAuth();
 
   if (loading) {
     return (
@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children, permission }: ProtectedRouteP
     return <Navigate to="/login" replace />;
   }
 
-  if (permission && !hasPermission(permission) && !isAdmin()) {
+  if (permission && !hasPermission(permission) && !isAdmin() && !isSuperAdmin()) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
