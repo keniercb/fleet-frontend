@@ -19,12 +19,14 @@ import {
   Wallet,
 } from 'lucide-react';
 
+export type RequiredRole = 'SUPER_ADMIN' | 'ADMIN' | null;
+
 export interface NavItem {
   id: string;
   label: string;
   path: string;
   icon: LucideIcon;
-  permission: string | null;
+  requiredRole: RequiredRole;
 }
 
 export interface NavSection {
@@ -45,28 +47,28 @@ export const navigationConfig: NavSection[] = [
         label: 'Roles',
         path: '/roles',
         icon: Shield,
-        permission: 'ROLES_READ',
+        requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'users',
         label: 'Usuarios',
         path: '/usuarios',
         icon: Users,
-        permission: 'USUARIOS_READ',
+        requiredRole: 'ADMIN',
       },
       {
         id: 'permissions',
         label: 'Permisos',
         path: '/permisos',
         icon: Key,
-        permission: 'PERMISOS_READ',
+        requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'empresas',
         label: 'Empresas',
         path: '/empresas',
         icon: Building2,
-        permission: 'EMPRESAS_READ',
+        requiredRole: 'SUPER_ADMIN',
       },
     ],
   },
@@ -80,35 +82,35 @@ export const navigationConfig: NavSection[] = [
         label: 'Marcas',
         path: '/marcas',
         icon: Tag,
-        permission: 'MARCAS_READ',
+        requiredRole: 'ADMIN',
       },
       {
         id: 'tipos-combustible',
         label: 'Tipo de Combustible',
         path: '/tipos-combustible',
         icon: Fuel,
-        permission: 'TIPOS_COMBUSTIBLE_READ',
+        requiredRole: 'ADMIN',
       },
       {
         id: 'tipos-vehiculo',
         label: 'Tipo de Vehículo',
         path: '/tipos-vehiculo',
         icon: CreditCard,
-        permission: 'TIPOS_VEHICULO_READ',
+        requiredRole: 'ADMIN',
       },
       {
         id: 'categorias-licencia',
         label: 'Categoría de Licencia',
         path: '/categorias-licencia',
         icon: FileBadge,
-        permission: 'CATEGORIAS_LICENCIA_READ',
+        requiredRole: 'ADMIN',
       },
       {
         id: 'monedas',
         label: 'Monedas',
         path: '/monedas',
         icon: Banknote,
-        permission: 'CURRENCIES_READ',
+        requiredRole: 'ADMIN',
       },
     ],
   },
@@ -122,42 +124,44 @@ export const navigationConfig: NavSection[] = [
         label: 'Vehículos',
         path: '/vehiculos',
         icon: Car,
-        permission: 'VEHICULOS_READ',
+        requiredRole: null,
       },
       {
         id: 'choferes',
         label: 'Choferes',
         path: '/choferes',
         icon: UserCog,
-        permission: 'CHOFERES_READ',
+        requiredRole: null,
       },
       {
         id: 'recorridos',
         label: 'Recorridos',
         path: '/recorridos',
         icon: Route,
-        permission: 'RECORRIDOS_READ',
+        requiredRole: null,
       },
       {
         id: 'tarjetas-combustible',
         label: 'Tarjetas de Combustible',
         path: '/tarjetas-combustible',
         icon: Wallet,
-        permission: 'TARJETAS_COMBUSTIBLE_READ',
+        requiredRole: 'ADMIN',
       },
     ],
   },
 ];
 
 export function getFilteredNavigation(
-  hasPermission: (name: string) => boolean,
+  isSuperAdmin: () => boolean,
   isAdmin: () => boolean
 ): NavSection[] {
   const filterItems = (items: NavItem[]) => {
-    if (isAdmin()) return items;
-    return items.filter(
-      (item) => item.permission === null || hasPermission(item.permission)
-    );
+    return items.filter((item) => {
+      if (item.requiredRole === null) return true;
+      if (item.requiredRole === 'ADMIN') return isSuperAdmin() || isAdmin();
+      if (item.requiredRole === 'SUPER_ADMIN') return isSuperAdmin();
+      return true;
+    });
   };
 
   return navigationConfig

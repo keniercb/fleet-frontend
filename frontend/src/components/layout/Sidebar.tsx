@@ -13,15 +13,15 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggleCollapse }: SidebarProps) {
-  const { hasPermission, isAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState<string[]>(() => {
-    const sections = getFilteredNavigation(hasPermission, isAdmin);
+    const sections = getFilteredNavigation(isSuperAdmin, isAdmin);
     return sections.filter((s) => s.items.some((i) => location.pathname === i.path)).map((s) => s.id);
   });
 
-  const sections = getFilteredNavigation(hasPermission, isAdmin);
+  const sections = getFilteredNavigation(isSuperAdmin, isAdmin);
 
   // Auto-expand when route changes (add to existing expanded sections)
   useEffect(() => {

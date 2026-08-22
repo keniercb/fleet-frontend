@@ -13,6 +13,7 @@ interface AuthContextType {
   hasPermission: (permissionName: string) => boolean;
   hasRole: (roleName: string) => boolean;
   isAdmin: () => boolean;
+  isSuperAdmin: () => boolean;
   isAuthenticated: boolean;
 }
 
@@ -91,6 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return hasRole('ADMIN') || hasRole('ADMINISTRADOR');
   };
 
+  const isSuperAdmin = (): boolean => {
+    return hasRole('SUPER_ADMIN');
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -104,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasPermission,
         hasRole,
         isAdmin,
+        isSuperAdmin,
         isAuthenticated: !!user,
       }}
     >
