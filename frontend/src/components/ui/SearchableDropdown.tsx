@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { PageResponse, PageParams } from '@/types';
 import type { AxiosResponse } from 'axios';
 
@@ -145,7 +145,6 @@ export default function SearchableDropdown<T extends { id: number }>({
               <X className="w-3.5 h-3.5 text-gray-400" />
             </button>
           )}
-          <ChevronDown className="w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
 
         {/* Dropdown list */}
