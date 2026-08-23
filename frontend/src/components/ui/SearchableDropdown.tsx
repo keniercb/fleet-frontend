@@ -38,6 +38,12 @@ export default function SearchableDropdown<T extends { id: number }>({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Keep latest props in refs to avoid recreating fetchItems on every parent render
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
+  const filterActiveRef = useRef(filterActive);
+  filterActiveRef.current = filterActive;
+
   // Resolve the currently selected label from fetched items
   const selectedItem = value ? items.find((i) => getId(i) === value) : undefined;
   const selectedLabel = selectedItem ? getLabel(selectedItem) : '';
@@ -45,14 +51,14 @@ export default function SearchableDropdown<T extends { id: number }>({
   // Whether user is actively typing (dropdown open mode)
   const isTyping = isOpen;
 
-  // Fetch items
+  // Fetch items — stable identity, reads props via refs
   const fetchItems = useCallback(
     async (filter: string) => {
       setLoading(true);
       try {
-        const res = await fetchFn({ page: 0, perPage: pageSize, filter });
+        const res = await fetchFnRef.current({ page: 0, perPage: pageSize, filter });
         let content = res.data.content;
-        if (filterActive) content = content.filter(filterActive);
+        if (filterActiveRef.current) content = content.filter(filterActiveRef.current);
         setItems(content);
       } catch {
         setItems([]);
@@ -60,7 +66,7 @@ export default function SearchableDropdown<T extends { id: number }>({
         setLoading(false);
       }
     },
-    [fetchFn, pageSize, filterActive]
+    [pageSize]
   );
 
   // Load initial items on mount
