@@ -426,6 +426,94 @@ export interface ReporteMovimientoMensualResponse {
   analisis: AnalisisConsumoResponse;
 }
 
+
+// --- Features ---
+export interface FeatureRequest {
+  name: string;
+  descripcion?: string;
+}
+
+export interface FeatureResponse {
+  id: number;
+  name: string;
+  descripcion: string;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Plans ---
+export interface PlanRequest {
+  nombre: string;
+  precioMensual?: number;
+  maxUsuarios?: number;
+  maxVehiculos?: number;
+  duracion?: number;
+  featureIds?: number[];
+}
+
+export interface PlanResumidoResponse {
+  id: number;
+  nombre: string;
+  precioMensual: number;
+  maxUsuarios: number;
+  maxVehiculos: number;
+  duracion: number;
+  activo: boolean;
+}
+
+export interface PlanResponse {
+  id: number;
+  nombre: string;
+  precioMensual: number;
+  maxUsuarios: number;
+  maxVehiculos: number;
+  duracion: number;
+  features: FeatureResponse[];
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Subscriptions ---
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED';
+
+export interface SubscriptionRequest {
+  empresaId: number;
+  planId: number;
+  startDate: string;
+  endDate: string;
+  status: SubscriptionStatus;
+  currentVehicleCount?: number;
+}
+
+export interface EmpresaResumidaResponse {
+  id: number;
+  codigo: string;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface SubscriptionResponse {
+  id: number;
+  empresa: EmpresaResumidaResponse;
+  plan: PlanResumidoResponse;
+  startDate: string;
+  endDate: string;
+  status: SubscriptionStatus;
+  currentVehicleCount: number;
+  version: number;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
 // --- Menu / App Types ---
 export interface MenuItem {
   label: string;

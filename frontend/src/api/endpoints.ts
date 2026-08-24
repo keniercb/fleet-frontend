@@ -33,6 +33,12 @@ import type {
   CurrencyRequest,
   TarjetaCombustibleResponse,
   TarjetaCombustibleRequest,
+  FeatureResponse,
+  FeatureRequest,
+  PlanResponse,
+  PlanRequest,
+  SubscriptionResponse,
+  SubscriptionRequest,
   PageParams,
   PageResponse,
 } from '@/types';
@@ -381,3 +387,64 @@ export const recorridosApi = {
   findByVehiculoId: (vehiculoId: number, params?: PageParams & { from?: string; to?: string }): Promise<AxiosResponse<PageResponse<RecorridoResponse>>> =>
     apiClient.get<PageResponse<RecorridoResponse>>(`/recorridos/vehiculo/${vehiculoId}`, { params }),
 };
+
+// ---- Features ----
+
+export const featuresApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<FeatureResponse>>> =>
+    apiClient.get<PageResponse<FeatureResponse>>('/features', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<FeatureResponse>> =>
+    apiClient.get<FeatureResponse>(`/features/${id}`),
+
+  create: (data: FeatureRequest): Promise<AxiosResponse<FeatureResponse>> =>
+    apiClient.post<FeatureResponse>('/features', data),
+
+  update: (id: number, data: FeatureRequest): Promise<AxiosResponse<FeatureResponse>> =>
+    apiClient.put<FeatureResponse>(`/features/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/features/${id}`),
+};
+
+// ---- Plans ----
+
+export const plansApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<PlanResponse>>> =>
+    apiClient.get<PageResponse<PlanResponse>>('/plans', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<PlanResponse>> =>
+    apiClient.get<PlanResponse>(`/plans/${id}`),
+
+  create: (data: PlanRequest): Promise<AxiosResponse<PlanResponse>> =>
+    apiClient.post<PlanResponse>('/plans', data),
+
+  update: (id: number, data: PlanRequest): Promise<AxiosResponse<PlanResponse>> =>
+    apiClient.put<PlanResponse>(`/plans/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/plans/${id}`),
+};
+
+// ---- Subscriptions ----
+
+export const subscriptionsApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
+    apiClient.get<PageResponse<SubscriptionResponse>>('/subscriptions', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<SubscriptionResponse>> =>
+    apiClient.get<SubscriptionResponse>(`/subscriptions/${id}`),
+
+  update: (id: number, data: SubscriptionRequest): Promise<AxiosResponse<SubscriptionResponse>> =>
+    apiClient.put<SubscriptionResponse>(`/subscriptions/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/subscriptions/${id}`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
+    apiClient.get<PageResponse<SubscriptionResponse>>(`/subscriptions/empresa/${empresaId}`, { params }),
+
+  findByPlanId: (planId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
+    apiClient.get<PageResponse<SubscriptionResponse>>(`/subscriptions/plan/${planId}`, { params }),
+};
+

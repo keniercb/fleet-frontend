@@ -17,6 +17,9 @@ import {
   Truck,
   Banknote,
   Wallet,
+  Layers,
+  Sparkles,
+  Receipt,
 } from 'lucide-react';
 
 export type RequiredRole = 'SUPER_ADMIN' | 'ADMIN' | null;
@@ -70,6 +73,13 @@ export const navigationConfig: NavSection[] = [
         icon: Building2,
         requiredRole: 'SUPER_ADMIN',
       },
+      {
+        id: 'suscripciones',
+        label: 'Suscripciones',
+        path: '/suscripciones',
+        icon: Receipt,
+        requiredRole: 'SUPER_ADMIN',
+      },
     ],
   },
   {
@@ -110,6 +120,20 @@ export const navigationConfig: NavSection[] = [
         label: 'Monedas',
         path: '/monedas',
         icon: Banknote,
+        requiredRole: 'SUPER_ADMIN',
+      },
+      {
+        id: 'features',
+        label: 'Características',
+        path: '/features',
+        icon: Sparkles,
+        requiredRole: 'SUPER_ADMIN',
+      },
+      {
+        id: 'planes',
+        label: 'Planes',
+        path: '/planes',
+        icon: Layers,
         requiredRole: 'SUPER_ADMIN',
       },
     ],

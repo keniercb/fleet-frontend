@@ -158,6 +158,30 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="features"
+                element={
+                  <SuperAdminRoute>
+                    <FeaturePage />
+                  </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="planes"
+                element={
+                  <SuperAdminRoute>
+                    <PlanPage />
+                  </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="suscripciones"
+                element={
+                  <SuperAdminRoute>
+                    <SubscriptionsPage />
+                  </SuperAdminRoute>
+                }
+              />
             </Route>
 
             {/* Catch all */}
