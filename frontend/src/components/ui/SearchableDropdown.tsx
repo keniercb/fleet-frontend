@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { PageResponse, PageParams } from '@/types';
 import type { AxiosResponse } from 'axios';
 
 interface SearchableDropdownProps<T> {
   label: string;
-  value: number;
-  onChange: (value: number) => void;
+  value?: number;
+  onChange: (value: number | undefined) => void;
   placeholder?: string;
   required?: boolean;
   fetchFn: (params?: PageParams) => Promise<AxiosResponse<PageResponse<T>>>;
@@ -38,21 +38,27 @@ export default function SearchableDropdown<T extends { id: number }>({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Keep latest props in refs to avoid recreating fetchItems on every parent render
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
+  const filterActiveRef = useRef(filterActive);
+  filterActiveRef.current = filterActive;
+
   // Resolve the currently selected label from fetched items
-  const selectedItem = value ? items.find((i) => getId(i) === value) : undefined;
+  const selectedItem = value != null ? items.find((i) => getId(i) === value) : undefined;
   const selectedLabel = selectedItem ? getLabel(selectedItem) : '';
 
   // Whether user is actively typing (dropdown open mode)
   const isTyping = isOpen;
 
-  // Fetch items
+  // Fetch items — stable identity, reads props via refs
   const fetchItems = useCallback(
     async (filter: string) => {
       setLoading(true);
       try {
-        const res = await fetchFn({ page: 0, perPage: pageSize, filter });
+        const res = await fetchFnRef.current({ page: 0, perPage: pageSize, filter });
         let content = res.data.content;
-        if (filterActive) content = content.filter(filterActive);
+        if (filterActiveRef.current) content = content.filter(filterActiveRef.current);
         setItems(content);
       } catch {
         setItems([]);
@@ -60,7 +66,7 @@ export default function SearchableDropdown<T extends { id: number }>({
         setLoading(false);
       }
     },
-    [fetchFn, pageSize, filterActive]
+    [pageSize]
   );
 
   // Load initial items on mount
@@ -101,7 +107,7 @@ export default function SearchableDropdown<T extends { id: number }>({
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    onChange(0);
+    onChange(undefined);
     setSearchText('');
   };
 
@@ -116,7 +122,7 @@ export default function SearchableDropdown<T extends { id: number }>({
   };
 
   // The display value: when typing show searchText, otherwise show selected label or placeholder
-  const displayValue = isTyping ? searchText : (value ? selectedLabel : '');
+  const displayValue = isTyping ? searchText : (value != null ? selectedLabel : '');
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -130,12 +136,12 @@ export default function SearchableDropdown<T extends { id: number }>({
           value={displayValue}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
-          placeholder={isTyping ? placeholder : (value ? selectedLabel : placeholder)}
+          placeholder={isTyping ? placeholder : (value != null ? selectedLabel : placeholder)}
           disabled={disabled}
           className="input-field pr-8 text-sm"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-          {value && !isTyping && !disabled && (
+          {value != null && !isTyping && !disabled && (
             <button
               type="button"
               onClick={handleClear}
@@ -145,7 +151,6 @@ export default function SearchableDropdown<T extends { id: number }>({
               <X className="w-3.5 h-3.5 text-gray-400" />
             </button>
           )}
-          <ChevronDown className="w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
 
         {/* Dropdown list */}
