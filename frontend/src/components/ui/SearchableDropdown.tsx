@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import type { PageResponse, PageParams } from '@/types';
 import type { AxiosResponse } from 'axios';
 
@@ -38,12 +38,6 @@ export default function SearchableDropdown<T extends { id: number }>({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep latest props in refs to avoid recreating fetchItems on every parent render
-  const fetchFnRef = useRef(fetchFn);
-  fetchFnRef.current = fetchFn;
-  const filterActiveRef = useRef(filterActive);
-  filterActiveRef.current = filterActive;
-
   // Resolve the currently selected label from fetched items
   const selectedItem = value ? items.find((i) => getId(i) === value) : undefined;
   const selectedLabel = selectedItem ? getLabel(selectedItem) : '';
@@ -51,14 +45,14 @@ export default function SearchableDropdown<T extends { id: number }>({
   // Whether user is actively typing (dropdown open mode)
   const isTyping = isOpen;
 
-  // Fetch items — stable identity, reads props via refs
+  // Fetch items
   const fetchItems = useCallback(
     async (filter: string) => {
       setLoading(true);
       try {
-        const res = await fetchFnRef.current({ page: 0, perPage: pageSize, filter });
+        const res = await fetchFn({ page: 0, perPage: pageSize, filter });
         let content = res.data.content;
-        if (filterActiveRef.current) content = content.filter(filterActiveRef.current);
+        if (filterActive) content = content.filter(filterActive);
         setItems(content);
       } catch {
         setItems([]);
@@ -66,7 +60,7 @@ export default function SearchableDropdown<T extends { id: number }>({
         setLoading(false);
       }
     },
-    [pageSize]
+    [fetchFn, pageSize, filterActive]
   );
 
   // Load initial items on mount
@@ -151,6 +145,7 @@ export default function SearchableDropdown<T extends { id: number }>({
               <X className="w-3.5 h-3.5 text-gray-400" />
             </button>
           )}
+          <ChevronDown className="w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
 
         {/* Dropdown list */}
