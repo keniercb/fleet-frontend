@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, User, Menu, X, ChevronDown, KeyRound, UserCircle, Building2 } from 'lucide-react';
 import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
+import ProfileModal from '@/components/ui/ProfileModal';
 
 interface TopNavbarProps {
   mobileMenuOpen: boolean;
@@ -15,6 +16,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
@@ -25,7 +27,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
 
   const handlePerfil = () => {
     setDropdownOpen(false);
-    // Se puede agregar navegación a página de perfil cuando exista
+    setProfileModalOpen(true);
   };
 
   // Cerrar dropdown al hacer clic fuera
@@ -132,6 +134,12 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
         userId={user?.id ?? 0}
         open={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
+      />
+
+      {/* Modal perfil */}
+      <ProfileModal
+        open={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
       />
     </>
   );

@@ -506,6 +506,7 @@ export interface SubscriptionResponse {
   endDate: string;
   status: SubscriptionStatus;
   currentVehicleCount: number;
+  currentUserCount: number;
   version: number;
   activo: boolean;
   fechaCreacion: string;

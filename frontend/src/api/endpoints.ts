@@ -446,5 +446,8 @@ export const subscriptionsApi = {
 
   findByPlanId: (planId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
     apiClient.get<PageResponse<SubscriptionResponse>>(`/subscriptions/plan/${planId}`, { params }),
+
+  getMyCompanySubscription: (): Promise<AxiosResponse<SubscriptionResponse>> =>
+    apiClient.get<SubscriptionResponse>('/subscriptions/my-company'),
 };
 
