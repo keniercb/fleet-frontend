@@ -14,6 +14,7 @@ interface FormData {
   maxUsuarios: string;
   maxVehiculos: string;
   duracion: string;
+  porcientoDescuentoAnual: string;
   featureIds: number[];
 }
 
@@ -23,6 +24,7 @@ const EMPTY_FORM: FormData = {
   maxUsuarios: '',
   maxVehiculos: '',
   duracion: '',
+  porcientoDescuentoAnual: '',
   featureIds: [],
 };
 
@@ -87,6 +89,7 @@ export default function PlanPage() {
       maxUsuarios: entity.maxUsuarios != null ? String(entity.maxUsuarios) : '',
       maxVehiculos: entity.maxVehiculos != null ? String(entity.maxVehiculos) : '',
       duracion: entity.duracion != null ? String(entity.duracion) : '',
+      porcientoDescuentoAnual: entity.porcientoDescuentoAnual != null ? String(entity.porcientoDescuentoAnual) : '',
       featureIds: entity.features?.map((f) => f.id) ?? [],
     });
     setShowForm(true);
@@ -111,6 +114,7 @@ export default function PlanPage() {
     maxUsuarios: formData.maxUsuarios ? Number(formData.maxUsuarios) : undefined,
     maxVehiculos: formData.maxVehiculos ? Number(formData.maxVehiculos) : undefined,
     duracion: formData.duracion ? Number(formData.duracion) : undefined,
+    porcientoDescuentoAnual: formData.porcientoDescuentoAnual ? Number(formData.porcientoDescuentoAnual) : undefined,
     featureIds: formData.featureIds.length > 0 ? formData.featureIds : undefined,
   });
 
@@ -164,6 +168,7 @@ export default function PlanPage() {
                 <th className="table-header px-4 py-3 text-right">Max Usuarios</th>
                 <th className="table-header px-4 py-3 text-right">Max Vehículos</th>
                 <th className="table-header px-4 py-3 text-right">Duración (días)</th>
+                <th className="table-header px-4 py-3 text-right">Dto. Anual %</th>
                 <th className="table-header px-4 py-3">Features</th>
                 <th className="table-header px-4 py-3 text-right">Estado</th>
                 <th className="table-header px-4 py-3 text-right">Acciones</th>
@@ -171,13 +176,13 @@ export default function PlanPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="px-4 py-12 text-center text-gray-400">
+                <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" /> Cargando...
                   </div>
                 </td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-12 text-center text-gray-400">No hay registros</td></tr>
+                <tr><td colSpan={9} className="px-4 py-12 text-center text-gray-400">No hay registros</td></tr>
               ) : (
                 data.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
@@ -186,6 +191,7 @@ export default function PlanPage() {
                     <td className="px-4 py-3 text-right"><span className="table-cell block">{item.maxUsuarios ?? '—'}</span></td>
                     <td className="px-4 py-3 text-right"><span className="table-cell block">{item.maxVehiculos ?? '—'}</span></td>
                     <td className="px-4 py-3 text-right"><span className="table-cell block">{item.duracion ?? '—'}</span></td>
+                    <td className="px-4 py-3 text-right"><span className="table-cell block">{item.porcientoDescuentoAnual != null ? item.porcientoDescuentoAnual + "%" : "—"}</span></td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {item.features?.length ? item.features.map((f) => (
@@ -222,6 +228,10 @@ export default function PlanPage() {
             <div>
               <label htmlFor="precioMensual" className="block text-sm font-medium text-gray-700 mb-1.5">Precio Mensual</label>
               <input id="precioMensual" type="number" min="0" step="0.01" value={formData.precioMensual} onChange={(e) => handleFieldChange('precioMensual', e.target.value)} className="input-field" placeholder="Ej: 99.99" />
+            </div>
+            <div>
+              <label htmlFor="porcientoDescuentoAnual" className="block text-sm font-medium text-gray-700 mb-1.5">Descuento Anual (%)</label>
+              <input id="porcientoDescuentoAnual" type="number" min="0" max="100" step="0.01" value={formData.porcientoDescuentoAnual} onChange={(e) => handleFieldChange('porcientoDescuentoAnual', e.target.value)} className="input-field" placeholder="Ej: 10" />
             </div>
             <div>
               <label htmlFor="duracion" className="block text-sm font-medium text-gray-700 mb-1.5">Duración (días)</label>
@@ -265,6 +275,7 @@ export default function PlanPage() {
             <div className="grid grid-cols-2 gap-4">
               <div><p className="text-xs text-gray-500">Precio Mensual</p><p className="text-sm font-semibold">${formatCurrency(viewEntity.precioMensual)}</p></div>
               <div><p className="text-xs text-gray-500">Duración</p><p className="text-sm font-semibold">{viewEntity.duracion ?? '—'} días</p></div>
+              <div><p className="text-xs text-gray-500">Descuento Anual</p><p className="text-sm font-semibold">{viewEntity.porcientoDescuentoAnual != null ? viewEntity.porcientoDescuentoAnual + "%" : "—"}</p></div>
               <div><p className="text-xs text-gray-500">Max Usuarios</p><p className="text-sm font-semibold">{viewEntity.maxUsuarios ?? '—'}</p></div>
               <div><p className="text-xs text-gray-500">Max Vehículos</p><p className="text-sm font-semibold">{viewEntity.maxVehiculos ?? '—'}</p></div>
             </div>

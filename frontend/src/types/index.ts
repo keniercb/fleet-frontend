@@ -448,6 +448,7 @@ export interface FeatureResponse {
 export interface PlanRequest {
   nombre: string;
   precioMensual?: number;
+  porcientoDescuentoAnual?: number;
   maxUsuarios?: number;
   maxVehiculos?: number;
   duracion?: number;
@@ -461,6 +462,7 @@ export interface PlanResumidoResponse {
   maxUsuarios: number;
   maxVehiculos: number;
   duracion: number;
+  porcientoDescuentoAnual: number;
   activo: boolean;
 }
 
@@ -471,6 +473,7 @@ export interface PlanResponse {
   maxUsuarios: number;
   maxVehiculos: number;
   duracion: number;
+  porcientoDescuentoAnual: number;
   features: FeatureResponse[];
   activo: boolean;
   fechaCreacion: string;
