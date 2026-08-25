@@ -113,6 +113,7 @@ export default function SubscriptionsPage() {
     setSaving(true);
     try {
       const payload: SubscriptionRequest = {
+        empresaId: editingEntity.empresa.id,
         planId: Number(formPlanId),
         status: formStatus,
       };
