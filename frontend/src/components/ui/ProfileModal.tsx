@@ -175,17 +175,6 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                     )}
                   </div>
 
-                  {/* Current Vehicle Count */}
-                  <div className="bg-white rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Car className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Cant. Vehículos</span>
-                    </div>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subscription.currentVehicleCount}
-                    </p>
-                  </div>
-
                   {/* Current User Count */}
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
@@ -194,6 +183,17 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                     </div>
                     <p className="text-lg font-bold text-gray-900">
                       {subscription.currentUserCount}
+                    </p>
+                  </div>
+
+                  {/* Current Vehicle Count */}
+                  <div className="bg-white rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Car className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs text-gray-500">Cant. Vehículos</span>
+                    </div>
+                    <p className="text-lg font-bold text-gray-900">
+                      {subscription.currentVehicleCount}
                     </p>
                   </div>
                 </div>
