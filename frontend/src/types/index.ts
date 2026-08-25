@@ -483,12 +483,9 @@ export interface PlanResponse {
 export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED';
 
 export interface SubscriptionRequest {
-  empresaId: number;
+  empresaId?: number;
   planId: number;
-  startDate: string;
-  endDate: string;
-  status: SubscriptionStatus;
-  currentVehicleCount?: number;
+  status?: SubscriptionStatus;
 }
 
 export interface EmpresaResumidaResponse {
