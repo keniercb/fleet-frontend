@@ -198,16 +198,29 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   </div>
                 </div>
 
-                {/* End Date */}
-                <div className="flex items-center gap-3 bg-white rounded-lg p-3">
-                  <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-orange-500" />
+                {/* Fechas */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3">
+                    <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-green-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {formatDate(subscription.startDate)}
+                      </p>
+                      <p className="text-xs text-gray-500">Fecha de inicio</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {formatDate(subscription.endDate)}
-                    </p>
-                    <p className="text-xs text-gray-500">Fecha de fin</p>
+                  <div className="flex items-center gap-3 bg-white rounded-lg p-3">
+                    <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {formatDate(subscription.endDate)}
+                      </p>
+                      <p className="text-xs text-gray-500">Fecha de fin</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -218,6 +231,18 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
             )}
           </div>
         </div>
+
+        {/* Footer */}
+        {subscription && (
+          <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+            <button
+              type="button"
+              className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Actualizar plan
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
