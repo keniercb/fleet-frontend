@@ -263,16 +263,7 @@ export default function ComprarPlanesPage() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 z-40">
-        <div className="max-w-7xl mx-auto flex justify-end">
-          <button
-            type="button"
-            className="btn-primary flex items-center gap-2"
-          >
-            <CreditCard className="w-4 h-4" /> Comprar
-          </button>
-        </div>
-      </div>
+
     </div>
   );
 }
