@@ -68,20 +68,6 @@ export const navigationConfig: NavSection[] = [
         requiredRole: 'SUPER_ADMIN',
       },
       {
-        id: 'provincias',
-        label: 'Provincias',
-        path: '/provincias',
-        icon: MapPin,
-        requiredRole: 'SUPER_ADMIN',
-      },
-      {
-        id: 'municipios',
-        label: 'Municipios',
-        path: '/municipios',
-        icon: MapPin,
-        requiredRole: 'SUPER_ADMIN',
-      },
-      {
         id: 'empresas',
         label: 'Empresas',
         path: '/empresas',
@@ -109,6 +95,20 @@ export const navigationConfig: NavSection[] = [
     label: 'Catálogos',
     icon: BookOpen,
     items: [
+      {
+        id: 'provincias',
+        label: 'Provincias',
+        path: '/provincias',
+        icon: MapPin,
+        requiredRole: 'SUPER_ADMIN',
+      },
+      {
+        id: 'municipios',
+        label: 'Municipios',
+        path: '/municipios',
+        icon: MapPin,
+        requiredRole: 'SUPER_ADMIN',
+      },
       {
         id: 'marcas',
         label: 'Marcas',
