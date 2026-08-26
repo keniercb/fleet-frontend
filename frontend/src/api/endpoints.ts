@@ -425,7 +425,7 @@ export const plansApi = {
   delete: (id: number): Promise<AxiosResponse<void>> =>
     apiClient.delete<void>(`/plans/${id}`),
 
-  calcularImporte: (id: number, facturacionAnual: boolean): Promise<AxiosResponse<number>> =>
+  calcularImporte: (id: number, facturarAnual: boolean): Promise<AxiosResponse<number>> =>
     apiClient.get<number>(`/plans/${id}/calcular-importe`, { params: { facturarAnual } }),
 };
 
