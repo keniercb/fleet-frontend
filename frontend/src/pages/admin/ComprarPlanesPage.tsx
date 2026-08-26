@@ -260,10 +260,17 @@ export default function ComprarPlanesPage() {
               )}
             </div>
           </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-200 mt-4">
+            <button
+              type="button"
+              className="btn-primary flex items-center gap-2"
+            >
+              <CreditCard className="w-4 h-4" /> Comprar
+            </button>
+          </div>
         </div>
       )}
-
-
     </div>
   );
 }
