@@ -515,6 +515,12 @@ export interface SubscriptionResponse {
   modificadoPor: UserAuditResponse;
 }
 
+export interface CalcularImporteResponse {
+  planId: number;
+  importe: number;
+  facturarAnual: boolean;
+}
+
 // --- Menu / App Types ---
 export interface MenuItem {
   label: string;

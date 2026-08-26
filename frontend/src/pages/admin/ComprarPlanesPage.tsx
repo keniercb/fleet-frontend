@@ -81,7 +81,7 @@ export default function ComprarPlanesPage() {
     setImporteLoading(true);
     plansApi
       .calcularImporte(selectedPlanId, facturacionAnual)
-      .then((res) => setImporte(typeof res.data === 'number' ? res.data : Number(res.data)))
+      .then((res) => setImporte(res.data.importe))
       .catch(() => setImporte(null))
       .finally(() => setImporteLoading(false));
   }, [selectedPlanId, facturacionAnual]);
