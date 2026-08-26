@@ -22,6 +22,8 @@ export interface FormFieldDef {
   key: string;
   label: string;
   type: 'text' | 'textarea' | 'number' | 'date' | 'email' | 'select';
+  asyncOptions?: () => Promise<{ label: string; value: string | number }[]>;
+  onChange?: (value: string | number, formData: Record<string, unknown>) => void;
   placeholder?: string;
   required?: boolean;
   options?: { label: string; value: string | number }[];
@@ -78,6 +80,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingEntity, setEditingEntity] = useState<TRes | null>(null);
+  const [asyncOptionMap, setAsyncOptionMap] = useState<Record<string, { label: string; value: string | number }[]>>({});
   const [formData, setFormData] = useState<TReq>(getFormDefaultValues());
   const [deleteTarget, setDeleteTarget] = useState<TRes | null>(null);
 
@@ -141,6 +144,18 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
         })
       )
     : data;
+
+  // Load async options for select fields
+  useEffect(() => {
+    config.formFields.forEach(async (field) => {
+      if (field.asyncOptions) {
+        try {
+          const opts = await field.asyncOptions();
+          setAsyncOptionMap((prev) => ({ ...prev, [field.key]: opts }));
+        } catch { /* ignore */ }
+      }
+    });
+  }, []);
 
   return (
     <div>
@@ -287,7 +302,11 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                     id={field.key}
                     rows={3}
                     value={(formData as Record<string, unknown>)[field.key] as string ?? ''}
-                    onChange={(e) => handleFormChange(field.key, e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : (isNaN(Number(e.target.value)) ? e.target.value : Number(e.target.value));
+                      handleFormChange(field.key, val);
+                      if (field.onChange) field.onChange(val, formData as Record<string, unknown>);
+                    }}
                     className="input-field"
                     placeholder={field.placeholder}
                   />
@@ -295,12 +314,16 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                   <select
                     id={field.key}
                     value={(formData as Record<string, unknown>)[field.key] as string ?? ''}
-                    onChange={(e) => handleFormChange(field.key, e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : (isNaN(Number(e.target.value)) ? e.target.value : Number(e.target.value));
+                      handleFormChange(field.key, val);
+                      if (field.onChange) field.onChange(val, formData as Record<string, unknown>);
+                    }}
                     className="input-field"
                     required={field.required}
                   >
                     <option value="">Seleccionar...</option>
-                    {field.options?.map((opt) => (
+                    {(field.options ?? asyncOptionMap[field.key] ?? []).map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>

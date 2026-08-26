@@ -19,6 +19,7 @@ import {
   Wallet,
   Layers,
   Sparkles,
+  MapPin,
   Receipt,
 } from 'lucide-react';
 
@@ -64,6 +65,20 @@ export const navigationConfig: NavSection[] = [
         label: 'Permisos',
         path: '/permisos',
         icon: Key,
+        requiredRole: 'SUPER_ADMIN',
+      },
+      {
+        id: 'provincias',
+        label: 'Provincias',
+        path: '/provincias',
+        icon: MapPin,
+        requiredRole: 'SUPER_ADMIN',
+      },
+      {
+        id: 'municipios',
+        label: 'Municipios',
+        path: '/municipios',
+        icon: MapPin,
         requiredRole: 'SUPER_ADMIN',
       },
       {

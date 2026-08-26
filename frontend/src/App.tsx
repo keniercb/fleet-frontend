@@ -21,6 +21,8 @@ import CategoriaLicenciaPage from '@/pages/catalogs/CategoriaLicenciaPage';
 import MarcaPage from '@/pages/catalogs/MarcaPage';
 import VehiculosPage from '@/pages/vehiculos/VehiculosPage';
 import ChoferesPage from '@/pages/choferes/ChoferesPage';
+import ProvinciaPage from "@/pages/catalogs/ProvinciaPage.tsx";
+import MunicipioPage from "@/pages/catalogs/MunicipioPage.tsx";
 import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import CurrencyPage from '@/pages/catalogs/CurrencyPage';
 import TarjetaCombustiblePage from '@/pages/catalogs/TarjetaCombustiblePage';
@@ -80,6 +82,22 @@ export default function App() {
                 element={
                   <ProtectedRoute permission="RECORRIDOS_READ">
                     <RecorridosPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="provincias"
+                element={
+                  <ProtectedRoute permission="PROVINCIAS_READ">
+                    <ProvinciaPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="municipios"
+                element={
+                  <ProtectedRoute permission="MUNICIPIOS_READ">
+                    <MunicipioPage />
                   </ProtectedRoute>
                 }
               />

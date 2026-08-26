@@ -128,6 +128,8 @@ export interface EmpresaRequest {
   direccion?: string;
   telefono?: string;
   email?: string;
+  provinciaId?: number;
+  municipioId?: number;
 }
 
 export interface EmpresaResponse {
@@ -137,6 +139,44 @@ export interface EmpresaResponse {
   direccion: string;
   telefono: string;
   email: string;
+  provincia: ProvinciaResponse | null;
+  municipio: MunicipioResponse | null;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Provincias ---
+export interface ProvinciaRequest {
+  codigo: number;
+  nombre: string;
+}
+
+export interface ProvinciaResponse {
+  id: number;
+  codigo: number;
+  nombre: string;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Municipios ---
+export interface MunicipioRequest {
+  provinciaId: number;
+  codigo: number;
+  nombre: string;
+}
+
+export interface MunicipioResponse {
+  id: number;
+  provincia: ProvinciaResponse;
+  codigo: number;
+  nombre: string;
   activo: boolean;
   fechaCreacion: string;
   fechaActualizacion: string;

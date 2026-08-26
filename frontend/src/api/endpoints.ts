@@ -430,6 +430,50 @@ export const plansApi = {
     apiClient.get<CalcularImporteResponse>(`/plans/${id}/calcular-importe`, { params: { facturarAnual } }),
 };
 
+// ---- Provincias ----
+
+export const provinciasApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<ProvinciaResponse>>> =>
+    apiClient.get<PageResponse<ProvinciaResponse>>('/provincias', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<ProvinciaResponse>> =>
+    apiClient.get<ProvinciaResponse>(`/provincias/${id}`),
+
+  create: (data: ProvinciaRequest): Promise<AxiosResponse<ProvinciaResponse>> =>
+    apiClient.post<ProvinciaResponse>('/provincias', data),
+
+  update: (id: number, data: ProvinciaRequest): Promise<AxiosResponse<ProvinciaResponse>> =>
+    apiClient.put<ProvinciaResponse>(`/provincias/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/provincias/${id}`),
+};
+
+// ---- Municipios ----
+
+export const municipiosApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<MunicipioResponse>>> =>
+    apiClient.get<PageResponse<MunicipioResponse>>('/municipios', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<MunicipioResponse>> =>
+    apiClient.get<MunicipioResponse>(`/municipios/${id}`),
+
+  create: (data: MunicipioRequest): Promise<AxiosResponse<MunicipioResponse>> =>
+    apiClient.post<MunicipioResponse>('/municipios', data),
+
+  update: (id: number, data: MunicipioRequest): Promise<AxiosResponse<MunicipioResponse>> =>
+    apiClient.put<MunicipioResponse>(`/municipios/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/municipios/${id}`),
+
+  findByProvinciaId: (provinciaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<MunicipioResponse>>> =>
+    apiClient.get<PageResponse<MunicipioResponse>>(`/municipios/provincia/${provinciaId}`, { params }),
+
+  findByProvinciaIdList: (provinciaId: number): Promise<AxiosResponse<MunicipioResponse[]>> =>
+    apiClient.get<MunicipioResponse[]>(`/municipios/provincia/${provinciaId}/list`),
+};
+
 // ---- Subscriptions ----
 
 export const subscriptionsApi = {
