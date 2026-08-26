@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight, FileDown, Loader2 } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -152,6 +152,31 @@ export default function VehiculosPage() {
     setReporteData(null);
     setReporteMes(new Date().getMonth() + 1);
     setReporteAnio(new Date().getFullYear());
+  };
+
+  // Exportar PDF
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!empresaId) return;
+    setExportingPdf(true);
+    try {
+      const res = await vehiculosApi.reportePdf(empresaId);
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `vehiculos_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      addToast({ type: 'success', title: 'Exportación exitosa', message: 'El reporte PDF se ha descargado.' });
+    } catch {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte PDF.' });
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   const handleBuscarReporte = async () => {
@@ -349,6 +374,14 @@ export default function VehiculosPage() {
             className="input-field pl-9 py-2 text-sm"
           />
         </div>
+        <button
+          onClick={handleExportPdf}
+          disabled={exportingPdf}
+          className="btn-secondary flex items-center gap-2"
+        >
+          {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+          {exportingPdf ? 'Exportando...' : 'Exportar PDF'}
+        </button>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Nuevo

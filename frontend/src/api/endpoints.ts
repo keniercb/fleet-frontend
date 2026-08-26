@@ -167,6 +167,12 @@ export const vehiculosApi = {
 
   findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<VehiculoResponse>>> =>
     apiClient.get<PageResponse<VehiculoResponse>>(`/vehiculos/empresa/${empresaId}`, { params }),
+
+  reportePdf: (empresaId: number): Promise<AxiosResponse<Blob>> =>
+    apiClient.get<Blob>('/vehiculos/reporte-pdf', {
+      params: { empresaId },
+      responseType: 'blob',
+    }),
 };
 
 // ---- Tipos Vehiculo ----
