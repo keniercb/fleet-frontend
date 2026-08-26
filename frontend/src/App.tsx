@@ -7,6 +7,7 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import SuperAdminRoute from "@/components/common/SuperAdminRoute.tsx";
 import FeaturePage from "@/pages/catalogs/FeaturePage.tsx";
 import PlanPage from "@/pages/catalogs/PlanPage.tsx";
+import ComprarPlanesPage from "@/pages/admin/ComprarPlanesPage.tsx";
 import SubscriptionsPage from "@/pages/admin/SubscriptionsPage.tsx";
 import LoginPage from '@/pages/auth/LoginPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
@@ -176,6 +177,14 @@ export default function App() {
                   <SuperAdminRoute>
                     <PlanPage />
                   </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="comprar-plan"
+                element={
+                  <ProtectedRoute permission="SUBSCRIPTIONS_READ">
+                    <ComprarPlanesPage />
+                  </ProtectedRoute>
                 }
               />
               <Route

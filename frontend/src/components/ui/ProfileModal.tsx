@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, User, Building2, CreditCard, Calendar, Car, Users, Clock, Activity } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionsApi } from '@/api/endpoints';
 import type { SubscriptionResponse } from '@/types';
@@ -29,6 +30,7 @@ function formatDate(dateStr: string): string {
 
 export default function ProfileModal({ open, onClose }: ProfileModalProps) {
   const { user, empresa } = useAuth();
+  const navigate = useNavigate();
   const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -237,6 +239,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
           <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
             <button
               type="button"
+              onClick={() => { onClose(); navigate('/comprar-plan'); }}
               className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
             >
               Actualizar plan

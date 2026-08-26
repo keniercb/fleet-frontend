@@ -74,6 +74,13 @@ export const navigationConfig: NavSection[] = [
         requiredRole: 'SUPER_ADMIN',
       },
       {
+        id: 'comprar-plan',
+        label: 'Comprar Planes',
+        path: '/comprar-plan',
+        icon: CreditCard,
+        requiredRole: 'ADMIN',
+      },
+      {
         id: 'suscripciones',
         label: 'Suscripciones',
         path: '/suscripciones',
