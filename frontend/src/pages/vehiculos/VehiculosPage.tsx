@@ -179,6 +179,30 @@ export default function VehiculosPage() {
     }
   };
 
+  // Exportar PDF reporte mensual
+  const [exportingReportePdf, setExportingReportePdf] = useState(false);
+
+  const handleExportReportePdf = async () => {
+    if (!reporteVehiculo) return;
+    setExportingReportePdf(true);
+    try {
+      const res = await vehiculosApi.reporteMensualPdf(reporteVehiculo.id, reporteMes, reporteAnio);
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `reporte_mensual_${reporteVehiculo.matricula}_${reporteAnio}_${reporteMes}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte PDF mensual.' });
+    } finally {
+      setExportingReportePdf(false);
+    }
+  };
+
   const handleBuscarReporte = async () => {
     if (!reporteVehiculo) return;
     setReporteLoading(true);
@@ -811,6 +835,14 @@ export default function VehiculosPage() {
                   <Search className="w-4 h-4" />
                 )}
                 Buscar
+              </button>
+              <button
+                onClick={handleExportReportePdf}
+                disabled={exportingReportePdf}
+                className="btn-secondary flex items-center gap-2 disabled:opacity-50"
+              >
+                {exportingReportePdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                Exportar PDF
               </button>
             </div>
 
