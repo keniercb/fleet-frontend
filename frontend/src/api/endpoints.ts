@@ -175,7 +175,7 @@ export const vehiculosApi = {
     }),
 
   reporteMensualPdf: (vehiculoId: number, mes: number, anio: number): Promise<AxiosResponse<Blob>> =>
-    apiClient.get<Blob>(`/vehiculo/${vehiculoId}/reporte-mensual/pdf`, {
+    apiClient.get<Blob>(`/recorridos/vehiculo/${vehiculoId}/reporte-mensual/pdf`, {
       params: { mes, anio },
       responseType: 'blob',
     }),
