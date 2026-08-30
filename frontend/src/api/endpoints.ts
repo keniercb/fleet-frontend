@@ -42,6 +42,7 @@ import type {
   PageParams,
   CalcularImporteResponse,
   PageResponse,
+  VehiculoConsumoReporteDTO,
 } from '@/types';
 
 // ---- Auth ----
@@ -511,3 +512,20 @@ export const subscriptionsApi = {
     apiClient.get<SubscriptionResponse>('/subscriptions/my-company'),
 };
 
+
+// ---- Reportes Transporte ----
+
+export const reportesTransporteApi = {
+  consumoVehiculo: (params: {
+    fechaDesde: string;
+    fechaHasta: string;
+    tipoVehiculoId?: number;
+    marcaId?: number;
+    tipoCombustibleId?: number;
+    page?: number;
+    size?: number;
+    sort?: string;
+    sortOrder?: string;
+  }): Promise<AxiosResponse<PageResponse<VehiculoConsumoReporteDTO>>> =>
+    apiClient.get<PageResponse<VehiculoConsumoReporteDTO>>('/reportes-transporte/consumo-vehiculo', { params }),
+};

@@ -21,6 +21,7 @@ import {
   Sparkles,
   MapPin,
   Receipt,
+  BarChart3,
 } from 'lucide-react';
 
 export type RequiredRole = 'SUPER_ADMIN' | 'ADMIN' | null;
@@ -157,6 +158,20 @@ export const navigationConfig: NavSection[] = [
         path: '/planes',
         icon: Layers,
         requiredRole: 'SUPER_ADMIN',
+      },
+    ],
+  },
+  {
+    id: 'reportes',
+    label: 'Reportes',
+    icon: BarChart3,
+    items: [
+      {
+        id: 'consumo-vehiculo',
+        label: 'Consumo por Vehiculo',
+        path: '/reportes/consumo-vehiculo',
+        icon: BarChart3,
+        requiredRole: 'ADMIN',
       },
     ],
   },

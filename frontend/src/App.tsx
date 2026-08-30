@@ -26,6 +26,7 @@ import MunicipioPage from "@/pages/catalogs/MunicipioPage.tsx";
 import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import CurrencyPage from '@/pages/catalogs/CurrencyPage';
 import TarjetaCombustiblePage from '@/pages/catalogs/TarjetaCombustiblePage';
+import ReporteConsumoVehiculoPage from '@/pages/reportes/ReporteConsumoVehiculoPage';
 import type { ReactNode } from 'react';
 
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -213,9 +214,15 @@ export default function App() {
                   </SuperAdminRoute>
                 }
               />
+              <Route
+                path="reportes/consumo-vehiculo"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteConsumoVehiculoPage />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
-
-            {/* Catch all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <ToastContainer />

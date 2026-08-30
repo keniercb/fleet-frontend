@@ -569,3 +569,20 @@ export interface MenuItem {
   permission?: string;
   children?: MenuItem[];
 }
+
+// --- Reportes ---
+
+export interface VehiculoConsumoReporteDTO {
+  vehiculoId: number;
+  matricula: string;
+  modelo: string;
+  marcaNombre: string;
+  tipoCombustibleCodigo: string;
+  empresaNombre: string;
+  kilometrosTotales: number;
+  consumoTeorico: number;
+  consumoReal: number;
+  desviacionLitros: number;
+  desviacionPorcentaje: number;
+  eficiencia: number;
+}
