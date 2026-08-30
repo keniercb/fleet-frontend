@@ -586,3 +586,31 @@ export interface VehiculoConsumoReporteDTO {
   desviacionPorcentaje: number;
   eficiencia: number;
 }
+
+// --- Reporte Mantenimiento ---
+
+export interface VehiculoResumidoDTO {
+  id: number;
+  matricula: string;
+  modelo: string;
+  marcaNombre: string;
+  tipoVehiculoNombre: string;
+}
+
+export interface EmpresaResumidoDTO {
+  id: number;
+  codigo: string;
+  nombre: string;
+}
+
+export interface MantenimientoReporteResponse {
+  vehiculoResumido: VehiculoResumidoDTO;
+  empresaResumida: EmpresaResumidoDTO;
+  fechaUltimoMantenimiento: string;
+  odometroUltimoMantenimiento: number;
+  odometroActual: number;
+  kmDesdeMantenimiento: number;
+  umbralKm: number;
+  estado: string;
+  diasTranscurridos: number;
+}

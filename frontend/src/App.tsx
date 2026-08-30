@@ -27,6 +27,7 @@ import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import CurrencyPage from '@/pages/catalogs/CurrencyPage';
 import TarjetaCombustiblePage from '@/pages/catalogs/TarjetaCombustiblePage';
 import ReporteConsumoVehiculoPage from '@/pages/reportes/ReporteConsumoVehiculoPage';
+import ReporteMantenimientoPage from '@/pages/reportes/ReporteMantenimientoPage';
 import type { ReactNode } from 'react';
 
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -212,6 +213,14 @@ export default function App() {
                   <SuperAdminRoute>
                     <SubscriptionsPage />
                   </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="reportes/mantenimiento"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteMantenimientoPage />
+                  </ProtectedRoute>
                 }
               />
               <Route

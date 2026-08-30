@@ -22,6 +22,7 @@ import {
   MapPin,
   Receipt,
   BarChart3,
+  Wrench,
 } from 'lucide-react';
 
 export type RequiredRole = 'SUPER_ADMIN' | 'ADMIN' | null;
@@ -171,6 +172,13 @@ export const navigationConfig: NavSection[] = [
         label: 'Consumo por Vehiculo',
         path: '/reportes/consumo-vehiculo',
         icon: BarChart3,
+        requiredRole: 'ADMIN',
+      },
+      {
+        id: 'mantenimiento',
+        label: 'Mantenimiento',
+        path: '/reportes/mantenimiento',
+        icon: Wrench,
         requiredRole: 'ADMIN',
       },
     ],
