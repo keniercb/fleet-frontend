@@ -181,6 +181,13 @@ export const navigationConfig: NavSection[] = [
         icon: Wrench,
         requiredRole: 'ADMIN',
       },
+      {
+        id: 'abastecimiento',
+        label: 'Abastecimiento',
+        path: '/reportes/abastecimiento',
+        icon: Fuel,
+        requiredRole: 'ADMIN',
+      },
     ],
   },
   {

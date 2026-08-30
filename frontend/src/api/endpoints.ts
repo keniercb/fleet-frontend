@@ -44,6 +44,7 @@ import type {
   PageResponse,
   VehiculoConsumoReporteDTO,
   MantenimientoReporteResponse,
+  AbastecimientoReporteResponse,
 } from '@/types';
 
 // ---- Auth ----
@@ -536,4 +537,20 @@ export const reportesTransporteApi = {
 export const reportesMantenimientoApi = {
   findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<MantenimientoReporteResponse>>> =>
     apiClient.get<PageResponse<MantenimientoReporteResponse>>('/reportes-transporte/mantenimiento', { params }),
+};
+
+// ---- Reportes Abastecimiento ----
+
+export const reportesAbastecimientoApi = {
+  findAll: (params: {
+    desde: string;
+    hasta: string;
+    vehiculoId?: number;
+    lugarAbastecimiento?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+    sortOrder?: string;
+  }): Promise<AxiosResponse<PageResponse<AbastecimientoReporteResponse>>> =>
+    apiClient.get<PageResponse<AbastecimientoReporteResponse>>('/reportes-transporte/abastecimiento', { params }),
 };

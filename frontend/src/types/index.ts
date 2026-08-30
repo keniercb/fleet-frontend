@@ -614,3 +614,15 @@ export interface MantenimientoReporteResponse {
   estado: string;
   diasTranscurridos: number;
 }
+
+// --- Reporte Abastecimiento ---
+
+export interface AbastecimientoReporteResponse {
+  vehiculoResumido: VehiculoResumidoDTO;
+  totalAbastecimientos: number;
+  totalLitros: number;
+  promedioLitrosPorCarga: number;
+  frecuenciaDias: number;
+  lugarMasFrecuente: string;
+  periodo: string;
+}
