@@ -46,6 +46,7 @@ import type {
   MantenimientoReporteResponse,
   AbastecimientoReporteResponse,
   ConsumoCombustibleResponse,
+  DashboardEjecutivoResponse,
 } from '@/types';
 
 // ---- Auth ----
@@ -519,6 +520,8 @@ export const subscriptionsApi = {
 // ---- Reportes Transporte ----
 
 export const reportesTransporteApi = {
+  dashboardEjecutivo: (mes: number, anio: number): Promise<AxiosResponse<DashboardEjecutivoResponse>> =>
+    apiClient.get<DashboardEjecutivoResponse>('/reportes-transporte/dashboard-ejecutivo', { params: { mes, anio } }),
   consumoVehiculo: (params: {
     fechaDesde: string;
     fechaHasta: string;

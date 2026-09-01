@@ -562,6 +562,17 @@ export interface CalcularImporteResponse {
 }
 
 // --- Menu / App Types ---
+export interface DashboardEjecutivoResponse {
+  periodo: string;
+  costoTotalCombustible: number;
+  consumoPromedioFlota: number;
+  kmTotalesFlota: number;
+  tasaUtilizacionFlota: number;
+  eficienciaPromedioChoferes: number;
+  vehiculosAlertaMantenimiento: number;
+  variacionCostoVsMesAnterior: number;
+  desviacionConsumoPromedio: number;
+}
 export interface MenuItem {
   label: string;
   icon: string;
