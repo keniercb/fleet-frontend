@@ -45,6 +45,7 @@ import type {
   VehiculoConsumoReporteDTO,
   MantenimientoReporteResponse,
   AbastecimientoReporteResponse,
+  ConsumoCombustibleResponse,
 } from '@/types';
 
 // ---- Auth ----
@@ -553,4 +554,15 @@ export const reportesAbastecimientoApi = {
     sortOrder?: string;
   }): Promise<AxiosResponse<PageResponse<AbastecimientoReporteResponse>>> =>
     apiClient.get<PageResponse<AbastecimientoReporteResponse>>('/reportes-transporte/abastecimiento', { params }),
+};
+
+// ---- Reportes Consumo por Combustible ----
+
+export const reportesConsumoCombustibleApi = {
+  findAll: (params: {
+    fechaDesde: string;
+    fechaHasta: string;
+    tipoVehiculoId?: number;
+  }): Promise<AxiosResponse<ConsumoCombustibleResponse>> =>
+    apiClient.get<ConsumoCombustibleResponse>('/reportes-transporte/consumo-por-combustible', { params }),
 };

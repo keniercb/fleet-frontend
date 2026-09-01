@@ -626,3 +626,31 @@ export interface AbastecimientoReporteResponse {
   lugarMasFrecuente: string;
   periodo: string;
 }
+
+// --- Reporte Consumo por Combustible ---
+
+export interface ResumenEjecutivo {
+  periodo: string;
+  totalTiposCombustible: number;
+  volumenConsumidoTotal: number;
+  volumenAbastecidoTotal: number;
+  costoEstimadoTotal: number;
+  totalRecorridos: number;
+  costoPromedioPorLitro: number;
+}
+
+export interface DetalleTipoCombustible {
+  tipoCombustible: string;
+  volumenConsumido: number;
+  volumenAbastecido: number;
+  costoEstimado: number;
+  porcentajeDelTotal: number;
+  variacionVsPeriodoAnterior: number;
+  cantidadRecorridos: number;
+  costoPromedioPorLitro: number;
+}
+
+export interface ConsumoCombustibleResponse {
+  resumenEjecutivo: ResumenEjecutivo;
+  detalle: DetalleTipoCombustible[];
+}

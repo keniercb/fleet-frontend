@@ -29,6 +29,7 @@ import TarjetaCombustiblePage from '@/pages/catalogs/TarjetaCombustiblePage';
 import ReporteConsumoVehiculoPage from '@/pages/reportes/ReporteConsumoVehiculoPage';
 import ReporteMantenimientoPage from '@/pages/reportes/ReporteMantenimientoPage';
 import ReporteAbastecimientoPage from '@/pages/reportes/ReporteAbastecimientoPage';
+import ReporteConsumoCombustiblePage from '@/pages/reportes/ReporteConsumoCombustiblePage';
 import type { ReactNode } from 'react';
 
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -229,6 +230,14 @@ export default function App() {
                 element={
                   <ProtectedRoute permission="ADMIN">
                     <ReporteAbastecimientoPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="reportes/consumo-combustible"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteConsumoCombustiblePage />
                   </ProtectedRoute>
                 }
               />

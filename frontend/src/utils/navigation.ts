@@ -188,6 +188,13 @@ export const navigationConfig: NavSection[] = [
         icon: Fuel,
         requiredRole: 'ADMIN',
       },
+      {
+        id: 'consumo-combustible',
+        label: 'Consumo por Combustible',
+        path: '/reportes/consumo-combustible',
+        icon: BarChart3,
+        requiredRole: 'ADMIN',
+      },
     ],
   },
   {
