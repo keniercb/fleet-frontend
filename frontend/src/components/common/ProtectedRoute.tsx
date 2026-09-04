@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -8,6 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, permission }: ProtectedRouteProps) {
+  const { t } = useTranslation(['common', 'navigation']);
   const { isAuthenticated, hasPermission, isAdmin, isSuperAdmin, loading } = useAuth();
 
   if (loading) {
@@ -27,10 +29,10 @@ export default function ProtectedRoute({ children, permission }: ProtectedRouteP
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Acceso Denegado
+            {t('state.deniedTitle')}
           </h2>
           <p className="text-gray-500">
-            No tiene permisos para acceder a esta sección.
+            {t('state.deniedMessage')}
           </p>
         </div>
       </div>

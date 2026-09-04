@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SuperAdminRouteProps {
@@ -7,6 +8,7 @@ interface SuperAdminRouteProps {
 }
 
 export default function SuperAdminRoute({ children }: SuperAdminRouteProps) {
+  const { t } = useTranslation(['common', 'navigation']);
   const { isAuthenticated, isSuperAdmin, loading } = useAuth();
 
   if (loading) {
@@ -25,8 +27,8 @@ export default function SuperAdminRoute({ children }: SuperAdminRouteProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
-          <p className="text-gray-500">Solo el super administrador puede acceder a esta sección.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('state.deniedTitle')}</h2>
+          <p className="text-gray-500">{t('navigation:denied.superAdminOnly')}</p>
         </div>
       </div>
     );

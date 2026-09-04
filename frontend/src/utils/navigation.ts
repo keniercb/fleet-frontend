@@ -29,7 +29,8 @@ export type RequiredRole = 'SUPER_ADMIN' | 'ADMIN' | null;
 
 export interface NavItem {
   id: string;
-  label: string;
+  /** i18n key, e.g. 'navigation:items.roles' */
+  labelKey: string;
   path: string;
   icon: LucideIcon;
   requiredRole: RequiredRole;
@@ -37,7 +38,8 @@ export interface NavItem {
 
 export interface NavSection {
   id: string;
-  label: string;
+  /** i18n key, e.g. 'navigation:sections.administracion' */
+  labelKey: string;
   icon: LucideIcon;
   items: NavItem[];
 }
@@ -45,47 +47,47 @@ export interface NavSection {
 export const navigationConfig: NavSection[] = [
   {
     id: 'administracion',
-    label: 'Administración',
+    labelKey: 'navigation:sections.administracion',
     icon: Settings,
     items: [
       {
         id: 'roles',
-        label: 'Roles',
+        labelKey: 'navigation:items.roles',
         path: '/roles',
         icon: Shield,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'users',
-        label: 'Usuarios',
+        labelKey: 'navigation:items.users',
         path: '/usuarios',
         icon: Users,
         requiredRole: 'ADMIN',
       },
       {
         id: 'permissions',
-        label: 'Permisos',
+        labelKey: 'navigation:items.permissions',
         path: '/permisos',
         icon: Key,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'empresas',
-        label: 'Empresas',
+        labelKey: 'navigation:items.empresas',
         path: '/empresas',
         icon: Building2,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'comprar-plan',
-        label: 'Comprar Planes',
+        labelKey: 'navigation:items.comprarPlan',
         path: '/comprar-plan',
         icon: CreditCard,
         requiredRole: 'ADMIN',
       },
       {
         id: 'suscripciones',
-        label: 'Suscripciones',
+        labelKey: 'navigation:items.suscripciones',
         path: '/suscripciones',
         icon: Receipt,
         requiredRole: 'SUPER_ADMIN',
@@ -94,68 +96,68 @@ export const navigationConfig: NavSection[] = [
   },
   {
     id: 'catalogos',
-    label: 'Catálogos',
+    labelKey: 'navigation:sections.catalogos',
     icon: BookOpen,
     items: [
       {
         id: 'provincias',
-        label: 'Provincias',
+        labelKey: 'navigation:items.provincias',
         path: '/provincias',
         icon: MapPin,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'municipios',
-        label: 'Municipios',
+        labelKey: 'navigation:items.municipios',
         path: '/municipios',
         icon: MapPin,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'marcas',
-        label: 'Marcas',
+        labelKey: 'navigation:items.marcas',
         path: '/marcas',
         icon: Tag,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'tipos-combustible',
-        label: 'Tipo de Combustible',
+        labelKey: 'navigation:items.tiposCombustible',
         path: '/tipos-combustible',
         icon: Fuel,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'tipos-vehiculo',
-        label: 'Tipo de Vehículo',
+        labelKey: 'navigation:items.tiposVehiculo',
         path: '/tipos-vehiculo',
         icon: CreditCard,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'categorias-licencia',
-        label: 'Categoría de Licencia',
+        labelKey: 'navigation:items.categoriasLicencia',
         path: '/categorias-licencia',
         icon: FileBadge,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'monedas',
-        label: 'Monedas',
+        labelKey: 'navigation:items.monedas',
         path: '/monedas',
         icon: Banknote,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'features',
-        label: 'Características',
+        labelKey: 'navigation:items.features',
         path: '/features',
         icon: Sparkles,
         requiredRole: 'SUPER_ADMIN',
       },
       {
         id: 'planes',
-        label: 'Planes',
+        labelKey: 'navigation:items.planes',
         path: '/planes',
         icon: Layers,
         requiredRole: 'SUPER_ADMIN',
@@ -164,33 +166,33 @@ export const navigationConfig: NavSection[] = [
   },
   {
     id: 'reportes',
-    label: 'Reportes',
+    labelKey: 'navigation:sections.reportes',
     icon: BarChart3,
     items: [
       {
         id: 'consumo-vehiculo',
-        label: 'Consumo por Vehiculo',
+        labelKey: 'navigation:items.consumoVehiculo',
         path: '/reportes/consumo-vehiculo',
         icon: BarChart3,
         requiredRole: 'ADMIN',
       },
       {
         id: 'mantenimiento',
-        label: 'Mantenimiento',
+        labelKey: 'navigation:items.mantenimiento',
         path: '/reportes/mantenimiento',
         icon: Wrench,
         requiredRole: 'ADMIN',
       },
       {
         id: 'abastecimiento',
-        label: 'Abastecimiento',
+        labelKey: 'navigation:items.abastecimiento',
         path: '/reportes/abastecimiento',
         icon: Fuel,
         requiredRole: 'ADMIN',
       },
       {
         id: 'consumo-combustible',
-        label: 'Consumo por Combustible',
+        labelKey: 'navigation:items.consumoCombustible',
         path: '/reportes/consumo-combustible',
         icon: BarChart3,
         requiredRole: 'ADMIN',
@@ -199,33 +201,33 @@ export const navigationConfig: NavSection[] = [
   },
   {
     id: 'transporte',
-    label: 'Control de Transporte',
+    labelKey: 'navigation:sections.transporte',
     icon: Truck,
     items: [
       {
         id: 'vehiculos',
-        label: 'Vehículos',
+        labelKey: 'navigation:items.vehiculos',
         path: '/vehiculos',
         icon: Car,
         requiredRole: 'ADMIN',
       },
       {
         id: 'choferes',
-        label: 'Choferes',
+        labelKey: 'navigation:items.choferes',
         path: '/choferes',
         icon: UserCog,
         requiredRole: 'ADMIN',
       },
       {
         id: 'recorridos',
-        label: 'Recorridos',
+        labelKey: 'navigation:items.recorridos',
         path: '/recorridos',
         icon: Route,
         requiredRole: null,
       },
       {
         id: 'tarjetas-combustible',
-        label: 'Tarjetas de Combustible',
+        labelKey: 'navigation:items.tarjetasCombustible',
         path: '/tarjetas-combustible',
         icon: Wallet,
         requiredRole: 'ADMIN',

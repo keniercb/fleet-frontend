@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, Menu, X, ChevronDown, KeyRound, UserCircle, Building2 } from 'lucide-react';
+import { LogOut, User, Menu, X, ChevronDown, KeyRound, UserCircle, Building2, Globe } from 'lucide-react';
 import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 import ProfileModal from '@/components/ui/ProfileModal';
 
@@ -12,12 +13,15 @@ interface TopNavbarProps {
 }
 
 export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarCollapsed }: TopNavbarProps) {
+  const { t, i18n } = useTranslation(['navigation', 'common']);
   const { user, empresa, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     setDropdownOpen(false);
@@ -36,12 +40,20 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
       }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
     };
-    if (dropdownOpen) {
+    if (dropdownOpen || langOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
+  }, [dropdownOpen, langOpen]);
+
+  const changeLanguage = (lng: string) => {
+    void i18n.changeLanguage(lng);
+    setLangOpen(false);
+  };
 
   return (
     <>
@@ -64,8 +76,37 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
             </div>
           )}
 
-          {/* Right: user dropdown */}
-          <div className="flex items-center ml-auto">
+          {/* Right: language switcher + user dropdown */}
+          <div className="flex items-center ml-auto gap-2">
+            {/* Language Switcher */}
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors text-sm text-gray-600"
+                title={t('common:language.switcher')}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="font-medium uppercase">{(i18n.language || 'es').slice(0, 2)}</span>
+                <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {langOpen && (
+                <div className="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                  <button
+                    onClick={() => changeLanguage('es')}
+                    className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${i18n.language?.startsWith('es') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50'}`}
+                  >
+                    <span className="text-base">🇪🇸</span> {t('common:language.es')}
+                  </button>
+                  <button
+                    onClick={() => changeLanguage('en')}
+                    className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${i18n.language?.startsWith('en') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50'}`}
+                  >
+                    <span className="text-base">🇺🇸</span> {t('common:language.en')}
+                  </button>
+                </div>
+              )}
+            </div>
+
             {user && (
               <div className="relative" ref={dropdownRef}>
                 {/* Trigger */}
@@ -81,7 +122,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
                       {user.email}
                     </p>
                     <p className="text-xs text-gray-500 truncate max-w-[200px] leading-tight">
-                      {user.roles?.map((r) => r.name).join(', ') || 'Sin rol'}
+                      {user.roles?.map((r) => r.name).join(', ') || t('topnavbar.noRole')}
                     </p>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -96,7 +137,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <UserCircle className="w-4 h-4 text-gray-400" />
-                      Perfil
+                      {t('topnavbar.profile')}
                     </button>
 
                     {/* Cambiar contraseña */}
@@ -108,7 +149,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <KeyRound className="w-4 h-4 text-gray-400" />
-                      Cambiar contraseña
+                      {t('topnavbar.changePassword')}
                     </button>
 
                     <div className="my-1 border-t border-gray-100" />
@@ -119,7 +160,7 @@ export default function TopNavbar({ mobileMenuOpen, onToggleMobileMenu, sidebarC
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
-                      Salir
+                      {t('topnavbar.logout')}
                     </button>
                   </div>
                 )}

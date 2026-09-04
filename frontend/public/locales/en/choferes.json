@@ -1,0 +1,40 @@
+{
+  "title": "Drivers",
+  "description": "System driver management",
+  "table": {
+    "name": "Name",
+    "lastName": "Last Name",
+    "identityCard": "ID Card",
+    "licenseNumber": "License No.",
+    "company": "Company",
+    "birthDate": "Birth Date",
+    "categories": "Categories",
+    "state": "Status",
+    "actions": "Actions"
+  },
+  "form": {
+    "newTitle": "New Driver",
+    "editTitle": "Edit Driver",
+    "name": { "label": "Name", "placeholder": "E.g.: John" },
+    "lastName": { "label": "Last Name", "placeholder": "E.g.: Smith Garcia" },
+    "identityCard": { "label": "ID Card", "placeholder": "E.g.: 90101012345" },
+    "licenseNumber": { "label": "License Number", "placeholder": "E.g.: 12345678" },
+    "birthDate": { "label": "Birth Date" },
+    "company": { "label": "Company" },
+    "categories": { "label": "License Categories" },
+    "addCategory": "Add",
+    "categoryPlaceholder": "Category...",
+    "noCategories": "No categories added. Click \"Add\" to include one."
+  },
+  "toast": {
+    "updated": "Driver updated",
+    "updatedMessage": "Driver has been updated successfully.",
+    "created": "Driver created",
+    "createdMessage": "The new record has been created successfully.",
+    "deleted": "Driver deleted",
+    "deletedMessage": "Driver has been deleted successfully.",
+    "error": "Error",
+    "categoriesLoadError": "Could not load license categories.",
+    "deleteConfirm": "Are you sure you want to delete this record? This action cannot be undone."
+  }
+}

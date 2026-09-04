@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, Search, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -8,6 +9,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { formatNumber } from '@/utils/format';
 import type {
   TarjetaCombustibleRequest,
   TarjetaCombustibleResponse,
@@ -32,6 +34,7 @@ const EMPTY_FORM: FormData = {
 // ---- Component ----
 
 export default function TarjetaCombustiblePage() {
+  const { t } = useTranslation(['catalogs', 'common']);
   const { addToast } = useToast();
   const { empresaId } = useAuth();
 
@@ -64,7 +67,7 @@ export default function TarjetaCombustiblePage() {
 
   useEffect(() => {
     if (error) {
-      addToast({ type: 'error', title: 'Error', message: error });
+      addToast({ type: 'error', title: t('common:state.error'), message: error });
     }
   }, [error, addToast]);
 
@@ -73,9 +76,9 @@ export default function TarjetaCombustiblePage() {
       const res = await currenciesApi.findAll({ page: 0, perPage: 200 });
       setCurrencies(res.data.content.filter((c) => c.activo));
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las monedas.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('catalogs:fuelCard.toast.selectCurrenciesError') });
     }
-  }, [addToast]);
+  }, [addToast, t]);
 
   useEffect(() => {
     fetchCurrencies();
@@ -114,10 +117,10 @@ export default function TarjetaCombustiblePage() {
       };
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);
-        addToast({ type: 'success', title: 'Tarjeta actualizada', message: 'El registro se ha actualizado correctamente.' });
+        addToast({ type: 'success', title: t('catalogs:fuelCard.toast.updated'), message: t('catalogs:fuelCard.toast.updatedMessage') });
       } else {
         await createItem(payload);
-        addToast({ type: 'success', title: 'Tarjeta creada', message: 'El nuevo registro se ha creado correctamente.' });
+        addToast({ type: 'success', title: t('catalogs:fuelCard.toast.created'), message: t('catalogs:fuelCard.toast.createdMessage') });
       }
       setShowForm(false);
     } catch {
@@ -129,7 +132,7 @@ export default function TarjetaCombustiblePage() {
     if (!deleteTarget) return;
     try {
       await deleteItem(deleteTarget.id);
-      addToast({ type: 'success', title: 'Tarjeta eliminada', message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('catalogs:fuelCard.toast.deleted'), message: t('catalogs:fuelCard.toast.deletedMessage') });
       setDeleteTarget(null);
     } catch {
       // error handled by hook
@@ -148,12 +151,12 @@ export default function TarjetaCombustiblePage() {
 
   return (
     <div>
-      <PageHeader title="Tarjetas de Combustible" description="Gestión de tarjetas de combustible">
+      <PageHeader title={t('catalogs:fuelCard.title')} description={t('catalogs:fuelCard.description')}>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder={t('crud:actions.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-field pl-9 py-2 text-sm"
@@ -161,7 +164,7 @@ export default function TarjetaCombustiblePage() {
         </div>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t('crud:actions.new')}
         </button>
       </PageHeader>
 
@@ -171,12 +174,12 @@ export default function TarjetaCombustiblePage() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="table-header px-4 py-3">Número</th>
-                <th className="table-header px-4 py-3">Empresa</th>
-                <th className="table-header px-4 py-3">Moneda</th>
-                <th className="table-header px-4 py-3 text-right">Saldo</th>
-                <th className="table-header px-4 py-3 text-right">Estado</th>
-                <th className="table-header px-4 py-3 text-right">Acciones</th>
+                <th className="table-header px-4 py-3">{t('catalogs:fuelCard.table.number')}</th>
+                <th className="table-header px-4 py-3">{t('catalogs:fuelCard.table.company')}</th>
+                <th className="table-header px-4 py-3">{t('catalogs:fuelCard.table.currency')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('catalogs:fuelCard.table.balance')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('catalogs:fuelCard.table.state')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('catalogs:fuelCard.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -185,14 +188,14 @@ export default function TarjetaCombustiblePage() {
                   <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                      Cargando...
+                      {t('crud:states.loading')}
                     </div>
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
-                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+                    {search ? t('crud:states.noResults') : t('crud:states.empty')}
                   </td>
                 </tr>
               ) : (
@@ -208,26 +211,26 @@ export default function TarjetaCombustiblePage() {
                       <span className="table-cell block">{item.currency?.isoCode} — {item.currency?.descripcion}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="table-cell block">{item.saldo.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      <span className="table-cell block">{formatNumber(item.saldo, 2)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {item.activo
-                        ? <span className="badge-active">Activo</span>
-                        : <span className="badge-inactive">Inactivo</span>}
+                        ? <span className="badge-active">{t('crud:badges.active')}</span>
+                        : <span className="badge-inactive">{t('crud:badges.inactive')}</span>}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
-                          title="Editar"
+                          title={t('common:actions.edit')}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(item)}
                           className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                          title="Eliminar"
+                          title={t('common:actions.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -256,7 +259,7 @@ export default function TarjetaCombustiblePage() {
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? 'Editar Tarjeta' : 'Nueva Tarjeta'}
+        title={editingEntity ? t('catalogs:fuelCard.modal.edit') : t('catalogs:fuelCard.modal.create')}
         onClose={() => setShowForm(false)}
         size="md"
       >
@@ -264,7 +267,7 @@ export default function TarjetaCombustiblePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label htmlFor="numero" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Número<span className="text-red-500 ml-0.5">*</span>
+                {t('catalogs:fuelCard.form.numero.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="numero"
@@ -272,13 +275,13 @@ export default function TarjetaCombustiblePage() {
                 value={formData.numero}
                 onChange={(e) => handleFieldChange('numero', e.target.value)}
                 className="input-field"
-                placeholder="Ej: TC-001"
+                placeholder={t('catalogs:fuelCard.form.numero.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="currencyId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Moneda<span className="text-red-500 ml-0.5">*</span>
+                {t('catalogs:fuelCard.form.currencyId.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <div className="relative">
                 <select
@@ -288,7 +291,7 @@ export default function TarjetaCombustiblePage() {
                   className="input-field appearance-none pr-8"
                   required
                 >
-                  <option value="0">Seleccionar moneda...</option>
+                  <option value="0">{t('catalogs:fuelCard.form.selectCurrency')}</option>
                   {currencies.map((c) => (
                     <option key={c.id} value={c.id}>{c.isoCode} — {c.descripcion}</option>
                   ))}
@@ -298,7 +301,7 @@ export default function TarjetaCombustiblePage() {
             </div>
             <div>
               <label htmlFor="saldo" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Saldo<span className="text-red-500 ml-0.5">*</span>
+                {t('catalogs:fuelCard.form.saldo.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="saldo"
@@ -308,17 +311,17 @@ export default function TarjetaCombustiblePage() {
                 value={formData.saldo}
                 onChange={(e) => handleFieldChange('saldo', e.target.value)}
                 className="input-field"
-                placeholder="Ej: 1000.00"
+                placeholder={t('catalogs:fuelCard.form.saldo.placeholder')}
                 required
               />
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+              {saving ? t('common:actions.saving') : editingEntity ? t('common:actions.update') : t('common:actions.create')}
             </button>
           </div>
         </form>
@@ -327,11 +330,11 @@ export default function TarjetaCombustiblePage() {
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title="Eliminar Tarjeta"
-        message="¿Está seguro que desea eliminar esta tarjeta? Esta acción no se puede deshacer."
+        title={t('crud:modal.delete', { singular: t('catalogs:fuelCard.singular') })}
+        message={t('catalogs:fuelCard.deleteConfirm')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        confirmText="Eliminar"
+        confirmText={t('common:actions.delete')}
         danger
       />
     </div>

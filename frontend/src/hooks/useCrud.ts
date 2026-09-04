@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import i18n from '@/i18n';
 import type { PageResponse, PageParams } from '@/types';
 import type { AxiosResponse } from 'axios';
+
+const t = (key: string) => i18n.t(key, { ns: 'errors' });
 
 interface CrudApi<TReq, TRes> {
   findAll: (params?: PageParams) => Promise<AxiosResponse<PageResponse<TRes>>>;
@@ -59,7 +62,7 @@ export function useCrud<TReq, TRes>(
       } catch (err) {
         const message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Error al cargar los datos';
+          t('crud.load');
         setError(message);
       } finally {
         setLoading(false);
@@ -91,7 +94,7 @@ export function useCrud<TReq, TRes>(
     } catch (err) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Error al crear';
+        t('crud.create');
       setError(message);
       throw err;
     } finally {
@@ -109,7 +112,7 @@ export function useCrud<TReq, TRes>(
     } catch (err) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Error al actualizar';
+        t('crud.update');
       setError(message);
       throw err;
     } finally {
@@ -126,7 +129,7 @@ export function useCrud<TReq, TRes>(
     } catch (err) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Error al eliminar';
+        t('crud.delete');
       setError(message);
       throw err;
     } finally {

@@ -1,0 +1,40 @@
+{
+  "title": "Choferes",
+  "description": "Gestión de choferes del sistema",
+  "table": {
+    "name": "Nombre",
+    "lastName": "Apellidos",
+    "identityCard": "Carné Identidad",
+    "licenseNumber": "No. Licencia",
+    "company": "Empresa",
+    "birthDate": "F. Nacimiento",
+    "categories": "Categorías",
+    "state": "Estado",
+    "actions": "Acciones"
+  },
+  "form": {
+    "newTitle": "Nuevo Chofer",
+    "editTitle": "Editar Chofer",
+    "name": { "label": "Nombre", "placeholder": "Ej: Juan" },
+    "lastName": { "label": "Apellidos", "placeholder": "Ej: Pérez García" },
+    "identityCard": { "label": "Carné de Identidad", "placeholder": "Ej: 90101012345" },
+    "licenseNumber": { "label": "Número de Licencia", "placeholder": "Ej: 12345678" },
+    "birthDate": { "label": "Fecha de Nacimiento" },
+    "company": { "label": "Empresa" },
+    "categories": { "label": "Categorías de Licencia" },
+    "addCategory": "Agregar",
+    "categoryPlaceholder": "Categoría...",
+    "noCategories": "No hay categorías agregadas. Haga clic en \"Agregar\" para añadir."
+  },
+  "toast": {
+    "updated": "Chofer actualizado",
+    "updatedMessage": "El chofer se ha actualizado correctamente.",
+    "created": "Chofer creado",
+    "createdMessage": "El nuevo registro se ha creado correctamente.",
+    "deleted": "Chofer eliminado",
+    "deletedMessage": "El chofer se ha eliminado correctamente.",
+    "error": "Error",
+    "categoriesLoadError": "No se pudieron cargar las categorías de licencia.",
+    "deleteConfirm": "¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "title": "Trips",
+  "description": "Trip and vehicle supply management",
+  "selectVehicle": "Select a vehicle to add",
+  "selectVehiclePlaceholder": "Select vehicle...",
+  "filters": {
+    "vehicle": "Vehicle",
+    "fromDate": "From date",
+    "toDate": "To date"
+  },
+  "table": {
+    "date": "Date",
+    "kmTraveled": "Km Traveled",
+    "odometerStart": "Start Odometer",
+    "odometerEnd": "End Odometer",
+    "consumption": "Consumption",
+    "liters": "Liters",
+    "chipNumber": "Chip No.",
+    "place": "Place",
+    "card": "Card",
+    "amount": "Amount",
+    "actions": "Actions"
+  },
+  "noCard": "No card",
+  "states": {
+    "loading": "Loading...",
+    "noDataRange": "No trips found in the date range",
+    "noDataVehicle": "No trips for this vehicle"
+  },
+  "form": {
+    "newTitle": "New Trip",
+    "editTitle": "Edit Trip",
+    "vehicle": { "label": "Vehicle" },
+    "date": { "label": "Date" },
+    "odometerStart": { "label": "Start Odometer", "placeholder": "E.g.: 50000" },
+    "odometerEnd": { "label": "End Odometer", "placeholder": "E.g.: 50150" },
+    "kmTraveled": { "label": "Km Traveled", "placeholder": "E.g.: 150" },
+    "consumption": { "label": "Consumption (L)", "placeholder": "E.g.: 12.5" },
+    "liters": { "label": "Liters", "placeholder": "E.g.: 12.5" },
+    "chipNumber": { "label": "Chip No.", "placeholder": "E.g.: 123456" },
+    "place": { "label": "Place", "placeholder": "E.g.: Central Service Station" },
+    "fuelCard": { "label": "Fuel Card" },
+    "amount": { "label": "Amount", "placeholder": "E.g.: 1500.00" }
+  },
+  "toast": {
+    "updated": "Trip updated",
+    "updatedMessage": "Trip has been updated successfully.",
+    "created": "Trip created",
+    "createdMessage": "The new trip has been created successfully.",
+    "deleted": "Trip deleted",
+    "deletedMessage": "Trip has been deleted successfully.",
+    "saveError": "Error saving the trip.",
+    "deleteError": "Error deleting the trip.",
+    "deleteConfirm": "Are you sure you want to delete this trip? This action cannot be undone."
+  }
+}

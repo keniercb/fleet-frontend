@@ -1,0 +1,78 @@
+{
+  "title": "Vehículos",
+  "description": "Gestión de los vehículos del sistema",
+  "table": {
+    "licensePlate": "Matrícula",
+    "company": "Empresa",
+    "type": "Tipo",
+    "brand": "Marca",
+    "model": "Modelo",
+    "fuelType": "Tipo Combustible",
+    "fuelLiters": "Combustible (L)",
+    "driver": "Chofer",
+    "odometer": "Odómetro",
+    "actions": "Acciones"
+  },
+  "form": {
+    "newTitle": "Nuevo Vehículo",
+    "editTitle": "Editar Vehículo",
+    "detailTitle": "Detalles del Vehículo",
+    "generalInfo": "Información General",
+    "companyAndDriver": "Empresa y Chofer",
+    "metricsAndFuel": "Métricas y Combustible",
+    "maintenance": "Mantenimiento",
+    "movementReport": "Reporte de Movimiento",
+    "noDriverAssigned": "Sin chofer asignado",
+    "model": { "label": "Modelo", "placeholder": "Ej: Corolla 2024" },
+    "licensePlate": { "label": "Matrícula", "placeholder": "Ej: A-123-456" },
+    "cardNumber": { "label": "No. Tarjeta", "placeholder": "Ej: M20240001" },
+    "odometer": { "label": "Odómetro", "placeholder": "Ej: 50000" },
+    "vehicleType": { "label": "Tipo de Vehículo" },
+    "fuelType": { "label": "Tipo de Combustible" },
+    "brand": { "label": "Marca" },
+    "company": { "label": "Empresa" },
+    "driver": { "label": "Chofer" },
+    "fuelCard": { "label": "Tarjeta de Combustible" },
+    "selectPlaceholder": "Seleccionar..."
+  },
+  "report": {
+    "title": "Reporte de Movimiento Mensual",
+    "subtitle": "Vehículo: {{vehicle}} — {{month}}/{{year}}",
+    "search": "Buscar",
+    "searching": "Generando reporte...",
+    "noData": "No hay lecturas para este período.",
+    "placeholder": "Seleccione mes y año, luego presione Buscar...",
+    "table": {
+      "date": "Fecha",
+      "odometerStart": "Odómetro Inicial",
+      "odometerEnd": "Odómetro Final",
+      "km": "Km Recorridos",
+      "liters": "Litros",
+      "chipNumber": "N° Chip",
+      "place": "Lugar",
+      "card": "Tarjeta",
+      "amount": "Importe"
+    }
+  },
+  "toast": {
+    "pdfError": "No se pudo generar el reporte PDF.",
+    "selectorsError": "No se pudieron cargar los datos de los selectores.",
+    "pdfGenerating": "Generando reporte...",
+    "vehicleCreated": "Vehículo creado",
+    "vehicleUpdated": "Vehículo actualizado",
+    "vehicleDeleted": "Vehículo eliminado",
+    "createError": "Error al crear el vehículo.",
+    "updateError": "Error al actualizar el vehículo.",
+    "deleteError": "Error al eliminar el vehículo.",
+    "createSuccess": "El vehículo se ha creado correctamente.",
+    "updateSuccess": "El vehículo se ha actualizado correctamente.",
+    "deleteSuccess": "El vehículo se ha eliminado correctamente.",
+    "pdfReportError": "No se pudo generar el reporte PDF."
+  },
+  "months": {
+    "january": "Enero", "february": "Febrero", "march": "Marzo",
+    "april": "Abril", "may": "Mayo", "june": "Junio",
+    "july": "Julio", "august": "Agosto", "september": "Septiembre",
+    "october": "Octubre", "november": "Noviembre", "december": "Diciembre"
+  }
+}

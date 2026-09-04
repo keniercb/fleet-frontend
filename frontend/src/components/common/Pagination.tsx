@@ -7,8 +7,10 @@ interface PaginationProps {
 }
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Pagination({ page, totalPages, totalElements, size, onPageChange }: PaginationProps) {
+  const { t } = useTranslation('common');
   if (totalPages <= 1) return null;
 
   const start = page * size + 1;
@@ -17,9 +19,11 @@ export default function Pagination({ page, totalPages, totalElements, size, onPa
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-gray-200">
       <p className="text-sm text-gray-500">
-        Mostrando <span className="font-medium text-gray-700">{start}</span> a{' '}
-        <span className="font-medium text-gray-700">{end}</span> de{' '}
-        <span className="font-medium text-gray-700">{totalElements}</span> resultados
+        <span
+          dangerouslySetInnerHTML={{
+            __html: t('pagination.showing', { start, end, total: totalElements }),
+          }}
+        />
       </p>
       <div className="flex items-center gap-1">
         <button

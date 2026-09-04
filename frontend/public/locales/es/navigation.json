@@ -1,0 +1,51 @@
+{
+  "sections": {
+    "administracion": "Administración",
+    "catalogos": "Catálogos",
+    "reportes": "Reportes",
+    "transporte": "Control de Transporte"
+  },
+  "items": {
+    "roles": "Roles",
+    "users": "Usuarios",
+    "permissions": "Permisos",
+    "empresas": "Empresas",
+    "comprarPlan": "Comprar Planes",
+    "suscripciones": "Suscripciones",
+    "provincias": "Provincias",
+    "municipios": "Municipios",
+    "marcas": "Marcas",
+    "tiposCombustible": "Tipo de Combustible",
+    "tiposVehiculo": "Tipo de Vehículo",
+    "categoriasLicencia": "Categoría de Licencia",
+    "monedas": "Monedas",
+    "features": "Características",
+    "planes": "Planes",
+    "consumoVehiculo": "Consumo por Vehículo",
+    "mantenimiento": "Mantenimiento",
+    "abastecimiento": "Abastecimiento",
+    "consumoCombustible": "Consumo por Combustible",
+    "vehiculos": "Vehículos",
+    "choferes": "Choferes",
+    "recorridos": "Recorridos",
+    "tarjetasCombustible": "Tarjetas de Combustible"
+  },
+  "sidebar": {
+    "title": "Gestión Vehicular",
+    "subtitle": "Sistema de Control",
+    "expand": "Expandir menú",
+    "collapse": "Colapsar menú",
+    "version": "v1.0.0 — Gestión Vehicular",
+    "dashboard": "Dashboard"
+  },
+  "topnavbar": {
+    "noRole": "Sin rol",
+    "profile": "Perfil",
+    "changePassword": "Cambiar contraseña",
+    "logout": "Salir",
+    "toggleSidebar": "Mostrar menú"
+  },
+  "denied": {
+    "superAdminOnly": "Solo el super administrador puede acceder a esta sección."
+  }
+}

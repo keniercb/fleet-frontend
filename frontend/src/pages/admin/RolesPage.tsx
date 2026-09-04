@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -26,6 +27,7 @@ const EMPTY_FORM: FormData = {
 // ---- Component ----
 
 export default function RolesPage() {
+  const { t } = useTranslation(['admin', 'common', 'crud']);
   const {
     data, loading, saving, totalPages, totalElements, page, size, error,
     setPage, createItem, updateItem, deleteItem,
@@ -47,9 +49,9 @@ export default function RolesPage() {
   // Show error as toast
   useEffect(() => {
     if (error) {
-      addToast({ type: 'error', title: 'Error', message: error });
+      addToast({ type: 'error', title: t('common:state.error'), message: error });
     }
-  }, [error, addToast]);
+  }, [error, addToast, t]);
 
   // Fetch all permissions for the multi-select
   const fetchPermissions = useCallback(async () => {
@@ -58,11 +60,11 @@ export default function RolesPage() {
       const res = await permissionsApi.findAll({ page: 0, perPage: 500 });
       setAllPermissions(res.data.content.filter((p) => p.activo));
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los permisos.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:roles.toast.permissionsLoadError') });
     } finally {
       setLoadingPermissions(false);
     }
-  }, [addToast]);
+  }, [addToast, t]);
 
   useEffect(() => {
     fetchPermissions();
@@ -105,10 +107,10 @@ export default function RolesPage() {
       };
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);
-        addToast({ type: 'success', title: 'Rol actualizado', message: 'El registro se ha actualizado correctamente.' });
+        addToast({ type: 'success', title: t('admin:roles.toast.updated'), message: t('crud:toast.updated') });
       } else {
         await createItem(payload);
-        addToast({ type: 'success', title: 'Rol creado', message: 'El nuevo registro se ha creado correctamente.' });
+        addToast({ type: 'success', title: t('admin:roles.toast.created'), message: t('crud:toast.created') });
       }
       setShowForm(false);
     } catch {
@@ -120,7 +122,7 @@ export default function RolesPage() {
     if (!deleteTarget) return;
     try {
       await deleteItem(deleteTarget.id);
-      addToast({ type: 'success', title: 'Rol eliminado', message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('admin:roles.toast.deleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
     } catch {
       // error handled by useCrud → toast via useEffect
@@ -137,12 +139,12 @@ export default function RolesPage() {
 
   return (
     <div>
-      <PageHeader title="Roles" description="Gestión de los roles del sistema">
+      <PageHeader title={t('admin:roles.title')} description={t('admin:roles.description')}>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder={t('crud:actions.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-field pl-9 py-2 text-sm"
@@ -150,7 +152,7 @@ export default function RolesPage() {
         </div>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t('crud:actions.new')}
         </button>
       </PageHeader>
 
@@ -160,11 +162,11 @@ export default function RolesPage() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="table-header px-4 py-3">Nombre</th>
-                <th className="table-header px-4 py-3">Descripción</th>
-                <th className="table-header px-4 py-3">Permisos</th>
-                <th className="table-header px-4 py-3 text-right">Estado</th>
-                <th className="table-header px-4 py-3 text-right">Acciones</th>
+                <th className="table-header px-4 py-3">{t('admin:roles.table.name')}</th>
+                <th className="table-header px-4 py-3">{t('admin:roles.table.description')}</th>
+                <th className="table-header px-4 py-3">{t('admin:roles.table.permissions')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('admin:roles.table.state')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('admin:roles.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -173,14 +175,14 @@ export default function RolesPage() {
                   <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                      Cargando...
+                      {t('crud:states.loading')}
                     </div>
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
-                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+                    {search ? t('crud:states.noResults') : t('crud:states.empty')}
                   </td>
                 </tr>
               ) : (
@@ -196,27 +198,27 @@ export default function RolesPage() {
                       <span className="table-cell block">
                         {item.permissions.length > 0
                           ? item.permissions.map((p) => p.name).join(', ')
-                          : <span className="text-gray-400">Sin permisos</span>}
+                          : <span className="text-gray-400">{t('admin:roles.form.noPermissions')}</span>}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {item.activo
-                        ? <span className="badge-active">Activo</span>
-                        : <span className="badge-inactive">Inactivo</span>}
+                        ? <span className="badge-active">{t('crud:badges.active')}</span>
+                        : <span className="badge-inactive">{t('crud:badges.inactive')}</span>}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
-                          title="Editar"
+                          title={t('common:actions.edit')}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(item)}
                           className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                          title="Eliminar"
+                          title={t('common:actions.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -245,7 +247,7 @@ export default function RolesPage() {
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? 'Editar Rol' : 'Nuevo Rol'}
+        title={editingEntity ? t('admin:roles.form.editTitle') : t('admin:roles.form.newTitle')}
         onClose={() => setShowForm(false)}
         size="lg"
       >
@@ -253,7 +255,7 @@ export default function RolesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Nombre<span className="text-red-500 ml-0.5">*</span>
+                {t('admin:roles.form.name.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="name"
@@ -261,13 +263,13 @@ export default function RolesPage() {
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 className="input-field"
-                placeholder="Ej: ADMIN"
+                placeholder={t('admin:roles.form.name.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Descripción
+                {t('admin:roles.form.description.label')}
               </label>
               <input
                 id="description"
@@ -275,7 +277,7 @@ export default function RolesPage() {
                 value={formData.description}
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 className="input-field"
-                placeholder="Ej: Administrador del sistema"
+                placeholder={t('admin:roles.form.description.placeholder')}
               />
             </div>
           </div>
@@ -283,15 +285,15 @@ export default function RolesPage() {
           {/* Permissions multi-select */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Permisos
+              {t('admin:roles.form.permissions.label')}
             </label>
             {loadingPermissions ? (
               <div className="flex items-center gap-2 text-gray-400 py-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600" />
-                Cargando permisos...
+                {t('admin:roles.form.loadingPermissions')}
               </div>
             ) : allPermissions.length === 0 ? (
-              <p className="text-gray-400 text-sm py-2">No hay permisos disponibles</p>
+              <p className="text-gray-400 text-sm py-2">{t('admin:roles.form.noPermissionsAvailable')}</p>
             ) : (
               <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto p-2 space-y-1">
                 {allPermissions.map((perm) => {
@@ -331,14 +333,14 @@ export default function RolesPage() {
             )}
             {formData.permissionIds.length > 0 && (
               <div className="flex items-center gap-1.5 mt-2">
-                <span className="text-xs text-gray-500">{formData.permissionIds.length} permiso(s) seleccionado(s)</span>
+                <span className="text-xs text-gray-500">{t('admin:roles.form.permissionsSelected', { count: formData.permissionIds.length })}</span>
                 <button
                   type="button"
                   onClick={() => setFormData((prev) => ({ ...prev, permissionIds: [] }))}
                   className="text-xs text-red-500 hover:text-red-700 flex items-center gap-0.5"
                 >
                   <X className="w-3 h-3" />
-                  Limpiar
+                  {t('admin:roles.form.clear')}
                 </button>
               </div>
             )}
@@ -351,10 +353,10 @@ export default function RolesPage() {
               onClick={() => setShowForm(false)}
               className="btn-secondary"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+              {saving ? t('common:actions.saving') : editingEntity ? t('common:actions.update') : t('common:actions.create')}
             </button>
           </div>
         </form>
@@ -363,11 +365,11 @@ export default function RolesPage() {
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title="Eliminar Rol"
-        message="¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+        title={t('admin:roles.delete.title')}
+        message={t('admin:roles.delete.confirm')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        confirmText="Eliminar"
+        confirmText={t('common:actions.delete')}
         danger
       />
     </div>

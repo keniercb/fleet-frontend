@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Car } from 'lucide-react';
 import type { AxiosError } from 'axios';
@@ -10,6 +11,7 @@ interface ApiError {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +32,7 @@ export default function LoginPage() {
       const message =
         axiosErr.response?.data?.message ||
         axiosErr.response?.data?.error ||
-        'Credenciales inválidas. Intente nuevamente.';
+        t('login.invalidCredentials');
       setError(message);
     } finally {
       setLoading(false);
@@ -46,10 +48,10 @@ export default function LoginPage() {
             <Car className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">
-            Gestión de Vehículos
+            {t('login.title')}
           </h1>
           <p className="text-primary-200 mt-1 text-sm">
-            Ingrese sus credenciales para acceder al sistema
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -67,7 +69,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-1.5"
               >
-                Correo electrónico
+                {t('login.email')}
               </label>
               <input
                 id="email"
@@ -76,7 +78,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="input-field"
-                placeholder="usuario@ejemplo.com"
+                placeholder={t('login.emailPlaceholder')}
                 autoComplete="email"
               />
             </div>
@@ -86,7 +88,7 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-1.5"
               >
-                Contraseña
+                {t('login.password')}
               </label>
               <input
                 id="password"
@@ -95,7 +97,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
-                placeholder="••••••••"
+                placeholder={t('login.passwordPlaceholder')}
                 autoComplete="current-password"
               />
             </div>
@@ -126,17 +128,17 @@ export default function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     />
                   </svg>
-                  Ingresando...
+                  {t('login.submitting')}
                 </span>
               ) : (
-                'Iniciar Sesión'
+                t('login.submit')
               )}
             </button>
           </form>
         </div>
 
         <p className="text-center text-primary-300 text-xs mt-6">
-          Sistema de Gestión de Flota Vehicular
+          {t('login.systemTitle')}
         </p>
       </div>
     </div>

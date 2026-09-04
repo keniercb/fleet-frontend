@@ -1,0 +1,56 @@
+{
+  "title": "Recorridos",
+  "description": "Gestión de recorridos y abastecimientos de vehículos",
+  "selectVehicle": "Seleccione un vehículo para adicionar",
+  "selectVehiclePlaceholder": "Seleccionar vehículo...",
+  "filters": {
+    "vehicle": "Vehículo",
+    "fromDate": "Fecha desde",
+    "toDate": "Fecha hasta"
+  },
+  "table": {
+    "date": "Fecha",
+    "kmTraveled": "Km Recorridos",
+    "odometerStart": "Odómetro Inicial",
+    "odometerEnd": "Odómetro Final",
+    "consumption": "Consumo",
+    "liters": "Litros",
+    "chipNumber": "N° Chip",
+    "place": "Lugar",
+    "card": "Tarjeta",
+    "amount": "Importe",
+    "actions": "Acciones"
+  },
+  "noCard": "Sin tarjeta",
+  "states": {
+    "loading": "Cargando...",
+    "noDataRange": "No se encontraron recorridos en el rango de fechas",
+    "noDataVehicle": "No hay recorridos para este vehículo"
+  },
+  "form": {
+    "newTitle": "Nuevo Recorrido",
+    "editTitle": "Editar Recorrido",
+    "vehicle": { "label": "Vehículo" },
+    "date": { "label": "Fecha" },
+    "odometerStart": { "label": "Odómetro Inicial", "placeholder": "Ej: 50000" },
+    "odometerEnd": { "label": "Odómetro Final", "placeholder": "Ej: 50150" },
+    "kmTraveled": { "label": "Km Recorridos", "placeholder": "Ej: 150" },
+    "consumption": { "label": "Consumo (L)", "placeholder": "Ej: 12.5" },
+    "liters": { "label": "Litros", "placeholder": "Ej: 12.5" },
+    "chipNumber": { "label": "N° Chip", "placeholder": "Ej: 123456" },
+    "place": { "label": "Lugar", "placeholder": "Ej: Estación Servicio Centro" },
+    "fuelCard": { "label": "Tarjeta de Combustible" },
+    "amount": { "label": "Importe", "placeholder": "Ej: 1500.00" }
+  },
+  "toast": {
+    "updated": "Recorrido actualizado",
+    "updatedMessage": "El recorrido se ha actualizado correctamente.",
+    "created": "Recorrido creado",
+    "createdMessage": "El nuevo recorrido se ha creado correctamente.",
+    "deleted": "Recorrido eliminado",
+    "deletedMessage": "El recorrido se ha eliminado correctamente.",
+    "saveError": "Error al guardar el recorrido.",
+    "deleteError": "Error al eliminar el recorrido.",
+    "deleteConfirm": "¿Está seguro que desea eliminar este recorrido? Esta acción no se puede deshacer."
+  }
+}

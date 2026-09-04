@@ -1,0 +1,133 @@
+{
+  "mantenimiento": {
+    "title": "Maintenance",
+    "description": "Vehicle maintenance report",
+    "loading": "Loading report...",
+    "noData": "No maintenance data available.",
+    "countLabel_one": "{{count}} vehicle",
+    "countLabel_other": "{{count}} vehicles",
+    "table": {
+      "licensePlate": "License Plate",
+      "model": "Model",
+      "brand": "Brand",
+      "type": "Type",
+      "company": "Company",
+      "state": "Status",
+      "currentOdometer": "Current Odometer",
+      "lastMaintenance": "Last Maint.",
+      "lastMaintenanceDate": "Last Maint. Date",
+      "kmSinceMaintenance": "Km Since Maint.",
+      "kmThreshold": "Km Threshold",
+      "elapsedDays": "Days Elapsed"
+    },
+    "status": {
+      "VENCIDO": "Overdue",
+      "PROXIMO": "Upcoming",
+      "VIGENTE": "Valid"
+    },
+    "toast": {
+      "loadError": "Could not load the maintenance report."
+    }
+  },
+  "consumoVehiculo": {
+    "title": "Consumption by Vehicle",
+    "description": "Vehicle fuel consumption report",
+    "filters": {
+      "title": "Filters",
+      "fromDate": "From Date *",
+      "toDate": "To Date *",
+      "vehicleType": "Vehicle Type",
+      "brand": "Brand",
+      "fuelType": "Fuel Type",
+      "all": "All",
+      "allF": "All",
+      "search": "Search",
+      "clear": "Clear"
+    },
+    "table": {
+      "licensePlate": "License Plate",
+      "model": "Model",
+      "brand": "Brand",
+      "fuelType": "Fuel",
+      "company": "Company",
+      "totalKm": "Total Km",
+      "theoreticalConsumption": "Theoretical Consumption",
+      "realConsumption": "Real Consumption",
+      "deviationL": "Deviation (L)",
+      "deviationPct": "Deviation (%)",
+      "efficiency": "Efficiency"
+    },
+    "toast": {
+      "filtersLoadError": "Could not load filters.",
+      "pageChangeError": "Error changing page."
+    }
+  },
+  "abastecimiento": {
+    "title": "Supply",
+    "description": "Vehicle fuel supply report",
+    "countLabel_one": "{{count}} result",
+    "countLabel_other": "{{count}} results",
+    "filters": {
+      "fromDate": "From",
+      "toDate": "To",
+      "vehicle": "Vehicle",
+      "fuelStation": "Supply Place"
+    },
+    "summary": {
+      "totalVehicles": "Total Vehicles",
+      "totalSupplies": "Total Supplies",
+      "totalLiters": "Total Liters"
+    },
+    "table": {
+      "licensePlate": "License Plate",
+      "model": "Model",
+      "brand": "Brand",
+      "type": "Type",
+      "totalSupplies": "Total Supplies",
+      "totalLiters": "Total Liters",
+      "avgPerSupply": "Avg L/Supply",
+      "frequencyDays": "Frequency (days)",
+      "mostFrequentPlace": "Most Frequent Place",
+      "period": "Period"
+    },
+    "toast": {
+      "datesRequired": "From and to dates are required.",
+      "reportError": "Could not generate the report."
+    }
+  },
+  "consumoCombustible": {
+    "title": "Consumption by Fuel",
+    "description": "Fuel consumption analysis by type",
+    "filters": {
+      "title": "Filters",
+      "fromDate": "From Date *",
+      "toDate": "To Date *",
+      "vehicleType": "Vehicle Type",
+      "all": "All",
+      "search": "Search",
+      "clear": "Clear"
+    },
+    "summary": {
+      "period": "Period",
+      "totalTrips": "Total Trips",
+      "suppliedVolume": "Supplied Volume",
+      "totalEstimatedCost": "Total Estimated Cost",
+      "consumedVolume": "Consumed Volume",
+      "fuelTypes": "Fuel Types",
+      "avgCostPerLiter": "Average Cost/Liter"
+    },
+    "table": {
+      "fuelType": "Fuel Type",
+      "consumedVolume": "Vol. Consumed",
+      "suppliedVolume": "Vol. Supplied",
+      "estimatedCost": "Estimated Cost",
+      "pctTotal": "% of Total",
+      "variationVsPrevious": "Variation vs Previous Period",
+      "trips": "Trips",
+      "avgCostPerLiter": "Avg Cost/Liter"
+    },
+    "loading": "Generating report...",
+    "noData": "No consumption data for the period.",
+    "placeholder": "Select filters and press Search..."
+  }
+}
