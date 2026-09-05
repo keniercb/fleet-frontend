@@ -71,7 +71,8 @@
       "fromDate": "Desde",
       "toDate": "Hasta",
       "vehicle": "Vehículo",
-      "fuelStation": "Lugar de Abastecimiento"
+      "fuelStation": "Lugar de Abastecimiento",
+      "all": "Todos"
     },
     "summary": {
       "totalVehicles": "Total Vehículos",

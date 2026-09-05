@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Loader2, Fuel, MapPin, RotateCcw } from 'lucide-react';
 import { reportesAbastecimientoApi, vehiculosApi } from '@/api/endpoints';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
+import { formatNumber as formatNum } from '@/utils/format';
 import type { AbastecimientoReporteResponse, VehiculoResponse } from '@/types';
 
 interface Filtros {
@@ -15,6 +17,7 @@ interface Filtros {
 }
 
 export default function ReporteAbastecimientoPage() {
+  const { t } = useTranslation(['reportes', 'common']);
   const { empresaId } = useAuth();
   const { addToast } = useToast();
 
@@ -53,7 +56,7 @@ export default function ReporteAbastecimientoPage() {
 
   const doFetch = useCallback(async (p: number) => {
     if (!filtros.desde || !filtros.hasta) {
-      addToast({ type: 'error', title: 'Error', message: 'Las fechas desde y hasta son obligatorias.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.datesRequired') });
       return;
     }
     setLoading(true);
@@ -70,14 +73,14 @@ export default function ReporteAbastecimientoPage() {
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.reportError') });
       setData([]);
       setTotalPages(0);
       setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  }, [filtros, size, addToast]);
+  }, [filtros, size, addToast, t]);
 
   const handleBuscar = () => {
     setPage(0);
@@ -104,10 +107,7 @@ export default function ReporteAbastecimientoPage() {
     setPage(0);
   };
 
-  const formatNumber = (n: number | null | undefined, decimals = 2) => {
-    if (n == null) return '—';
-    return n.toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  };
+  const formatNumLocal = (n: number | null | undefined, decimals = 2) => formatNum(n, decimals);
 
   // Totales generales
   const totals = data.reduce(
@@ -120,10 +120,10 @@ export default function ReporteAbastecimientoPage() {
 
   return (
     <div>
-      <PageHeader title="Abastecimiento" description="Reporte de abastecimiento de combustible por vehiculo">
+      <PageHeader title={t('reportes:abastecimiento.title')} description={t('reportes:abastecimiento.description')}>
         {searched && !loading && (
           <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-            {totalElements} resultado{totalElements !== 1 ? 's' : ''}
+            {t('reportes:abastecimiento.countLabel', { count: totalElements })}
           </span>
         )}
       </PageHeader>
@@ -132,11 +132,11 @@ export default function ReporteAbastecimientoPage() {
       <div className="card mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Fuel className="w-5 h-5 text-gray-500" />
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Filtros</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('common:actions.search')}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Desde *</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:abastecimiento.filters.fromDate')} *</label>
             <input
               type="date"
               value={filtros.desde}
@@ -145,7 +145,7 @@ export default function ReporteAbastecimientoPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Hasta *</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:abastecimiento.filters.toDate')} *</label>
             <input
               type="date"
               value={filtros.hasta}
@@ -154,23 +154,23 @@ export default function ReporteAbastecimientoPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Vehiculo</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:abastecimiento.filters.vehicle')}</label>
             <select
               value={filtros.vehiculoId}
               onChange={(e) => setFiltros((f) => ({ ...f, vehiculoId: Number(e.target.value) }))}
               className="input-field appearance-none pr-8 py-2 text-sm"
             >
-              <option value={0}>Todos</option>
+              <option value={0}>{t('reportes:abastecimiento.filters.all')}</option>
               {vehiculos.map((v) => (
                 <option key={v.id} value={v.id}>{v.matricula} — {v.modelo}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Lugar de Abastecimiento</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:abastecimiento.filters.fuelStation')}</label>
             <input
               type="text"
-              placeholder="Filtrar por lugar..."
+              placeholder={t('reportes:abastecimiento.filters.fuelStation')}
               value={filtros.lugarAbastecimiento}
               onChange={(e) => setFiltros((f) => ({ ...f, lugarAbastecimiento: e.target.value }))}
               className="input-field py-2 text-sm"
@@ -184,11 +184,11 @@ export default function ReporteAbastecimientoPage() {
             className="btn-primary flex items-center gap-2 disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Buscar
+            {t('common:actions.search')}
           </button>
           <button onClick={handleLimpiar} className="btn-secondary flex items-center gap-2">
             <RotateCcw className="w-4 h-4" />
-            Limpiar
+            {t('common:actions.clear')}
           </button>
         </div>
       </div>
@@ -197,16 +197,16 @@ export default function ReporteAbastecimientoPage() {
       {searched && !loading && data.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="card bg-blue-50 border-blue-200">
-            <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">Total Vehiculos</p>
-            <p className="text-2xl font-bold text-blue-800 mt-1">{totalElements}</p>
+            <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">{t('reportes:abastecimiento.summary.totalVehicles')}</p>
+            <p className="text-2xl font-bold text-blue-800 mt-1">{formatNum(totalElements)}</p>
           </div>
           <div className="card bg-green-50 border-green-200">
-            <p className="text-xs font-medium text-green-600 uppercase tracking-wide">Total Abastecimientos</p>
-            <p className="text-2xl font-bold text-green-800 mt-1">{totals.abastecimientos.toLocaleString()}</p>
+            <p className="text-xs font-medium text-green-600 uppercase tracking-wide">{t('reportes:abastecimiento.summary.totalSupplies')}</p>
+            <p className="text-2xl font-bold text-green-800 mt-1">{formatNum(totals.abastecimientos)}</p>
           </div>
           <div className="card bg-amber-50 border-amber-200">
-            <p className="text-xs font-medium text-amber-600 uppercase tracking-wide">Total Litros</p>
-            <p className="text-2xl font-bold text-amber-800 mt-1">{formatNumber(totals.litros)} L</p>
+            <p className="text-xs font-medium text-amber-600 uppercase tracking-wide">{t('reportes:abastecimiento.summary.totalLiters')}</p>
+            <p className="text-2xl font-bold text-amber-800 mt-1">{formatNumLocal(totals.litros)} L</p>
           </div>
         </div>
       )}
@@ -216,12 +216,12 @@ export default function ReporteAbastecimientoPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <Loader2 className="w-8 h-8 animate-spin mb-3" />
-            <p className="text-sm">Generando reporte...</p>
+            <p className="text-sm">{t('reportes:abastecimiento.toast.reportError')}</p>
           </div>
         ) : searched && data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <Fuel className="w-10 h-10 mb-3" />
-            <p className="text-sm">No se encontraron resultados para los filtros seleccionados.</p>
+            <p className="text-sm">{t('reportes:abastecimiento.toast.reportError')}</p>
           </div>
         ) : searched ? (
           <>
@@ -229,16 +229,16 @@ export default function ReporteAbastecimientoPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="table-header px-4 py-3 text-left">Matricula</th>
-                    <th className="table-header px-4 py-3 text-left">Modelo</th>
-                    <th className="table-header px-4 py-3 text-left">Marca</th>
-                    <th className="table-header px-4 py-3 text-left">Tipo</th>
-                    <th className="table-header px-4 py-3 text-right">Total Abast.</th>
-                    <th className="table-header px-4 py-3 text-right">Total Litros</th>
-                    <th className="table-header px-4 py-3 text-right">Promedio L/Carga</th>
-                    <th className="table-header px-4 py-3 text-right">Frecuencia (dias)</th>
-                    <th className="table-header px-4 py-3 text-left">Lugar Mas Frecuente</th>
-                    <th className="table-header px-4 py-3 text-left">Periodo</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:abastecimiento.table.licensePlate')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:abastecimiento.table.model')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:abastecimiento.table.brand')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:abastecimiento.table.type')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:abastecimiento.table.totalSupplies')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:abastecimiento.table.totalLiters')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:abastecimiento.table.avgPerSupply')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:abastecimiento.table.frequencyDays')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:abastecimiento.table.mostFrequentPlace')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:abastecimiento.table.period')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -248,10 +248,10 @@ export default function ReporteAbastecimientoPage() {
                       <td className="px-4 py-3 text-gray-600">{item.vehiculoResumido.modelo || '—'}</td>
                       <td className="px-4 py-3 text-gray-600">{item.vehiculoResumido.marcaNombre || '—'}</td>
                       <td className="px-4 py-3 text-gray-600">{item.vehiculoResumido.tipoVehiculoNombre || '—'}</td>
-                      <td className="px-4 py-3 text-right font-medium">{(item.totalAbastecimientos ?? 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right font-medium">{formatNumber(item.totalLitros)} L</td>
-                      <td className="px-4 py-3 text-right">{formatNumber(item.promedioLitrosPorCarga)} L</td>
-                      <td className="px-4 py-3 text-right">{item.frecuenciaDias != null ? item.frecuenciaDias.toLocaleString() : '—'}</td>
+                      <td className="px-4 py-3 text-right font-medium">{formatNum(item.totalAbastecimientos ?? 0)}</td>
+                      <td className="px-4 py-3 text-right font-medium">{formatNumLocal(item.totalLitros)} L</td>
+                      <td className="px-4 py-3 text-right">{formatNumLocal(item.promedioLitrosPorCarga)} L</td>
+                      <td className="px-4 py-3 text-right">{item.frecuenciaDias != null ? formatNum(item.frecuenciaDias) : '—'}</td>
                       <td className="px-4 py-3">
                         {item.lugarMasFrecuente ? (
                           <span className="inline-flex items-center gap-1 text-gray-700">
@@ -277,7 +277,7 @@ export default function ReporteAbastecimientoPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <Fuel className="w-10 h-10 mb-3" />
-            <p className="text-sm">Seleccione los filtros y presione Buscar para generar el reporte.</p>
+            <p className="text-sm">{t('reportes:consumoCombustible.placeholder')}</p>
           </div>
         )}
       </div>

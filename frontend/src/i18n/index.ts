@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import './types'; // strong typing for i18n keys (autocompletion + compile-time validation)
 
 import commonEs from '../../public/locales/es/common.json';
 import navigationEs from '../../public/locales/es/navigation.json';

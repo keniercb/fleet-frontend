@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, Search, ChevronDown, Eye, BarChart3, ChevronRight, FileDown, Loader2 } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -14,6 +15,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { formatDate as formatDateHelper, formatNumber, getMonthNames } from '@/utils/format';
 import type {
   VehiculoRequest,
   VehiculoResponse,
@@ -65,12 +67,6 @@ const EMPTY_FORM: FormData = {
 
 // ---- Componentes auxiliares ----
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  const date = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
-  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -83,6 +79,7 @@ function DetailField({ label, value }: { label: string; value: string }) {
 // ---- Component ----
 
 export default function VehiculosPage() {
+  const { t } = useTranslation(['vehiculos', 'common', 'crud']);
   const { addToast } = useToast();
   const { empresaId } = useAuth();
 
@@ -130,20 +127,7 @@ export default function VehiculosPage() {
   const [reporteMes, setReporteMes] = useState(new Date().getMonth() + 1);
   const [reporteAnio, setReporteAnio] = useState(new Date().getFullYear());
 
-  const MESES = [
-    { value: 1, label: 'Enero' },
-    { value: 2, label: 'Febrero' },
-    { value: 3, label: 'Marzo' },
-    { value: 4, label: 'Abril' },
-    { value: 5, label: 'Mayo' },
-    { value: 6, label: 'Junio' },
-    { value: 7, label: 'Julio' },
-    { value: 8, label: 'Agosto' },
-    { value: 9, label: 'Septiembre' },
-    { value: 10, label: 'Octubre' },
-    { value: 11, label: 'Noviembre' },
-    { value: 12, label: 'Diciembre' },
-  ];
+  const MESES = useMemo(() => getMonthNames(), []);
 
   const anios = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
 
@@ -171,9 +155,9 @@ export default function VehiculosPage() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      addToast({ type: 'success', title: 'Exportación exitosa', message: 'El reporte PDF se ha descargado.' });
+      addToast({ type: 'success', title: t('common:state.success'), message: t('vehiculos:toast.pdfSuccess') });
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte PDF.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.pdfError') });
     } finally {
       setExportingPdf(false);
     }
@@ -197,7 +181,7 @@ export default function VehiculosPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte PDF mensual.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.pdfError') });
     } finally {
       setExportingReportePdf(false);
     }
@@ -211,7 +195,7 @@ export default function VehiculosPage() {
       const res = await vehiculosApi.reporteMovimientoMensual(reporteVehiculo.id, reporteMes, reporteAnio);
       setReporteData(res.data);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte de movimiento.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.pdfError') });
     } finally {
       setReporteLoading(false);
     }
@@ -220,9 +204,9 @@ export default function VehiculosPage() {
   // Show error as toast
   useEffect(() => {
     if (error) {
-      addToast({ type: 'error', title: 'Error', message: error });
+      addToast({ type: 'error', title: t('common:state.error'), message: error });
     }
-  }, [error, addToast]);
+  }, [error, addToast, t]);
 
   // Fetch static dropdowns (no choferes — those are loaded by empresa)
   const fetchDropdowns = useCallback(async () => {
@@ -238,9 +222,9 @@ export default function VehiculosPage() {
         tiposCombustible: tcRes.data.content.filter((e) => e.activo),
       });
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los datos de los selectores.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.selectorsError') });
     }
-  }, [addToast]);
+  }, [addToast, t]);
 
   // Fetch choferes filtered by empresa
   const fetchChoferesByEmpresa = useCallback(async (empresaId: number) => {
@@ -320,10 +304,10 @@ export default function VehiculosPage() {
       const payload = buildRequestPayload();
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);
-        addToast({ type: 'success', title: 'Vehículo actualizado', message: 'El registro se ha actualizado correctamente.' });
+        addToast({ type: 'success', title: t('vehiculos:toast.vehicleUpdated'), message: t('crud:toast.updated') });
       } else {
         await createItem(payload);
-        addToast({ type: 'success', title: 'Vehículo creado', message: 'El nuevo registro se ha creado correctamente.' });
+        addToast({ type: 'success', title: t('vehiculos:toast.vehicleCreated'), message: t('crud:toast.created') });
       }
       setShowForm(false);
     } catch {
@@ -335,7 +319,7 @@ export default function VehiculosPage() {
     if (!deleteTarget) return;
     try {
       await deleteItem(deleteTarget.id);
-      addToast({ type: 'success', title: 'Vehículo eliminado', message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('vehiculos:toast.vehicleDeleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
     } catch {
       // error handled by useCrud → toast via useEffect
@@ -359,7 +343,7 @@ export default function VehiculosPage() {
     onChange: (v: number) => void,
     options: { id: number; label: string }[],
     required = true,
-    placeholder = 'Seleccionar...',
+    placeholder?: string,
   ) => (
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -373,7 +357,7 @@ export default function VehiculosPage() {
           className="input-field appearance-none pr-8"
           required={required}
         >
-          <option value={0}>{placeholder}</option>
+          <option value={0}>{placeholder ?? t('common:actions.select')}</option>
           {options.map((opt) => (
             <option key={opt.id} value={opt.id}>{opt.label}</option>
           ))}
@@ -387,12 +371,12 @@ export default function VehiculosPage() {
 
   return (
     <div>
-      <PageHeader title="Vehículos" description="Gestión de los vehículos del sistema">
+      <PageHeader title={t('vehiculos:title')} description={t('vehiculos:description')}>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder={t('crud:actions.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-field pl-9 py-2 text-sm"
@@ -404,11 +388,11 @@ export default function VehiculosPage() {
           className="btn-secondary flex items-center gap-2"
         >
           {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-          {exportingPdf ? 'Exportando...' : 'Exportar PDF'}
+          {exportingPdf ? t('vehiculos:report.searching') : t('vehiculos:report.searching')}
         </button>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t('crud:actions.new')}
         </button>
       </PageHeader>
 
@@ -418,16 +402,16 @@ export default function VehiculosPage() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="table-header px-4 py-3">Matrícula</th>
-                <th className="table-header px-4 py-3">Empresa</th>
-                <th className="table-header px-4 py-3">Tipo</th>
-                <th className="table-header px-4 py-3">Marca</th>
-                <th className="table-header px-4 py-3">Modelo</th>
-                <th className="table-header px-4 py-3">Tipo Combustible</th>
-                <th className="table-header px-4 py-3 text-right">Combustible (L)</th>
-                <th className="table-header px-4 py-3">Chofer</th>
-                <th className="table-header px-4 py-3 text-right">Odómetro</th>
-                <th className="table-header px-4 py-3 text-right">Acciones</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.licensePlate')}</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.company')}</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.type')}</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.brand')}</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.model')}</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.fuelType')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('vehiculos:table.fuelLiters')}</th>
+                <th className="table-header px-4 py-3">{t('vehiculos:table.driver')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('vehiculos:table.odometer')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('vehiculos:table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -436,14 +420,14 @@ export default function VehiculosPage() {
                   <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                      Cargando...
+                      {t('crud:states.loading')}
                     </div>
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
-                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+                    {search ? t('crud:states.noResults') : t('crud:states.empty')}
                   </td>
                 </tr>
               ) : (
@@ -478,35 +462,35 @@ export default function VehiculosPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="table-cell block">{item.odometro.toLocaleString()}</span>
+                      <span className="table-cell block">{formatNumber(item.odometro)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenReporte(item)}
                           className="p-1.5 hover:bg-purple-50 rounded-lg text-gray-400 hover:text-purple-600 transition-colors"
-                          title="Reporte de Movimiento"
+                          title={t('vehiculos:form.movementReport')}
                         >
                           <BarChart3 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setViewEntity(item)}
                           className="p-1.5 hover:bg-green-50 rounded-lg text-gray-400 hover:text-green-600 transition-colors"
-                          title="Ver detalles"
+                          title={t('common:actions.view')}
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
-                          title="Editar"
+                          title={t('common:actions.edit')}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(item)}
                           className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                          title="Eliminar"
+                          title={t('common:actions.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -535,7 +519,7 @@ export default function VehiculosPage() {
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+        title={editingEntity ? t('vehiculos:form.editTitle') : t('vehiculos:form.newTitle')}
         onClose={() => setShowForm(false)}
         size="xl"
       >
@@ -543,23 +527,23 @@ export default function VehiculosPage() {
           {/* Selects de relación */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {renderSelect(
-              'tipoVehiculoId', 'Tipo de Vehículo', formData.tipoVehiculoId,
+              'tipoVehiculoId', t('vehiculos:form.vehicleType.label'), formData.tipoVehiculoId,
               (v) => handleFieldChange('tipoVehiculoId', v),
               dropdowns.tiposVehiculo.map((e) => ({ id: e.id, label: e.nombre })),
             )}
             {renderSelect(
-              'marcaId', 'Marca', formData.marcaId,
+              'marcaId', t('vehiculos:form.brand.label'), formData.marcaId,
               (v) => handleFieldChange('marcaId', v),
               dropdowns.marcas.map((e) => ({ id: e.id, label: e.nombre })),
             )}
             {renderSelect(
-              'tipoCombustibleId', 'Tipo de Combustible', formData.tipoCombustibleId,
+              'tipoCombustibleId', t('vehiculos:form.fuelType.label'), formData.tipoCombustibleId,
               (v) => handleFieldChange('tipoCombustibleId', v),
               dropdowns.tiposCombustible.map((e) => ({ id: e.id, label: `${e.codigo} - ${e.denominacion}` })),
             )}
             <div>
               <label htmlFor="choferId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Chofer (opcional)
+                {t('vehiculos:form.driver.label')}
               </label>
               <div className="relative">
                 <select
@@ -569,7 +553,7 @@ export default function VehiculosPage() {
                   className="input-field appearance-none pr-8"
                   disabled={loadingChoferes}
                 >
-                  <option value="0">{loadingChoferes ? 'Cargando...' : 'Sin chofer asignado'}</option>
+                  <option value="0">{loadingChoferes ? t('crud:states.loading') : t('vehiculos:form.noDriverAssigned')}</option>
                   {choferes.map((c) => (
                     <option key={c.id} value={c.id}>{`${c.nombre} ${c.apellidos} — ${c.carneIdentidad}`}</option>
                   ))}
@@ -586,7 +570,7 @@ export default function VehiculosPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label htmlFor="modelo" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Modelo
+                {t('vehiculos:form.model.label')}
               </label>
               <input
                 id="modelo"
@@ -594,12 +578,12 @@ export default function VehiculosPage() {
                 value={formData.modelo}
                 onChange={(e) => handleFieldChange('modelo', e.target.value)}
                 className="input-field"
-                placeholder="Ej: Corolla 2024"
+                placeholder={t('vehiculos:form.model.placeholder')}
               />
             </div>
             <div>
               <label htmlFor="matricula" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Matrícula<span className="text-red-500 ml-0.5">*</span>
+                {t('vehiculos:form.licensePlate.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="matricula"
@@ -607,13 +591,13 @@ export default function VehiculosPage() {
                 value={formData.matricula}
                 onChange={(e) => handleFieldChange('matricula', e.target.value)}
                 className="input-field"
-                placeholder="Ej: A-123-456"
+                placeholder={t('vehiculos:form.licensePlate.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="numeroMotor" className="block text-sm font-medium text-gray-700 mb-1.5">
-                No. Motor<span className="text-red-500 ml-0.5">*</span>
+                {t('vehiculos:form.cardNumber.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="numeroMotor"
@@ -621,13 +605,13 @@ export default function VehiculosPage() {
                 value={formData.numeroMotor}
                 onChange={(e) => handleFieldChange('numeroMotor', e.target.value)}
                 className="input-field"
-                placeholder="Ej: M20240001"
+                placeholder={t('vehiculos:form.cardNumber.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="odometro" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Odómetro (km)<span className="text-red-500 ml-0.5">*</span>
+                {t('vehiculos:form.odometer.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="odometro"
@@ -636,13 +620,13 @@ export default function VehiculosPage() {
                 value={formData.odometro}
                 onChange={(e) => handleFieldChange('odometro', e.target.value === '' ? 0 : Number(e.target.value))}
                 className="input-field"
-                placeholder="Ej: 50000"
+                placeholder={t('vehiculos:form.odometer.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="combustible" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Combustible (L)<span className="text-red-500 ml-0.5">*</span>
+                {t('vehiculos:table.fuelLiters')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="combustible"
@@ -658,7 +642,7 @@ export default function VehiculosPage() {
             </div>
             <div>
               <label htmlFor="indiceConsumo" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Índice Consumo (km/L)
+                {t('vehiculos:form.odometer.label')} (km/L)
               </label>
               <input
                 id="indiceConsumo"
@@ -673,7 +657,7 @@ export default function VehiculosPage() {
             </div>
             <div>
               <label htmlFor="ultimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Último Mantenimiento
+                {t('vehiculos:form.maintenance')}
               </label>
               <input
                 id="ultimoMantenimiento"
@@ -685,7 +669,7 @@ export default function VehiculosPage() {
             </div>
             <div>
               <label htmlFor="odometroUltimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Odómetro Ult. Mantenimiento
+                {t('vehiculos:form.odometer.label')}
               </label>
               <input
                 id="odometroUltimoMantenimiento"
@@ -706,10 +690,10 @@ export default function VehiculosPage() {
               onClick={() => setShowForm(false)}
               className="btn-secondary"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+              {saving ? t('common:actions.saving') : editingEntity ? t('common:actions.update') : t('common:actions.create')}
             </button>
           </div>
         </form>
@@ -718,7 +702,7 @@ export default function VehiculosPage() {
       {/* View Detail Modal */}
       <Modal
         open={!!viewEntity}
-        title="Detalles del Vehículo"
+        title={t('vehiculos:form.detailTitle')}
         onClose={() => setViewEntity(null)}
         size="xl"
       >
@@ -726,61 +710,61 @@ export default function VehiculosPage() {
           <div className="space-y-6">
             {/* Info general */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información General</h3>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('vehiculos:form.generalInfo')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <DetailField label="Matrícula" value={viewEntity.matricula} />
-                <DetailField label="Modelo" value={viewEntity.modelo || '—'} />
-                <DetailField label="No. Motor" value={viewEntity.numeroMotor || '—'} />
-                <DetailField label="Marca" value={`${viewEntity.marca.nombre}${viewEntity.marca.paisOrigen ? ` (${viewEntity.marca.paisOrigen})` : ''}`} />
-                <DetailField label="Tipo de Vehículo" value={viewEntity.tipoVehiculo.nombre} />
-                <DetailField label="Tipo de Combustible" value={`${viewEntity.tipoCombustible.codigo} — ${viewEntity.tipoCombustible.denominacion}`} />
+                <DetailField label={t('vehiculos:table.licensePlate')} value={viewEntity.matricula} />
+                <DetailField label={t('vehiculos:table.model')} value={viewEntity.modelo || '—'} />
+                <DetailField label={t('vehiculos:form.cardNumber.label')} value={viewEntity.numeroMotor || '—'} />
+                <DetailField label={t('vehiculos:table.brand')} value={`${viewEntity.marca.nombre}${viewEntity.marca.paisOrigen ? ` (${viewEntity.marca.paisOrigen})` : ''}`} />
+                <DetailField label={t('vehiculos:form.vehicleType.label')} value={viewEntity.tipoVehiculo.nombre} />
+                <DetailField label={t('vehiculos:form.fuelType.label')} value={`${viewEntity.tipoCombustible.codigo} — ${viewEntity.tipoCombustible.denominacion}`} />
               </div>
             </div>
 
             {/* Empresa y Chofer */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Empresa y Chofer</h3>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('vehiculos:form.companyAndDriver')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DetailField label="Empresa" value={viewEntity.empresa.nombre} />
+                <DetailField label={t('vehiculos:table.company')} value={viewEntity.empresa.nombre} />
                 <DetailField
-                  label="Chofer"
-                  value={viewEntity.chofer ? `${viewEntity.chofer.nombre} ${viewEntity.chofer.apellidos}` : 'Sin asignar'}
+                  label={t('vehiculos:table.driver')}
+                  value={viewEntity.chofer ? `${viewEntity.chofer.nombre} ${viewEntity.chofer.apellidos}` : t('vehiculos:form.noDriverAssigned')}
                 />
               </div>
             </div>
 
             {/* Métricas */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Métricas y Combustible</h3>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('vehiculos:form.metricsAndFuel')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <DetailField label="Odómetro" value={`${viewEntity.odometro.toLocaleString()} km`} />
-                <DetailField label="Combustible" value={`${viewEntity.combustible} L`} />
-                <DetailField label="Índice de Consumo" value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
+                <DetailField label={t('vehiculos:table.odometer')} value={`${formatNumber(viewEntity.odometro)} km`} />
+                <DetailField label={t('vehiculos:table.fuelLiters')} value={`${viewEntity.combustible} L`} />
+                <DetailField label={t('vehiculos:table.fuelLiters')} value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
               </div>
             </div>
 
             {/* Mantenimiento */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Mantenimiento</h3>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('vehiculos:form.maintenance')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DetailField label="Último Mantenimiento" value={viewEntity.ultimoMantenimiento ? formatDate(viewEntity.ultimoMantenimiento) : '—'} />
-                <DetailField label="Odómetro Ult. Mantenimiento" value={viewEntity.odometroUltimoMantenimiento ? `${viewEntity.odometroUltimoMantenimiento.toLocaleString()} km` : '—'} />
+                <DetailField label={t('vehiculos:form.maintenance')} value={viewEntity.ultimoMantenimiento ? formatDateHelper(viewEntity.ultimoMantenimiento, 'short') : '—'} />
+                <DetailField label={t('vehiculos:table.odometer')} value={viewEntity.odometroUltimoMantenimiento ? `${formatNumber(viewEntity.odometroUltimoMantenimiento)} km` : '—'} />
               </div>
             </div>
 
             {/* Estado */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Estado</h3>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('common:field.state')}</h3>
               <div className="flex items-center gap-2">
                 {viewEntity.activo
-                  ? <span className="badge-active">Activo</span>
-                  : <span className="badge-inactive">Inactivo</span>}
+                  ? <span className="badge-active">{t('crud:badges.active')}</span>
+                  : <span className="badge-inactive">{t('crud:badges.inactive')}</span>}
               </div>
             </div>
 
             <div className="flex justify-end pt-4 border-t border-gray-200">
               <button onClick={() => setViewEntity(null)} className="btn-secondary">
-                Cerrar
+                {t('common:actions.close')}
               </button>
             </div>
           </div>
@@ -790,7 +774,7 @@ export default function VehiculosPage() {
       {/* Reporte Movimiento Mensual Modal */}
       <Modal
         open={!!reporteVehiculo}
-        title={reporteVehiculo ? `Reporte de Movimiento — ${reporteVehiculo.matricula}` : 'Reporte de Movimiento'}
+        title={reporteVehiculo ? `${t('vehiculos:report.title')} — ${reporteVehiculo.matricula}` : t('vehiculos:form.movementReport')}
         onClose={() => { setReporteVehiculo(null); setReporteData(null); }}
         size="xl"
       >
@@ -799,7 +783,7 @@ export default function VehiculosPage() {
             {/* Filtros: Mes y Año */}
             <div className="flex flex-col sm:flex-row items-end gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="w-full sm:w-44">
-                <label htmlFor="repo-mes" className="block text-xs font-medium text-gray-500 mb-1">Mes</label>
+                <label htmlFor="repo-mes" className="block text-xs font-medium text-gray-500 mb-1">{t('vehiculos:report.table.date')}</label>
                 <select
                   id="repo-mes"
                   value={reporteMes}
@@ -812,7 +796,7 @@ export default function VehiculosPage() {
                 </select>
               </div>
               <div className="w-full sm:w-36">
-                <label htmlFor="repo-anio" className="block text-xs font-medium text-gray-500 mb-1">Año</label>
+                <label htmlFor="repo-anio" className="block text-xs font-medium text-gray-500 mb-1">{t('vehiculos:report.table.date')}</label>
                 <select
                   id="repo-anio"
                   value={reporteAnio}
@@ -834,7 +818,7 @@ export default function VehiculosPage() {
                 ) : (
                   <Search className="w-4 h-4" />
                 )}
-                Buscar
+                {t('vehiculos:report.search')}
               </button>
               <button
                 onClick={handleExportReportePdf}
@@ -842,7 +826,7 @@ export default function VehiculosPage() {
                 className="btn-secondary flex items-center gap-2 disabled:opacity-50"
               >
                 {exportingReportePdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-                Exportar PDF
+                {t('vehiculos:report.search')}
               </button>
             </div>
 
@@ -850,7 +834,7 @@ export default function VehiculosPage() {
             {reporteLoading && (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
-                <p className="text-sm">Generando reporte...</p>
+                <p className="text-sm">{t('vehiculos:report.searching')}</p>
               </div>
             )}
 
@@ -861,19 +845,19 @@ export default function VehiculosPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <ChevronRight className="w-4 h-4" />
-                    Datos del Vehículo
+                    {t('vehiculos:form.detailTitle')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
-                    <DetailField label="Matrícula" value={reporteData.vehiculo.matricula} />
-                    <DetailField label="Marca" value={reporteData.vehiculo.marca} />
-                    <DetailField label="No. Motor" value={reporteData.vehiculo.numeroMotor || '—'} />
-                    <DetailField label="Tipo Combustible" value={reporteData.vehiculo.tipoCombustible} />
-                    <DetailField label="Norma de Consumo" value={`${reporteData.vehiculo.normaConsumo} km/L`} />
+                    <DetailField label={t('vehiculos:table.licensePlate')} value={reporteData.vehiculo.matricula} />
+                    <DetailField label={t('vehiculos:table.brand')} value={reporteData.vehiculo.marca} />
+                    <DetailField label={t('vehiculos:form.cardNumber.label')} value={reporteData.vehiculo.numeroMotor || '—'} />
+                    <DetailField label={t('vehiculos:form.fuelType.label')} value={reporteData.vehiculo.tipoCombustible} />
+                    <DetailField label={t('vehiculos:table.fuelLiters')} value={`${reporteData.vehiculo.normaConsumo} km/L`} />
                     <DetailField
-                      label="Chofer"
+                      label={t('vehiculos:table.driver')}
                       value={reporteData.vehiculo.chofer
                         ? `${reporteData.vehiculo.chofer.nombre} ${reporteData.vehiculo.chofer.apellidos}`
-                        : 'Sin asignar'}
+                        : t('vehiculos:form.noDriverAssigned')}
                     />
                   </div>
                 </div>
@@ -882,30 +866,30 @@ export default function VehiculosPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <ChevronRight className="w-4 h-4" />
-                    Lecturas Diarias
+                    {t('vehiculos:report.table.date')}
                   </h3>
                   {reporteData.lecturas.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-6">No hay lecturas para este periodo.</p>
+                    <p className="text-sm text-gray-400 text-center py-6">{t('vehiculos:report.noData')}</p>
                   ) : (
                     <div className="overflow-x-auto border border-gray-200 rounded-lg">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-gray-50">
-                            <th className="table-header px-3 py-2">Día</th>
-                            <th className="table-header px-3 py-2 text-right">Odómetro</th>
-                            <th className="table-header px-3 py-2 text-right">Km Recorridos</th>
-                            <th className="table-header px-3 py-2 text-right">Comb. en Depósito</th>
-                            <th className="table-header px-3 py-2 text-right">Comb. Consumido</th>
-                            <th className="table-header px-3 py-2 text-right">Comb. Abastecido</th>
-                            <th className="table-header px-3 py-2 text-right">Saldo Comb.</th>
+                            <th className="table-header px-3 py-2">{t('vehiculos:report.table.date')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.odometerEnd')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.km')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
                           </tr>
                         </thead>
                         <tbody>
                           {reporteData.lecturas.map((l) => (
                             <tr key={l.dia} className="hover:bg-gray-50 transition-colors">
                               <td className="px-3 py-2 font-medium text-gray-900">{l.dia}</td>
-                              <td className="px-3 py-2 text-right">{l.odometro?.toLocaleString() ?? '—'}</td>
-                              <td className="px-3 py-2 text-right">{l.kilometrosRecorridos?.toLocaleString() ?? '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.odometro != null ? formatNumber(l.odometro) : '—'}</td>
+                              <td className="px-3 py-2 text-right">{l.kilometrosRecorridos != null ? formatNumber(l.kilometrosRecorridos) : '—'}</td>
                               <td className="px-3 py-2 text-right">{l.combustibleEnDeposito ?? '—'}</td>
                               <td className="px-3 py-2 text-right">{l.combustibleConsumido ?? '—'}</td>
                               <td className="px-3 py-2 text-right">{l.combustibleAbastecido ?? '—'}</td>
@@ -922,15 +906,15 @@ export default function VehiculosPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <ChevronRight className="w-4 h-4" />
-                    Análisis de Consumo
+                    {t('vehiculos:form.metricsAndFuel')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
-                    <DetailField label="Combustible Inicial" value={`${reporteData.analisis.combustibleInicial} L`} />
-                    <DetailField label="Combustible Recibido" value={`${reporteData.analisis.combustibleRecibido} L`} />
-                    <DetailField label="Combustible Consumido" value={`${reporteData.analisis.combustibleConsumido} L`} />
-                    <DetailField label="Existencia Final" value={`${reporteData.analisis.existenciaFinal} L`} />
-                    <DetailField label="Km Recorridos" value={reporteData.analisis.kilometrosRecorridos.toLocaleString()} />
-                    <DetailField label="Consumido según Norma" value={`${reporteData.analisis.consumidoSegunNorma} L`} />
+                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.combustibleInicial} L`} />
+                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.combustibleRecibido} L`} />
+                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.combustibleConsumido} L`} />
+                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.existenciaFinal} L`} />
+                    <DetailField label={t('vehiculos:report.table.km')} value={formatNumber(reporteData.analisis.kilometrosRecorridos)} />
+                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.consumidoSegunNorma} L`} />
                   </div>
                 </div>
               </>
@@ -938,7 +922,7 @@ export default function VehiculosPage() {
 
             {/* Sin datos aún */}
             {!reporteData && !reporteLoading && (
-              <p className="text-sm text-gray-400 text-center py-12">Seleccione mes y año, luego presione Buscar para generar el reporte.</p>
+              <p className="text-sm text-gray-400 text-center py-12">{t('vehiculos:report.placeholder')}</p>
             )}
           </div>
         )}
@@ -947,11 +931,11 @@ export default function VehiculosPage() {
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title="Eliminar Vehículo"
-        message="¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+        title={t('crud:modal.delete', { singular: t('vehiculos:title') })}
+        message={t('crud:modal.deleteConfirm')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        confirmText="Eliminar"
+        confirmText={t('common:actions.delete')}
         danger
       />
     </div>

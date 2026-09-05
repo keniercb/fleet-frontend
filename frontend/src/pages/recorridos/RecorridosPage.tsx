@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, ChevronDown, FilterX, Search } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +8,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { formatDate as formatDateHelper, formatNumber } from '@/utils/format';
 import type {
   RecorridoRequest,
   RecorridoResponse,
@@ -40,14 +42,8 @@ const EMPTY_FORM: FormData = {
 
 // ---- Helpers ----
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  const date = new Date(dateStr + (dateStr.length === 10 ? 'T00:00:00' : ''));
-  return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split('T')[0] ?? '';
 }
 
 function vehiculoLabel(v: VehiculoResponse): string {
@@ -57,6 +53,7 @@ function vehiculoLabel(v: VehiculoResponse): string {
 // ---- Component ----
 
 export default function RecorridosPage() {
+  const { t } = useTranslation(['recorridos', 'common', 'crud']);
   const { addToast } = useToast();
   const { empresaId } = useAuth();
 
@@ -121,11 +118,11 @@ export default function RecorridosPage() {
       setVehiculosByEmpresa(res.data.content.filter((v) => v.activo));
     } catch {
       setVehiculosByEmpresa([]);
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los vehiculos.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('recorridos:toast.saveError') });
     } finally {
       setLoadingVehiculos(false);
     }
-  }, [empresaId, addToast]);
+  }, [empresaId, addToast, t]);
 
   useEffect(() => {
     fetchVehiculosByEmpresa();
@@ -155,15 +152,15 @@ export default function RecorridosPage() {
     } catch (err) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Error al cargar los recorridos';
-      addToast({ type: 'error', title: 'Error', message });
+        t('errors:crud.load');
+      addToast({ type: 'error', title: t('common:state.error'), message });
       setData([]);
       setTotalPages(0);
       setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  }, [size, addToast]);
+  }, [size, addToast, t]);
 
   useEffect(() => {
     if (canLoadData) {
@@ -258,15 +255,15 @@ export default function RecorridosPage() {
       const payload = buildRequestPayload();
       if (editingEntity) {
         await recorridosApi.update(editingEntity.id, payload);
-        addToast({ type: 'success', title: 'Recorrido actualizado', message: 'El registro se ha actualizado correctamente.' });
+        addToast({ type: 'success', title: t('recorridos:toast.updated'), message: t('crud:toast.updated') });
       } else {
         await recorridosApi.create(payload);
-        addToast({ type: 'success', title: 'Recorrido creado', message: 'El nuevo registro se ha creado correctamente.' });
+        addToast({ type: 'success', title: t('recorridos:toast.created'), message: t('crud:toast.created') });
       }
       setShowForm(false);
       if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'Error al guardar el recorrido.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('recorridos:toast.saveError') });
     } finally {
       setSaving(false);
     }
@@ -277,11 +274,11 @@ export default function RecorridosPage() {
     setSaving(true);
     try {
       await recorridosApi.delete(deleteTarget.id);
-      addToast({ type: 'success', title: 'Recorrido eliminado', message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('recorridos:toast.deleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
       if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'Error al eliminar el recorrido.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('recorridos:toast.deleteError') });
     } finally {
       setSaving(false);
     }
@@ -293,15 +290,15 @@ export default function RecorridosPage() {
 
   return (
     <div>
-      <PageHeader title="Recorridos" description="Gestion de recorridos y abastecimientos de vehiculos">
+      <PageHeader title={t('recorridos:title')} description={t('recorridos:description')}>
         <button
           onClick={handleOpenCreate}
           disabled={!filterVehiculoId}
           className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          title={!filterVehiculoId ? 'Seleccione un vehiculo para adicionar' : 'Nuevo recorrido'}
+          title={!filterVehiculoId ? t('recorridos:selectVehicle') : t('crud:actions.new')}
         >
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t('crud:actions.new')}
         </button>
       </PageHeader>
 
@@ -311,7 +308,7 @@ export default function RecorridosPage() {
           {/* Vehiculo */}
           <div className="relative w-full sm:w-64">
             <label htmlFor="filter-vehiculo" className="block text-xs font-medium text-gray-500 mb-1">
-              Vehiculo<span className="text-red-500 ml-0.5">*</span>
+              {t('recorridos:filters.vehicle')}<span className="text-red-500 ml-0.5">*</span>
             </label>
             <select
               id="filter-vehiculo"
@@ -322,8 +319,8 @@ export default function RecorridosPage() {
             >
               <option value="0">
                 {loadingVehiculos
-                  ? 'Cargando...'
-                  : 'Seleccionar vehiculo...'}
+                  ? t('recorridos:states.loading')
+                  : t('recorridos:selectVehiclePlaceholder')}
               </option>
               {vehiculosByEmpresa.map((v) => (
                 <option key={v.id} value={v.id}>{vehiculoLabel(v)}</option>
@@ -335,7 +332,7 @@ export default function RecorridosPage() {
           {/* Fecha Desde */}
           <div className="w-full sm:w-40">
             <label htmlFor="filter-from" className="block text-xs font-medium text-gray-500 mb-1">
-              Fecha desde
+              {t('recorridos:filters.fromDate')}
             </label>
             <input
               id="filter-from"
@@ -350,7 +347,7 @@ export default function RecorridosPage() {
           {/* Fecha Hasta */}
           <div className="w-full sm:w-40">
             <label htmlFor="filter-to" className="block text-xs font-medium text-gray-500 mb-1">
-              Fecha hasta
+              {t('recorridos:filters.toDate')}
             </label>
             <input
               id="filter-to"
@@ -368,10 +365,10 @@ export default function RecorridosPage() {
               <button
                 onClick={handleClearFilters}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Limpiar filtros"
+                title={t('common:actions.clear')}
               >
                 <FilterX className="w-4 h-4" />
-                Limpiar
+                {t('common:actions.clear')}
               </button>
             </div>
           )}
@@ -384,16 +381,16 @@ export default function RecorridosPage() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="table-header px-4 py-3">Fecha</th>
-                <th className="table-header px-4 py-3 text-right">Km Recorridos</th>
-                <th className="table-header px-4 py-3 text-right">Odometro Inicial</th>
-                <th className="table-header px-4 py-3 text-right">Consumo</th>
-                <th className="table-header px-4 py-3 text-right">Litros</th>
-                <th className="table-header px-4 py-3">N Chip</th>
-                <th className="table-header px-4 py-3">Lugar</th>
-                <th className="table-header px-4 py-3">Tarjeta</th>
-                <th className="table-header px-4 py-3 text-right">Importe</th>
-                <th className="table-header px-4 py-3 text-right">Acciones</th>
+                <th className="table-header px-4 py-3">{t('recorridos:table.date')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('recorridos:table.kmTraveled')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('recorridos:table.odometerStart')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('recorridos:table.consumption')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('recorridos:table.liters')}</th>
+                <th className="table-header px-4 py-3">{t('recorridos:table.chipNumber')}</th>
+                <th className="table-header px-4 py-3">{t('recorridos:table.place')}</th>
+                <th className="table-header px-4 py-3">{t('recorridos:table.card')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('recorridos:table.amount')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('recorridos:table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -402,7 +399,7 @@ export default function RecorridosPage() {
                   <td colSpan={colCount} className="px-4 py-16 text-center text-gray-400">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-8 h-8 text-gray-300" />
-                      <p className="text-sm">Seleccione un vehiculo para ver los recorridos</p>
+                      <p className="text-sm">{t('recorridos:selectVehicle')}</p>
                     </div>
                   </td>
                 </tr>
@@ -411,27 +408,27 @@ export default function RecorridosPage() {
                   <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                      Cargando...
+                      {t('recorridos:states.loading')}
                     </div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="px-4 py-12 text-center text-gray-400">
-                    {hasDateRange ? 'No se encontraron recorridos en el rango de fechas' : 'No hay recorridos para este vehiculo'}
+                    {hasDateRange ? t('recorridos:states.noDataRange') : t('recorridos:states.noDataVehicle')}
                   </td>
                 </tr>
               ) : (
                 data.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
-                      <span className="table-cell block font-medium text-gray-900">{formatDate(item.fecha)}</span>
+                      <span className="table-cell block font-medium text-gray-900">{formatDateHelper(item.fecha, 'short')}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="table-cell block">{item.kilometros.toLocaleString()}</span>
+                      <span className="table-cell block">{formatNumber(item.kilometros)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="table-cell block">{item.odometroInicial.toLocaleString()}</span>
+                      <span className="table-cell block">{formatNumber(item.odometroInicial)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="table-cell block">{item.consumo} km/L</span>
@@ -449,21 +446,21 @@ export default function RecorridosPage() {
                       <span className="table-cell block">{item.tarjetaCombustible?.numero || '—'}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="table-cell block">{item.importeAbastecido ? `${item.importeAbastecido.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}</span>
+                      <span className="table-cell block">{item.importeAbastecido ? formatNumber(item.importeAbastecido, 2) : '—'}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
-                          title="Editar"
+                          title={t('common:actions.edit')}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(item)}
                           className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                          title="Eliminar"
+                          title={t('common:actions.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -492,14 +489,14 @@ export default function RecorridosPage() {
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? 'Editar Recorrido' : 'Nuevo Recorrido'}
+        title={editingEntity ? t('recorridos:form.editTitle') : t('recorridos:form.newTitle')}
         onClose={() => setShowForm(false)}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {modalVehiculo && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-              <p className="text-xs font-medium text-gray-500 mb-0.5">Vehiculo</p>
+              <p className="text-xs font-medium text-gray-500 mb-0.5">{t('recorridos:filters.vehicle')}</p>
               <p className="text-sm font-semibold text-gray-900">{modalVehiculo.matricula} — {modalVehiculo.marca.nombre} {modalVehiculo.modelo || ''}</p>
               <p className="text-xs text-gray-500">{modalVehiculo.empresa.nombre}</p>
             </div>
@@ -507,7 +504,7 @@ export default function RecorridosPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Fecha<span className="text-red-500 ml-0.5">*</span>
+                {t('recorridos:form.date.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="fecha"
@@ -520,7 +517,7 @@ export default function RecorridosPage() {
             </div>
             <div>
               <label htmlFor="kilometros" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Kilometros Recorridos<span className="text-red-500 ml-0.5">*</span>
+                {t('recorridos:form.kmTraveled.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="kilometros"
@@ -530,13 +527,13 @@ export default function RecorridosPage() {
                 value={formData.kilometros}
                 onChange={(e) => handleFieldChange('kilometros', e.target.value === '' ? 0 : Number(e.target.value))}
                 className="input-field"
-                placeholder="Ej: 150.5"
+                placeholder={t('recorridos:form.kmTraveled.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="litrosAbastecidos" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Litros Abastecidos
+                {t('recorridos:form.liters.label')}
               </label>
               <input
                 id="litrosAbastecidos"
@@ -546,12 +543,12 @@ export default function RecorridosPage() {
                 value={formData.litrosAbastecidos}
                 onChange={(e) => handleFieldChange('litrosAbastecidos', e.target.value)}
                 className="input-field"
-                placeholder="Ej: 25.5"
+                placeholder={t('recorridos:form.liters.placeholder')}
               />
             </div>
             <div>
               <label htmlFor="numeroChip" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Numero de Chip
+                {t('recorridos:form.chipNumber.label')}
               </label>
               <input
                 id="numeroChip"
@@ -559,12 +556,12 @@ export default function RecorridosPage() {
                 value={formData.numeroChip}
                 onChange={(e) => handleFieldChange('numeroChip', e.target.value)}
                 className="input-field"
-                placeholder="Ej: CHIP-001"
+                placeholder={t('recorridos:form.chipNumber.placeholder')}
               />
             </div>
             <div className="sm:col-span-2">
               <label htmlFor="lugarAbastecimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Lugar de Abastecimiento
+                {t('recorridos:form.place.label')}
               </label>
               <input
                 id="lugarAbastecimiento"
@@ -572,12 +569,12 @@ export default function RecorridosPage() {
                 value={formData.lugarAbastecimiento}
                 onChange={(e) => handleFieldChange('lugarAbastecimiento', e.target.value)}
                 className="input-field"
-                placeholder="Ej: Estacion Servi Centro"
+                placeholder={t('recorridos:form.place.placeholder')}
               />
             </div>
             <div>
               <label htmlFor="tarjetaCombustibleId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Tarjeta de Combustible
+                {t('recorridos:form.fuelCard.label')}
               </label>
               <div className="relative">
                 <select
@@ -586,9 +583,9 @@ export default function RecorridosPage() {
                   onChange={(e) => handleFieldChange('tarjetaCombustibleId', Number(e.target.value))}
                   className="input-field appearance-none pr-8"
                 >
-                  <option value="0">Sin tarjeta</option>
-                  {tarjetas.map((t) => (
-                    <option key={t.id} value={t.id}>{t.numero} ({t.currency.isoCode})</option>
+                  <option value="0">{t('recorridos:noCard')}</option>
+                  {tarjetas.map((tt) => (
+                    <option key={tt.id} value={tt.id}>{tt.numero} ({tt.currency.isoCode})</option>
                   ))}
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -596,7 +593,7 @@ export default function RecorridosPage() {
             </div>
             <div>
               <label htmlFor="importeAbastecido" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Importe Abastecido
+                {t('recorridos:form.amount.label')}
               </label>
               <input
                 id="importeAbastecido"
@@ -606,7 +603,7 @@ export default function RecorridosPage() {
                 value={formData.importeAbastecido}
                 onChange={(e) => handleFieldChange('importeAbastecido', e.target.value)}
                 className="input-field"
-                placeholder="Ej: 1500.00"
+                placeholder={t('recorridos:form.amount.placeholder')}
               />
             </div>
           </div>
@@ -616,10 +613,10 @@ export default function RecorridosPage() {
               onClick={() => setShowForm(false)}
               className="btn-secondary"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+              {saving ? t('common:actions.saving') : editingEntity ? t('common:actions.update') : t('common:actions.create')}
             </button>
           </div>
         </form>
@@ -628,11 +625,11 @@ export default function RecorridosPage() {
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title="Eliminar Recorrido"
-        message="Esta seguro que desea eliminar este recorrido? Esta accion no se puede deshacer."
+        title={t('crud:modal.delete', { singular: t('recorridos:title') })}
+        message={t('recorridos:toast.deleteConfirm')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        confirmText="Eliminar"
+        confirmText={t('common:actions.delete')}
         danger
       />
     </div>

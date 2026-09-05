@@ -56,8 +56,9 @@
   },
   "toast": {
     "pdfError": "Could not generate the PDF report.",
-    "selectorsError": "Could not load selector data.",
+    "pdfSuccess": "The PDF report has been downloaded.",
     "pdfGenerating": "Generating report...",
+    "selectorsError": "Could not load selector data.",
     "vehicleCreated": "Vehicle created",
     "vehicleUpdated": "Vehicle updated",
     "vehicleDeleted": "Vehicle deleted",

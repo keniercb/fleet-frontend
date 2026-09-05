@@ -71,7 +71,8 @@
       "fromDate": "From",
       "toDate": "To",
       "vehicle": "Vehicle",
-      "fuelStation": "Supply Place"
+      "fuelStation": "Supply Place",
+      "all": "All"
     },
     "summary": {
       "totalVehicles": "Total Vehicles",
