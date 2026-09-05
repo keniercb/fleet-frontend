@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
 import { authApi } from '@/api/endpoints';
 import { useToast } from '@/contexts/ToastContext';
@@ -11,6 +12,7 @@ interface ChangePasswordModalProps {
 }
 
 export default function ChangePasswordModal({ userId, open, onClose }: ChangePasswordModalProps) {
+  const { t } = useTranslation('auth');
   const { addToast } = useToast();
   const [passwordAnterior, setPasswordAnterior] = useState('');
   const [nuevaPassword, setNuevaPassword] = useState('');
@@ -43,17 +45,17 @@ export default function ChangePasswordModal({ userId, open, onClose }: ChangePas
     e.preventDefault();
 
     if (!passwordAnterior.trim() || !nuevaPassword.trim() || !confirmacionPassword.trim()) {
-      addToast({ type: 'warning', title: 'Campos requeridos', message: 'Todos los campos son obligatorios.' });
+      addToast({ type: 'warning', title: t('changePassword.requiredFields'), message: t('changePassword.allRequired') });
       return;
     }
 
     if (nuevaPassword !== confirmacionPassword) {
-      addToast({ type: 'error', title: 'Error', message: 'La nueva contraseña y la confirmación no coinciden.' });
+      addToast({ type: 'error', title: t('changePassword.requiredFields'), message: t('changePassword.passwordMismatch') });
       return;
     }
 
     if (nuevaPassword.length < 4) {
-      addToast({ type: 'warning', title: 'Contraseña débil', message: 'La nueva contraseña debe tener al menos 4 caracteres.' });
+      addToast({ type: 'warning', title: t('changePassword.weakPassword'), message: t('changePassword.weakPasswordMessage') });
       return;
     }
 
@@ -65,31 +67,31 @@ export default function ChangePasswordModal({ userId, open, onClose }: ChangePas
         nuevaPassword,
         confirmacionPassword,
       });
-      addToast({ type: 'success', title: 'Contraseña actualizada', message: 'Su contraseña ha sido cambiada exitosamente.' });
+      addToast({ type: 'success', title: t('changePassword.success'), message: t('changePassword.successMessage') });
       resetForm();
       onClose();
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'No se pudo cambiar la contraseña.';
-      addToast({ type: 'error', title: 'Error al cambiar contraseña', message: msg });
+      const msg = error instanceof Error ? error.message : t('changePassword.errorMessage');
+      addToast({ type: 'error', title: t('changePassword.error'), message: msg });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal open={open} title="Cambiar Contraseña" onClose={handleClose} size="sm">
+    <Modal open={open} title={t('changePassword.title')} onClose={handleClose} size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Contraseña actual */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contraseña actual
+            {t('changePassword.currentPassword')}
           </label>
           <div className="relative">
             <input
               type={showPasswords.actual ? 'text' : 'password'}
               value={passwordAnterior}
               onChange={(e) => setPasswordAnterior(e.target.value)}
-              placeholder="Ingrese su contraseña actual"
+              placeholder={t('changePassword.currentPlaceholder')}
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
               autoComplete="current-password"
               disabled={loading}
@@ -108,14 +110,14 @@ export default function ChangePasswordModal({ userId, open, onClose }: ChangePas
         {/* Nueva contraseña */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nueva contraseña
+            {t('changePassword.newPassword')}
           </label>
           <div className="relative">
             <input
               type={showPasswords.nueva ? 'text' : 'password'}
               value={nuevaPassword}
               onChange={(e) => setNuevaPassword(e.target.value)}
-              placeholder="Ingrese la nueva contraseña"
+              placeholder={t('changePassword.newPlaceholder')}
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
               autoComplete="new-password"
               disabled={loading}
@@ -134,14 +136,14 @@ export default function ChangePasswordModal({ userId, open, onClose }: ChangePas
         {/* Confirmación */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Confirmar contraseña
+            {t('changePassword.confirmPassword')}
           </label>
           <div className="relative">
             <input
               type={showPasswords.confirmacion ? 'text' : 'password'}
               value={confirmacionPassword}
               onChange={(e) => setConfirmacionPassword(e.target.value)}
-              placeholder="Confirme la nueva contraseña"
+              placeholder={t('changePassword.confirmPlaceholder')}
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
               autoComplete="new-password"
               disabled={loading}
@@ -165,7 +167,7 @@ export default function ChangePasswordModal({ userId, open, onClose }: ChangePas
             disabled={loading}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
-            Cancelar
+            {t('changePassword.cancel')}
           </button>
           <button
             type="submit"
@@ -173,7 +175,7 @@ export default function ChangePasswordModal({ userId, open, onClose }: ChangePas
             className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Cambiar
+            {t('changePassword.submit')}
           </button>
         </div>
       </form>

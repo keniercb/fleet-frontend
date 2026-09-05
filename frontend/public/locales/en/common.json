@@ -1,0 +1,91 @@
+{
+  "actions": {
+    "new": "New",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "save": "Save",
+    "saving": "Saving...",
+    "search": "Search",
+    "searchPlaceholder": "Search...",
+    "clear": "Clear",
+    "back": "Back",
+    "select": "Select...",
+    "selectPlaceholder": "Select...",
+    "close": "Close",
+    "confirm": "Confirm",
+    "view": "View",
+    "loadMore": "Load more",
+    "refresh": "Refresh"
+  },
+  "state": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "loading": "Loading...",
+    "empty": "No records",
+    "noResults": "No results found",
+    "deniedTitle": "Access Denied",
+    "deniedMessage": "You don't have permission to access this section.",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "field": {
+    "name": "Name",
+    "code": "Code",
+    "description": "Description",
+    "state": "Status",
+    "actions": "Actions",
+    "status": "Status",
+    "createdAt": "Created At",
+    "updatedAt": "Last Updated",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "country": "Country",
+    "currency": "Currency",
+    "company": "Company",
+    "user": "User",
+    "role": "Role",
+    "date": "Date",
+    "amount": "Amount",
+    "balance": "Balance",
+    "number": "Number"
+  },
+  "units": {
+    "km": "km",
+    "liters": "L",
+    "litersPer100km": "L/100km",
+    "days": "days",
+    "percent": "%",
+    "currency": "USD"
+  },
+  "pagination": {
+    "showing": "Showing <strong>{{start}}</strong> to <strong>{{end}}</strong> of <strong>{{total}}</strong> results"
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "comingSoon": {
+    "message": "This module will be available soon. It will be implemented according to the project's needs."
+  },
+  "language": {
+    "switcher": "Language",
+    "es": "Español",
+    "en": "English"
+  }
+}

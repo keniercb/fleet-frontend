@@ -1,0 +1,79 @@
+{
+  "title": "Vehicles",
+  "description": "System vehicle management",
+  "table": {
+    "licensePlate": "License Plate",
+    "company": "Company",
+    "type": "Type",
+    "brand": "Brand",
+    "model": "Model",
+    "fuelType": "Fuel Type",
+    "fuelLiters": "Fuel (L)",
+    "driver": "Driver",
+    "odometer": "Odometer",
+    "actions": "Actions"
+  },
+  "form": {
+    "newTitle": "New Vehicle",
+    "editTitle": "Edit Vehicle",
+    "detailTitle": "Vehicle Details",
+    "generalInfo": "General Information",
+    "companyAndDriver": "Company and Driver",
+    "metricsAndFuel": "Metrics and Fuel",
+    "maintenance": "Maintenance",
+    "movementReport": "Movement Report",
+    "noDriverAssigned": "No driver assigned",
+    "model": { "label": "Model", "placeholder": "E.g.: Corolla 2024" },
+    "licensePlate": { "label": "License Plate", "placeholder": "E.g.: A-123-456" },
+    "cardNumber": { "label": "Card No.", "placeholder": "E.g.: M20240001" },
+    "odometer": { "label": "Odometer", "placeholder": "E.g.: 50000" },
+    "vehicleType": { "label": "Vehicle Type" },
+    "fuelType": { "label": "Fuel Type" },
+    "brand": { "label": "Brand" },
+    "company": { "label": "Company" },
+    "driver": { "label": "Driver" },
+    "fuelCard": { "label": "Fuel Card" },
+    "selectPlaceholder": "Select..."
+  },
+  "report": {
+    "title": "Monthly Movement Report",
+    "subtitle": "Vehicle: {{vehicle}} — {{month}}/{{year}}",
+    "search": "Search",
+    "searching": "Generating report...",
+    "noData": "No readings for this period.",
+    "placeholder": "Select month and year, then press Search...",
+    "table": {
+      "date": "Date",
+      "odometerStart": "Start Odometer",
+      "odometerEnd": "End Odometer",
+      "km": "Km Traveled",
+      "liters": "Liters",
+      "chipNumber": "Chip No.",
+      "place": "Place",
+      "card": "Card",
+      "amount": "Amount"
+    }
+  },
+  "toast": {
+    "pdfError": "Could not generate the PDF report.",
+    "pdfSuccess": "The PDF report has been downloaded.",
+    "pdfGenerating": "Generating report...",
+    "selectorsError": "Could not load selector data.",
+    "vehicleCreated": "Vehicle created",
+    "vehicleUpdated": "Vehicle updated",
+    "vehicleDeleted": "Vehicle deleted",
+    "createError": "Error creating the vehicle.",
+    "updateError": "Error updating the vehicle.",
+    "deleteError": "Error deleting the vehicle.",
+    "createSuccess": "Vehicle has been created successfully.",
+    "updateSuccess": "Vehicle has been updated successfully.",
+    "deleteSuccess": "Vehicle has been deleted successfully.",
+    "pdfReportError": "Could not generate the PDF report."
+  },
+  "months": {
+    "january": "January", "february": "February", "march": "March",
+    "april": "April", "may": "May", "june": "June",
+    "july": "July", "august": "August", "september": "September",
+    "october": "October", "november": "November", "december": "December"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, FilterX, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { subscriptionsApi, empresasApi, plansApi } from '@/api/endpoints';
@@ -6,23 +7,20 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useSubscriptionStatusInfo } from '@/utils/statusLabels';
 import type { SubscriptionRequest, SubscriptionResponse, SubscriptionStatus, EmpresaResponse, PlanResponse, PageParams } from '@/types';
 
-const STATUS_OPTIONS: { value: SubscriptionStatus; label: string; className: string }[] = [
-  { value: 'TRIAL', label: 'Trial', className: 'bg-blue-100 text-blue-800' },
-  { value: 'ACTIVE', label: 'Activa', className: 'bg-green-100 text-green-800' },
-  { value: 'PAST_DUE', label: 'Vencida', className: 'bg-yellow-100 text-yellow-800' },
-  { value: 'CANCELED', label: 'Cancelada', className: 'bg-red-100 text-red-800' },
-  { value: 'EXPIRED', label: 'Expirada', className: 'bg-gray-100 text-gray-800' },
-];
+const STATUS_VALUES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED'];
 
-function formatDate(dateStr: string): string {
+function formatLocalDate(dateStr: string): string {
   if (!dateStr) return '\u2014';
   return dateStr.length === 10 ? dateStr : dateStr.split('T')[0];
 }
 
 export default function SubscriptionsPage() {
+  const { t } = useTranslation(['admin', 'common', 'crud']);
   const { addToast } = useToast();
+  const getStatusInfo = useSubscriptionStatusInfo();
   const [data, setData] = useState<SubscriptionResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -66,10 +64,10 @@ export default function SubscriptionsPage() {
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'Error al cargar las suscripciones.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:subscription.toast.loadError') });
       setData([]);
     } finally { setLoading(false); }
-  }, [size, addToast]);
+  }, [size, addToast, t]);
 
   useEffect(() => {
     const empId = filterEmpresaId ? Number(filterEmpresaId) : undefined;
@@ -90,10 +88,10 @@ export default function SubscriptionsPage() {
     if (!editingEntity || !selectedPlan) return [];
     const w: string[] = [];
     if (selectedPlan.maxUsuarios < (editingEntity.currentUserCount ?? 0)) {
-      w.push(`El nuevo plan permite maximo ${selectedPlan.maxUsuarios} usuarios, pero actualmente hay ${editingEntity.currentUserCount}.`);
+      w.push(t('admin:subscription.warnings.planLimitUsers', { max: selectedPlan.maxUsuarios, current: editingEntity.currentUserCount }));
     }
     if (selectedPlan.maxVehiculos < (editingEntity.currentVehicleCount ?? 0)) {
-      w.push(`El nuevo plan permite maximo ${selectedPlan.maxVehiculos} vehiculos, pero actualmente hay ${editingEntity.currentVehicleCount}.`);
+      w.push(t('admin:subscription.warnings.planLimitVehicles', { max: selectedPlan.maxVehiculos, current: editingEntity.currentVehicleCount }));
     }
     return w;
   }, [editingEntity, selectedPlan]);
@@ -118,11 +116,11 @@ export default function SubscriptionsPage() {
         status: formStatus,
       };
       await subscriptionsApi.update(editingEntity.id, payload);
-      addToast({ type: 'success', title: 'Suscripcion actualizada', message: 'El registro se ha actualizado correctamente.' });
+      addToast({ type: 'success', title: t('admin:subscription.toast.updated'), message: t('crud:toast.updated') });
       setShowForm(false);
       fetchData(page, filterEmpresaId ? Number(filterEmpresaId) : undefined, filterPlanId ? Number(filterPlanId) : undefined);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'Error al actualizar la suscripcion.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:subscription.toast.updateError') });
     } finally { setSaving(false); }
   };
 
@@ -131,44 +129,44 @@ export default function SubscriptionsPage() {
     setSaving(true);
     try {
       await subscriptionsApi.delete(deleteTarget.id);
-      addToast({ type: 'success', title: 'Suscripcion eliminada', message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('admin:subscription.toast.deleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
       fetchData(page, filterEmpresaId ? Number(filterEmpresaId) : undefined, filterPlanId ? Number(filterPlanId) : undefined);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'Error al eliminar la suscripcion.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:subscription.toast.deleteError') });
     } finally { setSaving(false); }
   };
 
   const getStatusBadge = (status: SubscriptionStatus) => {
-    const found = STATUS_OPTIONS.find((s) => s.value === status);
-    if (!found) return <span className='text-sm text-gray-500'>{status}</span>;
-    return <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded-full ${found.className}`}>{found.label}</span>;
+    const info = getStatusInfo(status);
+    if (!info) return <span className='text-sm text-gray-500'>{status}</span>;
+    return <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded-full ${info.badgeClass}`}>{info.label}</span>;
   };
 
   return (
     <div>
-      <PageHeader title='Suscripciones' description='Gestion de suscripciones de empresas a planes' />
+      <PageHeader title={t('admin:subscription.title')} description={t('admin:subscription.description')} />
 
       <div className='card mb-4 !py-3'>
         <div className='flex flex-col sm:flex-row items-start sm:items-end gap-3'>
           <div className='w-full sm:w-64'>
-            <label htmlFor='filter-empresa' className='block text-xs font-medium text-gray-500 mb-1'>Empresa</label>
+            <label htmlFor='filter-empresa' className='block text-xs font-medium text-gray-500 mb-1'>{t('admin:subscription.filters.company')}</label>
             <select id='filter-empresa' value={filterEmpresaId} onChange={(e) => setFilterEmpresaId(e.target.value)} className='input-field py-2 text-sm'>
-              <option value=''>Todas las empresas</option>
+              <option value=''>{t('admin:subscription.filters.allCompanies')}</option>
               {empresas.map((emp) => <option key={emp.id} value={emp.id}>{emp.nombre}</option>)}
             </select>
           </div>
           <div className='w-full sm:w-64'>
-            <label htmlFor='filter-plan' className='block text-xs font-medium text-gray-500 mb-1'>Plan</label>
+            <label htmlFor='filter-plan' className='block text-xs font-medium text-gray-500 mb-1'>{t('admin:subscription.filters.plan')}</label>
             <select id='filter-plan' value={filterPlanId} onChange={(e) => setFilterPlanId(e.target.value)} className='input-field py-2 text-sm'>
-              <option value=''>Todos los planes</option>
+              <option value=''>{t('admin:subscription.filters.allPlans')}</option>
               {plans.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
             </select>
           </div>
           {hasActiveFilters && (
             <div>
-              <button onClick={handleClearFilters} className='flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors' title='Limpiar filtros'>
-                <FilterX className='w-4 h-4' /> Limpiar
+              <button onClick={handleClearFilters} className='flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors' title={t('admin:subscription.filters.clear')}>
+                <FilterX className='w-4 h-4' /> {t('admin:subscription.filters.clear')}
               </button>
             </div>
           )}
@@ -180,26 +178,26 @@ export default function SubscriptionsPage() {
           <table className='w-full'>
             <thead>
               <tr>
-                <th className='table-header px-4 py-3'>Empresa</th>
-                <th className='table-header px-4 py-3'>Plan</th>
-                <th className='table-header px-4 py-3'>Estado</th>
-                <th className='table-header px-4 py-3'>Fecha Inicio</th>
-                <th className='table-header px-4 py-3'>Fecha Fin</th>
-                <th className='table-header px-4 py-3 text-right'>Vehiculos</th>
-                <th className='table-header px-4 py-3 text-right'>Usuarios</th>
-                <th className='table-header px-4 py-3 text-right'>Acciones</th>
+                <th className='table-header px-4 py-3'>{t('admin:subscription.table.company')}</th>
+                <th className='table-header px-4 py-3'>{t('admin:subscription.table.plan')}</th>
+                <th className='table-header px-4 py-3'>{t('admin:subscription.table.state')}</th>
+                <th className='table-header px-4 py-3'>{t('admin:subscription.table.startDate')}</th>
+                <th className='table-header px-4 py-3'>{t('admin:subscription.table.endDate')}</th>
+                <th className='table-header px-4 py-3 text-right'>{t('admin:subscription.table.vehicles')}</th>
+                <th className='table-header px-4 py-3 text-right'>{t('admin:subscription.table.users')}</th>
+                <th className='table-header px-4 py-3 text-right'>{t('admin:subscription.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr><td colSpan={8} className='px-4 py-12 text-center text-gray-400'>
                   <div className='flex items-center justify-center gap-2'>
-                    <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600' /> Cargando...
+                    <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600' /> {t('crud:states.loading')}
                   </div>
                 </td></tr>
               ) : data.length === 0 ? (
                 <tr><td colSpan={8} className='px-4 py-12 text-center text-gray-400'>
-                  {hasActiveFilters ? 'No se encontraron resultados para los filtros aplicados' : 'No hay registros'}
+                  {hasActiveFilters ? t('admin:subscription.noResultsFiltered') : t('crud:states.empty')}
                 </td></tr>
               ) : (
                 data.map((item) => (
@@ -212,8 +210,8 @@ export default function SubscriptionsPage() {
                       <span className='table-cell block'>{item.plan?.nombre ?? '\u2014'}</span>
                     </td>
                     <td className='px-4 py-3'>{getStatusBadge(item.status)}</td>
-                    <td className='px-4 py-3'><span className='table-cell block'>{formatDate(item.startDate)}</span></td>
-                    <td className='px-4 py-3'><span className='table-cell block'>{formatDate(item.endDate)}</span></td>
+                    <td className='px-4 py-3'><span className='table-cell block'>{formatLocalDate(item.startDate)}</span></td>
+                    <td className='px-4 py-3'><span className='table-cell block'>{formatLocalDate(item.endDate)}</span></td>
                     <td className='px-4 py-3 text-right'>
                       <span className='table-cell block'>{item.currentVehicleCount ?? 0} / {item.plan?.maxVehiculos ?? '\u2014'}</span>
                     </td>
@@ -222,8 +220,8 @@ export default function SubscriptionsPage() {
                     </td>
                     <td className='px-4 py-3 text-right'>
                       <div className='flex items-center justify-end gap-1'>
-                        <button onClick={() => handleOpenEdit(item)} className='p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors' title='Editar'><Pencil className='w-4 h-4' /></button>
-                        <button onClick={() => setDeleteTarget(item)} className='p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors' title='Eliminar'><Trash2 className='w-4 h-4' /></button>
+                        <button onClick={() => handleOpenEdit(item)} className='p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors' title={t('common:actions.edit')}><Pencil className='w-4 h-4' /></button>
+                        <button onClick={() => setDeleteTarget(item)} className='p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors' title={t('common:actions.delete')}><Trash2 className='w-4 h-4' /></button>
                       </div>
                     </td>
                   </tr>
@@ -235,42 +233,45 @@ export default function SubscriptionsPage() {
         <div className='px-4 pb-4'><Pagination page={page} totalPages={totalPages} totalElements={totalElements} size={size} onPageChange={setPage} /></div>
       </div>
 
-      <Modal open={showForm} title='Editar Suscripcion' onClose={() => setShowForm(false)} size='lg'>
+      <Modal open={showForm} title={t('admin:subscription.form.editTitle')} onClose={() => setShowForm(false)} size='lg'>
         <form onSubmit={handleSubmit} className='space-y-4'>
           {/* Read-only info */}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1.5'>Empresa</label>
+              <label className='block text-sm font-medium text-gray-700 mb-1.5'>{t('admin:subscription.form.company')}</label>
               <input type='text' value={editingEntity?.empresa?.nombre ?? ''} className='input-field bg-gray-50' disabled />
             </div>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1.5'>Plan Actual</label>
+              <label className='block text-sm font-medium text-gray-700 mb-1.5'>{t('admin:subscription.form.currentPlan')}</label>
               <input type='text' value={editingEntity?.plan?.nombre ?? ''} className='input-field bg-gray-50' disabled />
             </div>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1.5'>Fecha de Inicio</label>
-              <input type='text' value={formatDate(editingEntity?.startDate ?? '')} className='input-field bg-gray-50' disabled />
+              <label className='block text-sm font-medium text-gray-700 mb-1.5'>{t('admin:subscription.form.startDate')}</label>
+              <input type='text' value={formatLocalDate(editingEntity?.startDate ?? '')} className='input-field bg-gray-50' disabled />
             </div>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1.5'>Fecha de Fin</label>
-              <input type='text' value={formatDate(editingEntity?.endDate ?? '')} className='input-field bg-gray-50' disabled />
+              <label className='block text-sm font-medium text-gray-700 mb-1.5'>{t('admin:subscription.form.endDate')}</label>
+              <input type='text' value={formatLocalDate(editingEntity?.endDate ?? '')} className='input-field bg-gray-50' disabled />
             </div>
           </div>
 
           <div className='border-t border-gray-200 pt-4'>
-            <p className='text-sm font-medium text-gray-700 mb-3'>Campos editables</p>
+            <p className='text-sm font-medium text-gray-700 mb-3'>{t('admin:subscription.form.editableFields')}</p>
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <div>
-                <label htmlFor='edit-planId' className='block text-sm font-medium text-gray-700 mb-1.5'>Plan <span className='text-red-500'>*</span></label>
+                <label htmlFor='edit-planId' className='block text-sm font-medium text-gray-700 mb-1.5'>{t('admin:subscription.form.plan')} <span className='text-red-500'>*</span></label>
                 <select id='edit-planId' value={formPlanId} onChange={(e) => setFormPlanId(e.target.value)} className='input-field' required>
-                  <option value=''>Seleccionar...</option>
+                  <option value=''>{t('admin:subscription.form.selectPlaceholder')}</option>
                   {plans.map((p) => <option key={p.id} value={p.id}>{p.nombre} (Max {p.maxUsuarios} usr / {p.maxVehiculos} veh)</option>)}
                 </select>
               </div>
               <div>
-                <label htmlFor='edit-status' className='block text-sm font-medium text-gray-700 mb-1.5'>Estado</label>
+                <label htmlFor='edit-status' className='block text-sm font-medium text-gray-700 mb-1.5'>{t('admin:subscription.form.state')}</label>
                 <select id='edit-status' value={formStatus} onChange={(e) => setFormStatus(e.target.value as SubscriptionStatus)} className='input-field'>
-                  {STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  {STATUS_VALUES.map((s) => {
+                    const info = getStatusInfo(s);
+                    return <option key={s} value={s}>{info.label}</option>;
+                  })}
                 </select>
               </div>
             </div>
@@ -291,32 +292,32 @@ export default function SubscriptionsPage() {
           {/* Current usage summary */}
           {selectedPlan && editingEntity && (
             <div className='bg-gray-50 rounded-lg p-3'>
-              <p className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2'>Resumen de uso</p>
+              <p className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2'>{t('admin:subscription.form.usageSummary')}</p>
               <div className='grid grid-cols-2 gap-3 text-sm'>
                 <div>
-                  <span className='text-gray-500'>Usuarios: </span>
+                  <span className='text-gray-500'>{t('admin:subscription.form.users')}: </span>
                   <span className='font-medium'>{editingEntity.currentUserCount ?? 0}</span>
-                  <span className='text-gray-400'> / {selectedPlan.maxUsuarios} max</span>
+                  <span className='text-gray-400'> / {selectedPlan.maxUsuarios} {t('admin:subscription.form.max')}</span>
                 </div>
                 <div>
-                  <span className='text-gray-500'>Vehiculos: </span>
+                  <span className='text-gray-500'>{t('admin:subscription.form.vehicles')}: </span>
                   <span className='font-medium'>{editingEntity.currentVehicleCount ?? 0}</span>
-                  <span className='text-gray-400'> / {selectedPlan.maxVehiculos} max</span>
+                  <span className='text-gray-400'> / {selectedPlan.maxVehiculos} {t('admin:subscription.form.max')}</span>
                 </div>
               </div>
             </div>
           )}
 
           <div className='flex justify-end gap-3 pt-4 border-t border-gray-200'>
-            <button type='button' onClick={() => setShowForm(false)} className='btn-secondary'>Cancelar</button>
+            <button type='button' onClick={() => setShowForm(false)} className='btn-secondary'>{t('common:actions.cancel')}</button>
             <button type='submit' disabled={saving || !canSubmit} className='btn-primary'>
-              {saving ? 'Guardando...' : 'Actualizar'}
+              {saving ? t('common:actions.saving') : t('common:actions.update')}
             </button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmModal open={!!deleteTarget} title='Eliminar Suscripcion' message='Esta seguro que desea eliminar esta suscripcion? Esta accion no se puede deshacer.' onConfirm={handleConfirmDelete} onCancel={() => setDeleteTarget(null)} confirmText='Eliminar' danger />
+      <ConfirmModal open={!!deleteTarget} title={t('admin:subscription.delete.title')} message={t('admin:subscription.delete.confirm')} onConfirm={handleConfirmDelete} onCancel={() => setDeleteTarget(null)} confirmText={t('common:actions.delete')} danger />
     </div>
   );
 }

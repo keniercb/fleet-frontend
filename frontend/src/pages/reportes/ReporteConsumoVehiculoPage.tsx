@@ -1,10 +1,12 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, FileDown, Loader2, ArrowUpDown, TrendingUp, TrendingDown } from 'lucide-react';
 import { reportesTransporteApi, tiposVehiculoApi, marcasApi, tiposCombustibleApi } from '@/api/endpoints';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
+import { formatNumber as formatNum } from '@/utils/format';
 import type { VehiculoConsumoReporteDTO, TipoVehiculoResponse, MarcaResponse, TipoCombustibleResponse } from '@/types';
 
 interface Filtros {
@@ -16,6 +18,7 @@ interface Filtros {
 }
 
 export default function ReporteConsumoVehiculoPage() {
+  const { t } = useTranslation(['reportes', 'common']);
   const { empresaId } = useAuth();
   const { addToast } = useToast();
 
@@ -54,9 +57,9 @@ export default function ReporteConsumoVehiculoPage() {
       setMarcas(marRes.data.content.filter((e) => e.activo));
       setTiposCombustible(tcRes.data.content.filter((e) => e.activo));
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los filtros.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:consumoVehiculo.toast.filtersLoadError') });
     }
-  }, [addToast]);
+  }, [addToast, t]);
 
   useState(() => {
     fetchDropdowns();
@@ -64,7 +67,7 @@ export default function ReporteConsumoVehiculoPage() {
 
   const handleBuscar = useCallback(async () => {
     if (!filtros.fechaDesde || !filtros.fechaHasta) {
-      addToast({ type: 'error', title: 'Error', message: 'Las fechas desde y hasta son obligatorias.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.datesRequired') });
       return;
     }
     setLoading(true);
@@ -84,14 +87,14 @@ export default function ReporteConsumoVehiculoPage() {
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.reportError') });
       setData([]);
       setTotalPages(0);
       setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  }, [filtros, size, addToast]);
+  }, [filtros, size, addToast, t]);
 
   const fetchPage = useCallback(async (p: number) => {
     setLoading(true);
@@ -110,11 +113,11 @@ export default function ReporteConsumoVehiculoPage() {
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'Error al cambiar de pagina.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:consumoVehiculo.toast.pageChangeError') });
     } finally {
       setLoading(false);
     }
-  }, [filtros, size, addToast]);
+  }, [filtros, size, addToast, t]);
 
   const handleLimpiar = () => {
     setFiltros({
@@ -131,18 +134,15 @@ export default function ReporteConsumoVehiculoPage() {
     setPage(0);
   };
 
-  const formatNumber = (n: number | null | undefined, decimals = 2) => {
-    if (n == null) return '—';
-    return n.toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  };
+  const formatNumber = (n: number | null | undefined, decimals = 2) => formatNum(n, decimals);
 
   return (
     <div>
-      <PageHeader title="Consumo por Vehiculo" description="Reporte de consumo de combustible por vehiculo">
+      <PageHeader title={t('reportes:consumoVehiculo.title')} description={t('reportes:consumoVehiculo.description')}>
         <div className="text-sm text-gray-500">
           {searched && !loading && (
             <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-medium">
-              {totalElements} resultado{totalElements !== 1 ? 's' : ''}
+              {t('reportes:abastecimiento.countLabel', { count: totalElements })}
             </span>
           )}
         </div>
@@ -152,11 +152,11 @@ export default function ReporteConsumoVehiculoPage() {
       <div className="card mb-6">
         <div className="flex items-center gap-2 mb-4">
           <ArrowUpDown className="w-5 h-5 text-gray-500" />
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Filtros</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('common:actions.search')}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Fecha Desde *</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoVehiculo.filters.fromDate')}</label>
             <input
               type="date"
               value={filtros.fechaDesde}
@@ -165,7 +165,7 @@ export default function ReporteConsumoVehiculoPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Fecha Hasta *</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoVehiculo.filters.toDate')}</label>
             <input
               type="date"
               value={filtros.fechaHasta}
@@ -174,39 +174,39 @@ export default function ReporteConsumoVehiculoPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tipo de Vehiculo</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoVehiculo.filters.vehicleType')}</label>
             <select
               value={filtros.tipoVehiculoId}
               onChange={(e) => setFiltros((f) => ({ ...f, tipoVehiculoId: Number(e.target.value) }))}
               className="input-field appearance-none pr-8 py-2 text-sm"
             >
-              <option value={0}>Todos</option>
+              <option value={0}>{t('reportes:consumoVehiculo.filters.all')}</option>
               {tiposVehiculo.map((tv) => (
                 <option key={tv.id} value={tv.id}>{tv.nombre}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Marca</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoVehiculo.filters.brand')}</label>
             <select
               value={filtros.marcaId}
               onChange={(e) => setFiltros((f) => ({ ...f, marcaId: Number(e.target.value) }))}
               className="input-field appearance-none pr-8 py-2 text-sm"
             >
-              <option value={0}>Todas</option>
+              <option value={0}>{t('reportes:consumoVehiculo.filters.allF')}</option>
               {marcas.map((m) => (
                 <option key={m.id} value={m.id}>{m.nombre}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tipo Combustible</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoVehiculo.filters.fuelType')}</label>
             <select
               value={filtros.tipoCombustibleId}
               onChange={(e) => setFiltros((f) => ({ ...f, tipoCombustibleId: Number(e.target.value) }))}
               className="input-field appearance-none pr-8 py-2 text-sm"
             >
-              <option value={0}>Todos</option>
+              <option value={0}>{t('reportes:consumoVehiculo.filters.all')}</option>
               {tiposCombustible.map((tc) => (
                 <option key={tc.id} value={tc.id}>{tc.nombre}</option>
               ))}
@@ -220,10 +220,10 @@ export default function ReporteConsumoVehiculoPage() {
             className="btn-primary flex items-center gap-2 disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Buscar
+            {t('common:actions.search')}
           </button>
           <button onClick={handleLimpiar} className="btn-secondary">
-            Limpiar
+            {t('common:actions.clear')}
           </button>
         </div>
       </div>
@@ -233,12 +233,12 @@ export default function ReporteConsumoVehiculoPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <Loader2 className="w-8 h-8 animate-spin mb-3" />
-            <p className="text-sm">Generando reporte...</p>
+            <p className="text-sm">{t('reportes:consumoCombustible.loading')}</p>
           </div>
         ) : searched && data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <FileDown className="w-10 h-10 mb-3" />
-            <p className="text-sm">No se encontraron resultados para los filtros seleccionados.</p>
+            <p className="text-sm">{t('reportes:consumoCombustible.noData')}</p>
           </div>
         ) : searched ? (
           <>
@@ -246,17 +246,17 @@ export default function ReporteConsumoVehiculoPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="table-header px-4 py-3 text-left">Matricula</th>
-                    <th className="table-header px-4 py-3 text-left">Modelo</th>
-                    <th className="table-header px-4 py-3 text-left">Marca</th>
-                    <th className="table-header px-4 py-3 text-left">Combustible</th>
-                    <th className="table-header px-4 py-3 text-left">Empresa</th>
-                    <th className="table-header px-4 py-3 text-right">Km Totales</th>
-                    <th className="table-header px-4 py-3 text-right">Consumo Teorico</th>
-                    <th className="table-header px-4 py-3 text-right">Consumo Real</th>
-                    <th className="table-header px-4 py-3 text-right">Desviacion (L)</th>
-                    <th className="table-header px-4 py-3 text-right">Desviacion (%)</th>
-                    <th className="table-header px-4 py-3 text-right">Eficiencia</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:consumoVehiculo.table.licensePlate')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:consumoVehiculo.table.model')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:consumoVehiculo.table.brand')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:consumoVehiculo.table.fuelType')}</th>
+                    <th className="table-header px-4 py-3 text-left">{t('reportes:consumoVehiculo.table.company')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:consumoVehiculo.table.totalKm')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:consumoVehiculo.table.theoreticalConsumption')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:consumoVehiculo.table.realConsumption')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:consumoVehiculo.table.deviationL')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:consumoVehiculo.table.deviationPct')}</th>
+                    <th className="table-header px-4 py-3 text-right">{t('reportes:consumoVehiculo.table.efficiency')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -313,7 +313,7 @@ export default function ReporteConsumoVehiculoPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <ArrowUpDown className="w-10 h-10 mb-3" />
-            <p className="text-sm">Seleccione los filtros y presione Buscar para generar el reporte.</p>
+            <p className="text-sm">{t('reportes:consumoCombustible.placeholder')}</p>
           </div>
         )}
       </div>

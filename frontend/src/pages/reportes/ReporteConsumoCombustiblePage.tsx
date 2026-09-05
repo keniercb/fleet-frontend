@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Loader2, Fuel, RotateCcw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { reportesConsumoCombustibleApi, tiposVehiculoApi } from '@/api/endpoints';
 import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/components/common/PageHeader';
+import { formatNumber as fmtHelper, formatCurrency as fmtCurHelper } from '@/utils/format';
 import type { ConsumoCombustibleResponse, DetalleTipoCombustible } from '@/types';
 
 export default function ReporteConsumoCombustiblePage() {
+  const { t } = useTranslation(['reportes', 'common']);
   const { addToast } = useToast();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -33,7 +36,7 @@ export default function ReporteConsumoCombustiblePage() {
 
   const handleBuscar = useCallback(async () => {
     if (!fechaDesde || !fechaHasta) {
-      addToast({ type: 'error', title: 'Error', message: 'Las fechas son obligatorias.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.datesRequired') });
       return;
     }
     setLoading(true);
@@ -46,12 +49,12 @@ export default function ReporteConsumoCombustiblePage() {
       });
       setData(res.data);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudo generar el reporte.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.reportError') });
       setData(null);
     } finally {
       setLoading(false);
     }
-  }, [fechaDesde, fechaHasta, tipoVehiculoId, addToast]);
+  }, [fechaDesde, fechaHasta, tipoVehiculoId, addToast, t]);
 
   const handleLimpiar = () => {
     setFechaDesde(firstDayOfMonth);
@@ -61,10 +64,7 @@ export default function ReporteConsumoCombustiblePage() {
     setSearched(false);
   };
 
-  const fmt = (n: number | null | undefined, decimals = 2) => {
-    if (n == null) return '—';
-    return n.toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  };
+  const fmt = (n: number | null | undefined, decimals = 2) => fmtHelper(n, decimals);
 
   const getVariacionIcon = (val: number | null | undefined) => {
     if (val == null || val === 0) return <Minus className="w-3.5 h-3.5 text-gray-400" />;
@@ -82,27 +82,27 @@ export default function ReporteConsumoCombustiblePage() {
 
   return (
     <div>
-      <PageHeader title="Consumo por Combustible" description="Analisis de consumo de combustible por tipo" />
+      <PageHeader title={t('reportes:consumoCombustible.title')} description={t('reportes:consumoCombustible.description')} />
 
       {/* Filtros */}
       <div className="card mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Fuel className="w-5 h-5 text-gray-500" />
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Filtros</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('common:actions.search')}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Fecha Desde *</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoCombustible.filters.fromDate')}</label>
             <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="input-field py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Fecha Hasta *</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoCombustible.filters.toDate')}</label>
             <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="input-field py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tipo de Vehiculo</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{t('reportes:consumoCombustible.filters.vehicleType')}</label>
             <select value={tipoVehiculoId} onChange={(e) => setTipoVehiculoId(Number(e.target.value))} className="input-field appearance-none pr-8 py-2 text-sm">
-              <option value={0}>Todos</option>
+              <option value={0}>{t('reportes:consumoCombustible.filters.all')}</option>
               {tiposVehiculo.map((tv) => (
                 <option key={tv.id} value={tv.id}>{tv.nombre}</option>
               ))}
@@ -112,11 +112,11 @@ export default function ReporteConsumoCombustiblePage() {
         <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200">
           <button onClick={handleBuscar} disabled={loading} className="btn-primary flex items-center gap-2 disabled:opacity-50">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Buscar
+            {t('common:actions.search')}
           </button>
           <button onClick={handleLimpiar} className="btn-secondary flex items-center gap-2">
             <RotateCcw className="w-4 h-4" />
-            Limpiar
+            {t('common:actions.clear')}
           </button>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function ReporteConsumoCombustiblePage() {
       {loading && (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <Loader2 className="w-8 h-8 animate-spin mb-3" />
-          <p className="text-sm">Generando reporte...</p>
+          <p className="text-sm">{t('reportes:consumoCombustible.loading')}</p>
         </div>
       )}
 
@@ -133,35 +133,35 @@ export default function ReporteConsumoCombustiblePage() {
           {/* Resumen Ejecutivo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="card border-l-4 border-l-blue-500">
-              <p className="text-xs font-medium text-gray-500 uppercase">Periodo</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.period')}</p>
               <p className="text-lg font-bold text-gray-900 mt-1">{r?.periodo || '—'}</p>
             </div>
             <div className="card border-l-4 border-l-green-500">
-              <p className="text-xs font-medium text-gray-500 uppercase">Total Recorridos</p>
-              <p className="text-lg font-bold text-green-800 mt-1">{r?.totalRecorridos?.toLocaleString() || '—'}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.totalTrips')}</p>
+              <p className="text-lg font-bold text-green-800 mt-1">{fmt(r?.totalRecorridos, 0)}</p>
             </div>
             <div className="card border-l-4 border-l-amber-500">
-              <p className="text-xs font-medium text-gray-500 uppercase">Volumen Abastecido</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.suppliedVolume')}</p>
               <p className="text-lg font-bold text-amber-800 mt-1">{fmt(r?.volumenAbastecidoTotal)} L</p>
             </div>
             <div className="card border-l-4 border-l-red-500">
-              <p className="text-xs font-medium text-gray-500 uppercase">Costo Estimado Total</p>
-              <p className="text-lg font-bold text-red-800 mt-1">${fmt(r?.costoEstimadoTotal)}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.totalEstimatedCost')}</p>
+              <p className="text-lg font-bold text-red-800 mt-1">{fmtCurHelper(r?.costoEstimadoTotal)}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div className="card bg-gray-50">
-              <p className="text-xs font-medium text-gray-500 uppercase">Volumen Consumido</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.consumedVolume')}</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">{fmt(r?.volumenConsumidoTotal)} L</p>
             </div>
             <div className="card bg-gray-50">
-              <p className="text-xs font-medium text-gray-500 uppercase">Tipos de Combustible</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.fuelTypes')}</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">{r?.totalTiposCombustible ?? '—'}</p>
             </div>
             <div className="card bg-gray-50">
-              <p className="text-xs font-medium text-gray-500 uppercase">Costo Promedio/Litro</p>
-              <p className="text-2xl font-bold text-gray-800 mt-1">${fmt(r?.costoPromedioPorLitro)}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase">{t('reportes:consumoCombustible.summary.avgCostPerLiter')}</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{fmtCurHelper(r?.costoPromedioPorLitro)}</p>
             </div>
           </div>
 
@@ -170,21 +170,21 @@ export default function ReporteConsumoCombustiblePage() {
             {data.detalle.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                 <Fuel className="w-10 h-10 mb-3" />
-                <p className="text-sm">No hay datos de consumo para el periodo.</p>
+                <p className="text-sm">{t('reportes:consumoCombustible.noData')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="table-header px-4 py-3 text-left">Tipo Combustible</th>
-                      <th className="table-header px-4 py-3 text-right">Vol. Consumido</th>
-                      <th className="table-header px-4 py-3 text-right">Vol. Abastecido</th>
-                      <th className="table-header px-4 py-3 text-right">Costo Estimado</th>
-                      <th className="table-header px-4 py-3 text-right">% del Total</th>
-                      <th className="table-header px-4 py-3 text-right">Variacion vs Periodo Ant.</th>
-                      <th className="table-header px-4 py-3 text-right">Recorridos</th>
-                      <th className="table-header px-4 py-3 text-right">Costo Prom./Litro</th>
+                      <th className="table-header px-4 py-3 text-left">{t('reportes:consumoCombustible.table.fuelType')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.consumedVolume')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.suppliedVolume')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.estimatedCost')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.pctTotal')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.variationVsPrevious')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.trips')}</th>
+                      <th className="table-header px-4 py-3 text-right">{t('reportes:consumoCombustible.table.avgCostPerLiter')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -193,7 +193,7 @@ export default function ReporteConsumoCombustiblePage() {
                         <td className="px-4 py-3 font-medium text-gray-900">{d.tipoCombustible || '—'}</td>
                         <td className="px-4 py-3 text-right">{fmt(d.volumenConsumido)} L</td>
                         <td className="px-4 py-3 text-right">{fmt(d.volumenAbastecido)} L</td>
-                        <td className="px-4 py-3 text-right font-medium">${fmt(d.costoEstimado)}</td>
+                        <td className="px-4 py-3 text-right font-medium">{fmtCurHelper(d.costoEstimado)}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -211,8 +211,8 @@ export default function ReporteConsumoCombustiblePage() {
                             {d.variacionVsPeriodoAnterior != null ? `${d.variacionVsPeriodoAnterior > 0 ? '+' : ''}${fmt(d.variacionVsPeriodoAnterior, 1)}%` : '—'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">{d.cantidadRecorridos?.toLocaleString() ?? '—'}</td>
-                        <td className="px-4 py-3 text-right">${fmt(d.costoPromedioPorLitro)}</td>
+                        <td className="px-4 py-3 text-right">{fmt(d.cantidadRecorridos, 0)}</td>
+                        <td className="px-4 py-3 text-right">{fmtCurHelper(d.costoPromedioPorLitro)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -226,14 +226,14 @@ export default function ReporteConsumoCombustiblePage() {
       {searched && !loading && !data && (
         <div className="card flex flex-col items-center justify-center py-20 text-gray-400">
           <Fuel className="w-10 h-10 mb-3" />
-          <p className="text-sm">No se encontraron datos para los filtros seleccionados.</p>
+          <p className="text-sm">{t('reportes:consumoCombustible.noData')}</p>
         </div>
       )}
 
       {!searched && !loading && (
         <div className="card flex flex-col items-center justify-center py-20 text-gray-400">
           <Fuel className="w-10 h-10 mb-3" />
-          <p className="text-sm">Seleccione los filtros y presione Buscar para generar el reporte.</p>
+          <p className="text-sm">{t('reportes:consumoCombustible.placeholder')}</p>
         </div>
       )}
     </div>

@@ -1,0 +1,188 @@
+{
+  "province": {
+    "title": "Provinces",
+    "singular": "Province",
+    "description": "Province management",
+    "table": { "code": "Code", "name": "Name" },
+    "form": {
+      "code": { "label": "Code", "placeholder": "E.g.: 1" },
+      "name": { "label": "Name", "placeholder": "E.g.: Havana" }
+    }
+  },
+  "municipality": {
+    "title": "Municipalities",
+    "singular": "Municipality",
+    "description": "Municipality management",
+    "table": { "code": "Code", "name": "Name", "province": "Province" },
+    "form": {
+      "provinceId": { "label": "Province" },
+      "code": { "label": "Code", "placeholder": "E.g.: 101" },
+      "name": { "label": "Name", "placeholder": "E.g.: Arroyo Naranjo" }
+    }
+  },
+  "brand": {
+    "title": "Brands",
+    "singular": "Brand",
+    "description": "Vehicle brand management",
+    "table": { "name": "Name", "description": "Description", "originCountry": "Country of Origin" },
+    "form": {
+      "name": { "label": "Name", "placeholder": "E.g.: Toyota" },
+      "originCountry": { "label": "Country of Origin", "placeholder": "E.g.: Japan" },
+      "description": { "label": "Description", "placeholder": "Optional description" }
+    }
+  },
+  "fuelType": {
+    "title": "Fuel Types",
+    "singular": "Fuel type",
+    "description": "System fuel type management",
+    "table": { "code": "Code", "denomination": "Denomination", "description": "Description" },
+    "form": {
+      "code": { "label": "Code", "placeholder": "E.g.: DIESEL" },
+      "denomination": { "label": "Denomination", "placeholder": "E.g.: Diesel" },
+      "description": { "label": "Description", "placeholder": "Optional description" }
+    }
+  },
+  "vehicleType": {
+    "title": "Vehicle Types",
+    "singular": "Vehicle type",
+    "description": "System vehicle type management",
+    "table": { "name": "Name", "description": "Description" },
+    "form": {
+      "name": { "label": "Name", "placeholder": "E.g.: Pickup" },
+      "description": { "label": "Description", "placeholder": "Optional description" }
+    }
+  },
+  "licenseCategory": {
+    "title": "License Categories",
+    "singular": "License category",
+    "description": "Driver's license category management",
+    "table": { "code": "Code", "denomination": "Denomination", "description": "Description" },
+    "form": {
+      "code": { "label": "Code", "placeholder": "E.g.: B1" },
+      "denomination": { "label": "Denomination", "placeholder": "E.g.: Bus" },
+      "description": { "label": "Description", "placeholder": "Optional description" }
+    }
+  },
+  "currency": {
+    "title": "Currencies",
+    "singular": "Currency",
+    "description": "System currency management",
+    "table": { "isoCode": "ISO Code", "description": "Description" },
+    "form": {
+      "isoCode": { "label": "ISO Code", "placeholder": "E.g.: CUP, USD, EUR" },
+      "description": { "label": "Description", "placeholder": "E.g.: Cuban Peso" }
+    }
+  },
+  "company": {
+    "title": "Companies",
+    "singular": "Company",
+    "description": "System company management",
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "province": "Province",
+      "municipality": "Municipality",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "form": {
+      "code": { "label": "Code", "placeholder": "E.g.: CMP-001" },
+      "name": { "label": "Name", "placeholder": "E.g.: Southern Transport Inc." },
+      "provinceId": { "label": "Province" },
+      "municipioId": { "label": "Municipality" },
+      "address": { "label": "Address", "placeholder": "E.g.: 5th St #123, Havana" },
+      "phone": { "label": "Phone", "placeholder": "E.g.: +53 5 1234567" },
+      "email": { "label": "Email", "placeholder": "E.g.: contact@company.cu" }
+    }
+  },
+  "feature": {
+    "title": "Features",
+    "singular": "Feature",
+    "description": "System feature management",
+    "table": { "name": "Name", "description": "Description" },
+    "form": {
+      "name": { "label": "Name", "placeholder": "E.g.: Advanced reports" },
+      "description": { "label": "Description", "placeholder": "Optional description of the feature" }
+    }
+  },
+  "permission": {
+    "title": "Permissions",
+    "singular": "Permission",
+    "description": "System permission management",
+    "table": { "name": "Name", "description": "Description" },
+    "form": {
+      "name": { "label": "Name", "placeholder": "E.g.: USERS_CREATE" },
+      "description": { "label": "Description", "placeholder": "E.g.: Allows creating new users" }
+    }
+  },
+  "fuelCard": {
+    "title": "Fuel Cards",
+    "singular": "Fuel Card",
+    "description": "Fuel card management",
+    "table": {
+      "number": "Number",
+      "company": "Company",
+      "currency": "Currency",
+      "balance": "Balance",
+      "state": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "numero": { "label": "Number", "placeholder": "E.g.: 1234567890123456" },
+      "empresaId": { "label": "Company" },
+      "currencyId": { "label": "Currency" },
+      "selectCurrency": "Select currency...",
+      "saldo": { "label": "Balance", "placeholder": "E.g.: 5000.00" }
+    },
+    "modal": {
+      "edit": "Edit Card",
+      "create": "New Card"
+    },
+    "deleteConfirm": "Are you sure you want to delete this card? This action cannot be undone.",
+    "toast": {
+      "selectCurrenciesError": "Could not load currencies.",
+      "created": "Card created",
+      "updated": "Card updated",
+      "deleted": "Card deleted",
+      "createdMessage": "The new record has been created successfully.",
+      "updatedMessage": "The record has been updated successfully.",
+      "deletedMessage": "The record has been deleted successfully."
+    }
+  },
+  "plan": {
+    "title": "Plans",
+    "singular": "Plan",
+    "description": "Subscription plan management",
+    "table": {
+      "name": "Name",
+      "monthlyPrice": "Monthly Price",
+      "maxUsers": "Max Users",
+      "maxVehicles": "Max Vehicles",
+      "duration": "Duration (days)",
+      "annualDiscount": "Annual Disc. %",
+      "features": "Features",
+      "state": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": { "label": "Name", "placeholder": "E.g.: Basic Plan" },
+      "precioMensual": { "label": "Monthly Price", "placeholder": "E.g.: 50.00" },
+      "maxUsuarios": { "label": "Max Users", "placeholder": "E.g.: 10" },
+      "maxVehiculos": { "label": "Max Vehicles", "placeholder": "E.g.: 50" },
+      "duracionDias": { "label": "Duration (days)", "placeholder": "E.g.: 30" },
+      "porcientoDescuentoAnual": { "label": "Annual Disc. %", "placeholder": "E.g.: 10" },
+      "features": { "label": "Features" }
+    },
+    "labels": {
+      "noFeatures": "No features available",
+      "noFeaturesAssigned": "No features assigned",
+      "featuresCount": "Features ({{count}})",
+      "days": "days"
+    },
+    "toast": {
+      "updated": "Plan updated",
+      "error": "Error saving the plan."
+    }
+  }
+}

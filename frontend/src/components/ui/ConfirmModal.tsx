@@ -9,8 +9,11 @@ interface ConfirmModalProps {
 }
 
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-export default function ConfirmModal({ open, title, message, onConfirm, onCancel, confirmText = 'Eliminar', danger = true }: ConfirmModalProps) {
+export default function ConfirmModal({ open, title, message, onConfirm, onCancel, confirmText, danger = true }: ConfirmModalProps) {
+  const { t } = useTranslation('common');
+  const resolvedConfirmText = confirmText ?? t('actions.delete');
   if (!open) return null;
 
   return (
@@ -29,13 +32,13 @@ export default function ConfirmModal({ open, title, message, onConfirm, onCancel
         <p className="text-sm text-gray-600 mb-6">{message}</p>
         <div className="flex justify-end gap-3">
           <button onClick={onCancel} className="btn-secondary">
-            Cancelar
+            {t('actions.cancel')}
           </button>
           <button
             onClick={onConfirm}
             className={danger ? 'btn-danger' : 'btn-primary'}
           >
-            {confirmText}
+            {resolvedConfirmText}
           </button>
         </div>
       </div>

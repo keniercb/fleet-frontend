@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, User, Building2, CreditCard, Calendar, Car, Users, Clock, Activity } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionsApi } from '@/api/endpoints';
+import { formatDate } from '@/utils/format';
+import { useSubscriptionStatusInfo } from '@/utils/statusLabels';
 import type { SubscriptionResponse } from '@/types';
 
 interface ProfileModalProps {
@@ -10,27 +13,11 @@ interface ProfileModalProps {
   onClose: () => void;
 }
 
-const statusLabels: Record<string, { label: string; color: string }> = {
-  TRIAL: { label: 'Prueba', color: 'bg-blue-100 text-blue-800' },
-  ACTIVE: { label: 'Activa', color: 'bg-green-100 text-green-800' },
-  PAST_DUE: { label: 'Vencida', color: 'bg-yellow-100 text-yellow-800' },
-  CANCELED: { label: 'Cancelada', color: 'bg-red-100 text-red-800' },
-  EXPIRED: { label: 'Expirada', color: 'bg-gray-100 text-gray-800' },
-};
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
 export default function ProfileModal({ open, onClose }: ProfileModalProps) {
+  const { t } = useTranslation('auth');
   const { user, empresa } = useAuth();
   const navigate = useNavigate();
+  const getStatusInfo = useSubscriptionStatusInfo();
   const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -42,13 +29,13 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
     subscriptionsApi
       .getMyCompanySubscription()
       .then((res) => setSubscription(res.data))
-      .catch(() => setError('No se pudo cargar la información de suscripción.'))
+      .catch(() => setError(t('profile.loadError')))
       .finally(() => setLoading(false));
-  }, [open]);
+  }, [open, t]);
 
   if (!open) return null;
 
-  const statusInfo = subscription ? statusLabels[subscription.status] || { label: subscription.status, color: 'bg-gray-100 text-gray-800' } : null;
+  const statusInfo = subscription ? getStatusInfo(subscription.status) : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -59,7 +46,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Mi Perfil</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('profile.title')}</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -73,7 +60,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
           {/* User Info Section */}
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Datos de Usuario
+              {t('profile.userData')}
             </h3>
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-3">
@@ -84,7 +71,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {user?.email || '-'}
                   </p>
-                  <p className="text-xs text-gray-500">Email</p>
+                  <p className="text-xs text-gray-500">{t('profile.email')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -93,9 +80,9 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {empresa?.nombre || 'Sin empresa'}
+                    {empresa?.nombre || t('profile.noCompany')}
                   </p>
-                  <p className="text-xs text-gray-500">Empresa</p>
+                  <p className="text-xs text-gray-500">{t('profile.company')}</p>
                 </div>
               </div>
             </div>
@@ -104,12 +91,12 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
           {/* Subscription Info Section */}
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Suscripción Activa
+              {t('profile.subscriptionActive')}
             </h3>
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mr-2" />
-                <span className="text-sm text-gray-400">Cargando...</span>
+                <span className="text-sm text-gray-400">{t('profile.loading')}</span>
               </div>
             ) : error ? (
               <div className="bg-red-50 rounded-xl p-4 text-center">
@@ -126,7 +113,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {subscription.plan.nombre}
                     </p>
-                    <p className="text-xs text-gray-500">Plan</p>
+                    <p className="text-xs text-gray-500">{t('profile.plan')}</p>
                   </div>
                 </div>
 
@@ -135,7 +122,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Limite de Usuarios</span>
+                      <span className="text-xs text-gray-500">{t('profile.maxUsers')}</span>
                     </div>
                     <p className="text-lg font-bold text-gray-900">
                       {subscription.plan.maxUsuarios}
@@ -146,7 +133,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Car className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Limite de Vehículos</span>
+                      <span className="text-xs text-gray-500">{t('profile.maxVehicles')}</span>
                     </div>
                     <p className="text-lg font-bold text-gray-900">
                       {subscription.plan.maxVehiculos}
@@ -157,10 +144,10 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Vigencia</span>
+                      <span className="text-xs text-gray-500">{t('profile.validity')}</span>
                     </div>
                     <p className="text-lg font-bold text-gray-900">
-                      {subscription.plan.duracion} días
+                      {subscription.plan.duracion} {t('profile.days')}
                     </p>
                   </div>
 
@@ -168,10 +155,10 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Activity className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Estado</span>
+                      <span className="text-xs text-gray-500">{t('profile.state')}</span>
                     </div>
                     {statusInfo && (
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusInfo.color}`}>
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusInfo.badgeClass}`}>
                         {statusInfo.label}
                       </span>
                     )}
@@ -181,7 +168,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Cant. Usuarios</span>
+                      <span className="text-xs text-gray-500">{t('profile.userCount')}</span>
                     </div>
                     <p className="text-lg font-bold text-gray-900">
                       {subscription.currentUserCount}
@@ -192,7 +179,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                   <div className="bg-white rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <Car className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">Cant. Vehículos</span>
+                      <span className="text-xs text-gray-500">{t('profile.vehicleCount')}</span>
                     </div>
                     <p className="text-lg font-bold text-gray-900">
                       {subscription.currentVehicleCount}
@@ -208,9 +195,9 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900">
-                        {formatDate(subscription.startDate)}
+                        {formatDate(subscription.startDate, 'long')}
                       </p>
-                      <p className="text-xs text-gray-500">Fecha de inicio</p>
+                      <p className="text-xs text-gray-500">{t('profile.startDate')}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 bg-white rounded-lg p-3">
@@ -219,16 +206,16 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900">
-                        {formatDate(subscription.endDate)}
+                        {formatDate(subscription.endDate, 'long')}
                       </p>
-                      <p className="text-xs text-gray-500">Fecha de fin</p>
+                      <p className="text-xs text-gray-500">{t('profile.endDate')}</p>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="bg-gray-50 rounded-xl p-4 text-center">
-                <p className="text-sm text-gray-500">No hay suscripción activa para su empresa.</p>
+                <p className="text-sm text-gray-500">{t('profile.noSubscription')}</p>
               </div>
             )}
           </div>
@@ -242,7 +229,7 @@ export default function ProfileModal({ open, onClose }: ProfileModalProps) {
               onClick={() => { onClose(); navigate('/comprar-plan'); }}
               className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
             >
-              Actualizar plan
+              {t('profile.upgradePlan')}
             </button>
           </div>
         )}

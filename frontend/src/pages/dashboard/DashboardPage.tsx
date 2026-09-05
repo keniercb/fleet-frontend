@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Fuel,
   Gauge,
@@ -14,31 +15,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { reportesTransporteApi } from '@/api/endpoints';
+import { formatNumber, formatCurrency, getMonthName } from '@/utils/format';
 import type { DashboardEjecutivoResponse } from '@/types';
 
-const MESES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
-
-function formatNumber(value: number | undefined | null, decimals = 2): string {
-  if (value === undefined || value === null) return '--';
-  return value.toLocaleString('es-CU', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
-
-function formatCurrency(value: number | undefined | null): string {
-  if (value === undefined || value === null) return '--';
-  return new Intl.NumberFormat('es-CU', {
-    style: 'currency',
-    currency: 'CUP',
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
 function VariacionBadge({ value }: { value: number }) {
+  const { t } = useTranslation('dashboard');
   const isPositive = value > 0;
   const isZero = value === 0;
   return (
@@ -69,6 +50,7 @@ function EfficienciaBadge({ value }: { value: number }) {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation(['dashboard', 'common']);
   const { user } = useAuth();
   const now = new Date();
   const [mes, setMes] = useState(now.getMonth() + 1);
@@ -84,7 +66,7 @@ export default function DashboardPage() {
       const res = await reportesTransporteApi.dashboardEjecutivo(mes, anio);
       setData(res.data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al cargar datos del dashboard';
+      const msg = err instanceof Error ? err.message : t('error');
       setError(msg);
     } finally {
       setLoading(false);
@@ -110,20 +92,20 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard Ejecutivo</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-500 mt-1">
-            Bienvenido, {user?.email || 'Usuario'}
+            {t('welcome', { name: user?.email || 'Usuario' })}
             {user?.roles?.length ? ` \u00b7 ${user.roles.map((r) => r.name).join(', ')}` : ''}
           </p>
         </div>
         <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
-          <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-md transition-colors" title="Mes anterior">
+          <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-md transition-colors" title={t('common:actions.back')}>
             <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
           <span className="text-sm font-semibold text-gray-700 min-w-[140px] text-center">
-            {MESES[mes - 1]} {anio}
+            {getMonthName(mes)} {anio}
           </span>
-          <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-md transition-colors" title="Mes siguiente">
+          <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-md transition-colors" title={t('common:actions.back')}>
             <ChevronRight className="w-5 h-5 text-gray-600" />
           </button>
         </div>
@@ -132,7 +114,7 @@ export default function DashboardPage() {
       {loading && (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
-          <span className="ml-3 text-gray-500">Cargando datos...</span>
+          <span className="ml-3 text-gray-500">{t('loading')}</span>
         </div>
       )}
 
@@ -141,7 +123,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <div>
-              <p className="font-medium text-red-800">Error al cargar el dashboard</p>
+              <p className="font-medium text-red-800">{t('error')}</p>
               <p className="text-sm text-red-600 mt-1">{error}</p>
             </div>
           </div>
@@ -154,7 +136,7 @@ export default function DashboardPage() {
             <div className="mb-6">
               <span className="inline-flex items-center gap-2 bg-primary-50 text-primary-700 text-sm font-medium px-3 py-1.5 rounded-lg border border-primary-200">
                 <Route className="w-4 h-4" />
-                Periodo: {data.periodo}
+                {t('period', { periodo: data.periodo })}
               </span>
             </div>
           )}
@@ -166,8 +148,8 @@ export default function DashboardPage() {
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 truncate">KM Totales Flota</p>
-                  <p className="text-2xl font-bold text-gray-900">{data.kmTotalesFlota?.toLocaleString('es-CU') ?? '--'}</p>
+                  <p className="text-sm text-gray-500 truncate">{t('kpis.kmTotalesFlota')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{formatNumber(data.kmTotalesFlota, 0) ?? '--'}</p>
                 </div>
               </div>
             </div>
@@ -178,12 +160,12 @@ export default function DashboardPage() {
                   <Fuel className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 truncate">Costo Total Combustible</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(data.costoTotalCombustible)}</p>
+                  <p className="text-sm text-gray-500 truncate">{t('kpis.costoTotalCombustible')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(data.costoTotalCombustible, 'CUP')}</p>
                   {data.variacionCostoVsMesAnterior !== undefined && data.variacionCostoVsMesAnterior !== null && (
                     <div className="mt-1">
                       <VariacionBadge value={data.variacionCostoVsMesAnterior} />
-                      <span className="text-xs text-gray-400 ml-1">vs mes anterior</span>
+                      <span className="text-xs text-gray-400 ml-1">{t('variation.vsLastMonth')}</span>
                     </div>
                   )}
                 </div>
@@ -196,13 +178,13 @@ export default function DashboardPage() {
                   <Gauge className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 truncate">Consumo Promedio Flota</p>
+                  <p className="text-sm text-gray-500 truncate">{t('kpis.consumoPromedioFlota')}</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatNumber(data.consumoPromedioFlota)} <span className="text-sm font-normal text-gray-400">L/100km</span>
+                    {formatNumber(data.consumoPromedioFlota)} <span className="text-sm font-normal text-gray-400">{t('units.litersPer100km')}</span>
                   </p>
                   {data.desviacionConsumoPromedio !== undefined && data.desviacionConsumoPromedio !== null && (
                     <div className="mt-1">
-                      <span className="text-xs text-gray-500">Desviacion: {formatNumber(data.desviacionConsumoPromedio)} L</span>
+                      <span className="text-xs text-gray-500">{t('variation.deviation', { value: formatNumber(data.desviacionConsumoPromedio) })}</span>
                     </div>
                   )}
                 </div>
@@ -215,7 +197,7 @@ export default function DashboardPage() {
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 truncate">Tasa de Utilizacion</p>
+                  <p className="text-sm text-gray-500 truncate">{t('kpis.tasaUtilizacion')}</p>
                   <p className="text-2xl font-bold text-gray-900">{formatNumber(data.tasaUtilizacionFlota, 1)}%</p>
                   <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -234,7 +216,7 @@ export default function DashboardPage() {
             <div className="card border-l-4 border-l-emerald-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Eficiencia Promedio Choferes</p>
+                  <p className="text-sm text-gray-500">{t('kpis.eficienciaPromedioChoferes')}</p>
                   <div className="mt-1"><EfficienciaBadge value={data.eficienciaPromedioChoferes} /></div>
                 </div>
                 <div className="bg-emerald-50 p-3 rounded-lg"><Users className="w-6 h-6 text-emerald-600" /></div>
@@ -244,7 +226,7 @@ export default function DashboardPage() {
             <div className={`card border-l-4 ${data.vehiculosAlertaMantenimiento > 0 ? 'border-l-red-500' : 'border-l-emerald-500'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Vehiculos en Alerta de Mantenimiento</p>
+                  <p className="text-sm text-gray-500">{t('kpis.vehiculosAlertaMantenimiento')}</p>
                   <p className={`text-2xl font-bold mt-1 ${data.vehiculosAlertaMantenimiento > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                     {data.vehiculosAlertaMantenimiento ?? 0}
                   </p>
@@ -258,9 +240,9 @@ export default function DashboardPage() {
             <div className="card border-l-4 border-l-amber-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Desviacion de Consumo Promedio</p>
+                  <p className="text-sm text-gray-500">{t('kpis.desviacionConsumoPromedio')}</p>
                   <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {formatNumber(data.desviacionConsumoPromedio)} <span className="text-sm font-normal text-gray-400">L</span>
+                    {formatNumber(data.desviacionConsumoPromedio)} <span className="text-sm font-normal text-gray-400">{t('units.liters')}</span>
                   </p>
                 </div>
                 <div className="bg-amber-50 p-3 rounded-lg"><Fuel className="w-6 h-6 text-amber-600" /></div>

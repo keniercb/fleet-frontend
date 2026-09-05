@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFilteredNavigation } from '@/utils/navigation';
 import type { NavSection } from '@/utils/navigation';
@@ -13,6 +14,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggleCollapse }: SidebarProps) {
+  const { t } = useTranslation('navigation');
   const { isSuperAdmin, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,14 +61,14 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <h1 className="text-sm font-bold text-white truncate">Gestión Vehicular</h1>
-              <p className="text-[10px] text-zinc-500 truncate">Sistema de Control</p>
+              <h1 className="text-sm font-bold text-white truncate">{t('sidebar.title')}</h1>
+              <p className="text-[10px] text-zinc-500 truncate">{t('sidebar.subtitle')}</p>
             </div>
           )}
           <button
             onClick={onToggleCollapse}
             className={`hidden lg:flex ml-auto flex-shrink-0 w-7 h-7 items-center justify-center rounded-md text-zinc-500 hover:bg-white/5 hover:text-white transition-colors ${collapsed ? 'ml-0' : ''}`}
-            title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+            title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
           >
             {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           </button>
@@ -83,10 +85,10 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
               ? 'bg-primary-600/20 text-primary-400'
               : 'text-zinc-400 hover:text-white hover:bg-white/5'
           } ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? 'Dashboard' : undefined}
+          title={collapsed ? t('sidebar.dashboard') : undefined}
         >
           <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span className="truncate">Dashboard</span>}
+          {!collapsed && <span className="truncate">{t('sidebar.dashboard')}</span>}
         </button>
 
         {/* Sections */}
@@ -108,7 +110,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                       <button
                         key={item.id}
                         onClick={() => handleNavigate(item.path)}
-                        title={item.label}
+                        title={t(item.labelKey)}
                         className={`w-full flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-normal transition-colors ${
                           isActive
                             ? 'bg-primary-600/20 text-primary-400'

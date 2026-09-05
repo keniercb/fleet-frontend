@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import type { PageResponse, PageParams } from '@/types';
 import type { AxiosResponse } from 'axios';
@@ -21,7 +22,7 @@ export default function SearchableDropdown<T extends { id: number }>({
   label,
   value,
   onChange,
-  placeholder = 'Buscar...',
+  placeholder,
   required = false,
   fetchFn,
   getId,
@@ -30,6 +31,8 @@ export default function SearchableDropdown<T extends { id: number }>({
   disabled = false,
   pageSize = 50,
 }: SearchableDropdownProps<T>) {
+  const { t } = useTranslation('common');
+  const resolvedPlaceholder = placeholder ?? t('actions.searchPlaceholder');
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -136,7 +139,7 @@ export default function SearchableDropdown<T extends { id: number }>({
           value={displayValue}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
-          placeholder={isTyping ? placeholder : (value != null ? selectedLabel : placeholder)}
+          placeholder={isTyping ? resolvedPlaceholder : (value != null ? selectedLabel : resolvedPlaceholder)}
           disabled={disabled}
           className="input-field pr-8 text-sm"
         />
@@ -159,11 +162,11 @@ export default function SearchableDropdown<T extends { id: number }>({
             {loading ? (
               <div className="flex items-center justify-center py-6 text-gray-400 text-sm">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2" />
-                Buscando...
+                {t('state.loading')}
               </div>
             ) : items.length === 0 ? (
               <div className="py-6 text-center text-gray-400 text-sm">
-                No se encontraron resultados
+                {t('state.noResults')}
               </div>
             ) : (
               items.map((item) => {
