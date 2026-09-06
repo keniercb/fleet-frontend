@@ -145,7 +145,7 @@ export default function ComprarPlanesPage() {
         planId: selectedPlanId,
         type: paymentType,
         subscriptionId: subscription?.id,
-        facturarAnual,
+        facturarAnual: facturacionAnual,
       };
       const res = await paymentsApi.create(payload);
       setPayment(res.data);
