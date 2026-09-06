@@ -158,7 +158,7 @@ export default function ComprarPlanesPage() {
     } finally {
       setCreatingPayment(false);
     }
-  }, [selectedPlanId, subscription, addToast, t, startPolling]);
+  }, [selectedPlanId, subscription, facturacionAnual, addToast, t, startPolling]);
 
   const handleCheckStatus = useCallback(async () => {
     if (!payment) return;
