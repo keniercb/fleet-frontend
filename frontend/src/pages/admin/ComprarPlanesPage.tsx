@@ -426,7 +426,9 @@ export default function ComprarPlanesPage() {
             <div className="flex flex-col items-center">
               {payment.qrImageBase64 ? (
                 <img
-                  src={payment.qrImageBase64}
+                  src={payment.qrImageBase64.startsWith('data:')
+                    ? payment.qrImageBase64
+                    : `data:image/png;base64,${payment.qrImageBase64}`}
                   alt="QR Enzona"
                   className="w-64 h-64 border-2 border-gray-200 rounded-lg"
                 />
