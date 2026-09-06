@@ -180,6 +180,7 @@
       "transactionIdLabel": "ID de transacción",
       "copyQr": "Copiar código QR",
       "copied": "Código QR copiado al portapapeles",
+      "copyError": "No se pudo copiar el código QR.",
       "retryPayment": "Reintentar pago",
       "cancelPayment": "Cancelar pago",
       "checkStatus": "Verificar estado",

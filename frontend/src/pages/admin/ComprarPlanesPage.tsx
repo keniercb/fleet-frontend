@@ -221,9 +221,23 @@ export default function ComprarPlanesPage() {
     if (!payment?.qrCode) return;
     try {
       await navigator.clipboard.writeText(payment.qrCode);
-      addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.copied') });
+      addToast({ type: 'info', title: t('admin:payment.modal.copyQr'), message: t('admin:payment.toast.copied') });
     } catch {
-      // fallback: ignore
+      // Fallback: usar execCommand si clipboard API no esta disponible
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = payment.qrCode;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        addToast({ type: 'info', title: t('admin:payment.modal.copyQr'), message: t('admin:payment.toast.copied') });
+      } catch {
+        addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.copyError') });
+      }
     }
   }, [payment, addToast, t]);
 

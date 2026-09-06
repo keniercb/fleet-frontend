@@ -180,6 +180,7 @@
       "transactionIdLabel": "Transaction ID",
       "copyQr": "Copy QR code",
       "copied": "QR code copied to clipboard",
+      "copyError": "Could not copy the QR code.",
       "retryPayment": "Retry payment",
       "cancelPayment": "Cancel payment",
       "checkStatus": "Check status",
