@@ -1,0 +1,30 @@
+# Dependencias de node
+node_modules
+npm-debug.log
+
+# Build de Vite
+dist
+dist-ssr
+
+# Editor y OS
+.vscode
+.idea
+.DS_Store
+*.local
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Tests
+cypress
+cypress.config.ts
+
+# Archivos de configuracion que no se necesitan en el build
+*.md
+LICENSE
