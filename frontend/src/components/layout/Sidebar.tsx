@@ -131,7 +131,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                     }`}
                   >
                     <SectionIcon className="w-5 h-5 flex-shrink-0" />
-                    <span className="flex-1 text-left truncate">{section.label}</span>
+                    <span className="flex-1 text-left truncate">{t(section.labelKey)}</span>
                     {isExpanded ? (
                       <ChevronDown className="w-4 h-4 flex-shrink-0" />
                     ) : (
@@ -154,7 +154,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
                                 : 'text-zinc-400 hover:text-white hover:bg-white/5'
                             }`}
                           >
-                            {item.label}
+                            {t(item.labelKey)}
                           </button>
                         );
                       })}
@@ -171,7 +171,7 @@ export default function Sidebar({ mobileOpen, onCloseMobile, collapsed, onToggle
       {!collapsed && (
         <div className="p-4 border-t border-white/10">
           <p className="text-[10px] text-zinc-600 text-center">
-            v1.0.0 — Gestión Vehicular
+            {t('sidebar.version')}
           </p>
         </div>
       )}
