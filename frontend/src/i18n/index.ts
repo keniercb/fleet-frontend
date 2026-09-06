@@ -3,31 +3,31 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import './types'; // strong typing for i18n keys (autocompletion + compile-time validation)
 
-import commonEs from '../../public/locales/es/common.json';
-import navigationEs from '../../public/locales/es/navigation.json';
-import authEs from '../../public/locales/es/auth.json';
-import dashboardEs from '../../public/locales/es/dashboard.json';
-import crudEs from '../../public/locales/es/crud.json';
-import catalogsEs from '../../public/locales/es/catalogs.json';
-import vehiculosEs from '../../public/locales/es/vehiculos.json';
-import choferesEs from '../../public/locales/es/choferes.json';
-import recorridosEs from '../../public/locales/es/recorridos.json';
-import adminEs from '../../public/locales/es/admin.json';
-import reportesEs from '../../public/locales/es/reportes.json';
-import errorsEs from '../../public/locales/es/errors.json';
+import commonEs from '../locales/es/common.json';
+import navigationEs from '../locales/es/navigation.json';
+import authEs from '../locales/es/auth.json';
+import dashboardEs from '../locales/es/dashboard.json';
+import crudEs from '../locales/es/crud.json';
+import catalogsEs from '../locales/es/catalogs.json';
+import vehiculosEs from '../locales/es/vehiculos.json';
+import choferesEs from '../locales/es/choferes.json';
+import recorridosEs from '../locales/es/recorridos.json';
+import adminEs from '../locales/es/admin.json';
+import reportesEs from '../locales/es/reportes.json';
+import errorsEs from '../locales/es/errors.json';
 
-import commonEn from '../../public/locales/en/common.json';
-import navigationEn from '../../public/locales/en/navigation.json';
-import authEn from '../../public/locales/en/auth.json';
-import dashboardEn from '../../public/locales/en/dashboard.json';
-import crudEn from '../../public/locales/en/crud.json';
-import catalogsEn from '../../public/locales/en/catalogs.json';
-import vehiculosEn from '../../public/locales/en/vehiculos.json';
-import choferesEn from '../../public/locales/en/choferes.json';
-import recorridosEn from '../../public/locales/en/recorridos.json';
-import adminEn from '../../public/locales/en/admin.json';
-import reportesEn from '../../public/locales/en/reportes.json';
-import errorsEn from '../../public/locales/en/errors.json';
+import commonEn from '../locales/en/common.json';
+import navigationEn from '../locales/en/navigation.json';
+import authEn from '../locales/en/auth.json';
+import dashboardEn from '../locales/en/dashboard.json';
+import crudEn from '../locales/en/crud.json';
+import catalogsEn from '../locales/en/catalogs.json';
+import vehiculosEn from '../locales/en/vehiculos.json';
+import choferesEn from '../locales/en/choferes.json';
+import recorridosEn from '../locales/en/recorridos.json';
+import adminEn from '../locales/en/admin.json';
+import reportesEn from '../locales/en/reportes.json';
+import errorsEn from '../locales/en/errors.json';
 
 export const NAMESPACES = [
   'common', 'navigation', 'auth', 'dashboard', 'crud',

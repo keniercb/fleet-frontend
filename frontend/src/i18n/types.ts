@@ -1,16 +1,16 @@
 import 'i18next';
-import type common from '../../public/locales/es/common.json';
-import type navigation from '../../public/locales/es/navigation.json';
-import type auth from '../../public/locales/es/auth.json';
-import type dashboard from '../../public/locales/es/dashboard.json';
-import type crud from '../../public/locales/es/crud.json';
-import type catalogs from '../../public/locales/es/catalogs.json';
-import type vehiculos from '../../public/locales/es/vehiculos.json';
-import type choferes from '../../public/locales/es/choferes.json';
-import type recorridos from '../../public/locales/es/recorridos.json';
-import type admin from '../../public/locales/es/admin.json';
-import type reportes from '../../public/locales/es/reportes.json';
-import type errors from '../../public/locales/es/errors.json';
+import type common from '../locales/es/common.json';
+import type navigation from '../locales/es/navigation.json';
+import type auth from '../locales/es/auth.json';
+import type dashboard from '../locales/es/dashboard.json';
+import type crud from '../locales/es/crud.json';
+import type catalogs from '../locales/es/catalogs.json';
+import type vehiculos from '../locales/es/vehiculos.json';
+import type choferes from '../locales/es/choferes.json';
+import type recorridos from '../locales/es/recorridos.json';
+import type admin from '../locales/es/admin.json';
+import type reportes from '../locales/es/reportes.json';
+import type errors from '../locales/es/errors.json';
 
 /**
  * Tipado fuerte de claves i18n para autocompletado en VSCode y validación
