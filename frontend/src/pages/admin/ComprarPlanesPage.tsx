@@ -202,7 +202,7 @@ export default function ComprarPlanesPage() {
     setActionLoading(true);
     try {
       const res = await paymentsApi.cancel(payment.id);
-      setPayment(res.data);
+      setPayment({ ...res.data, qrImageBase64: undefined, qrCode: undefined });
       stopPolling();
       addToast({ type: 'info', title: t('common:state.info'), message: t('admin:payment.toast.cancelled') });
     } catch {
