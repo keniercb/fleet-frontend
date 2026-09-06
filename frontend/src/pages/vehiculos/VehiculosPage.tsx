@@ -388,7 +388,7 @@ export default function VehiculosPage() {
           className="btn-secondary flex items-center gap-2"
         >
           {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-          {exportingPdf ? t('vehiculos:report.searching') : t('vehiculos:report.searching')}
+          {exportingPdf ? t('vehiculos:report.exportingPdf') : t('vehiculos:report.generatePdf')}
         </button>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -597,7 +597,7 @@ export default function VehiculosPage() {
             </div>
             <div>
               <label htmlFor="numeroMotor" className="block text-sm font-medium text-gray-700 mb-1.5">
-                {t('vehiculos:form.cardNumber.label')}<span className="text-red-500 ml-0.5">*</span>
+                {t('vehiculos:form.engineNumber.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="numeroMotor"
@@ -605,7 +605,7 @@ export default function VehiculosPage() {
                 value={formData.numeroMotor}
                 onChange={(e) => handleFieldChange('numeroMotor', e.target.value)}
                 className="input-field"
-                placeholder={t('vehiculos:form.cardNumber.placeholder')}
+                placeholder={t('vehiculos:form.engineNumber.placeholder')}
                 required
               />
             </div>
@@ -626,7 +626,7 @@ export default function VehiculosPage() {
             </div>
             <div>
               <label htmlFor="combustible" className="block text-sm font-medium text-gray-700 mb-1.5">
-                {t('vehiculos:table.fuelLiters')}<span className="text-red-500 ml-0.5">*</span>
+                {t('vehiculos:form.fuel.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="combustible"
@@ -636,13 +636,13 @@ export default function VehiculosPage() {
                 value={formData.combustible}
                 onChange={(e) => handleFieldChange('combustible', e.target.value === '' ? 0 : Number(e.target.value))}
                 className="input-field"
-                placeholder="Ej: 40.5"
+                placeholder={t('vehiculos:form.fuel.placeholder')}
                 required
               />
             </div>
             <div>
               <label htmlFor="indiceConsumo" className="block text-sm font-medium text-gray-700 mb-1.5">
-                {t('vehiculos:form.odometer.label')} (km/L)
+                {t('vehiculos:form.consumptionIndex.label')}
               </label>
               <input
                 id="indiceConsumo"
@@ -652,12 +652,12 @@ export default function VehiculosPage() {
                 value={formData.indiceConsumo}
                 onChange={(e) => handleFieldChange('indiceConsumo', e.target.value)}
                 className="input-field"
-                placeholder="Ej: 8.5"
+                placeholder={t('vehiculos:form.consumptionIndex.placeholder')}
               />
             </div>
             <div>
               <label htmlFor="ultimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                {t('vehiculos:form.maintenance')}
+                {t('vehiculos:form.lastMaintenanceDate.label')}
               </label>
               <input
                 id="ultimoMantenimiento"
@@ -669,7 +669,7 @@ export default function VehiculosPage() {
             </div>
             <div>
               <label htmlFor="odometroUltimoMantenimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                {t('vehiculos:form.odometer.label')}
+                {t('vehiculos:form.lastMaintenanceOdometer.label')}
               </label>
               <input
                 id="odometroUltimoMantenimiento"
@@ -678,7 +678,7 @@ export default function VehiculosPage() {
                 value={formData.odometroUltimoMantenimiento}
                 onChange={(e) => handleFieldChange('odometroUltimoMantenimiento', e.target.value)}
                 className="input-field"
-                placeholder="Ej: 48000"
+                placeholder={t('vehiculos:form.lastMaintenanceOdometer.placeholder')}
               />
             </div>
           </div>
@@ -739,7 +739,7 @@ export default function VehiculosPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <DetailField label={t('vehiculos:table.odometer')} value={`${formatNumber(viewEntity.odometro)} km`} />
                 <DetailField label={t('vehiculos:table.fuelLiters')} value={`${viewEntity.combustible} L`} />
-                <DetailField label={t('vehiculos:table.fuelLiters')} value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
+                <DetailField label={t('vehiculos:form.consumptionIndex.label')} value={viewEntity.indiceConsumo ? `${viewEntity.indiceConsumo} km/L` : '—'} />
               </div>
             </div>
 
@@ -747,8 +747,8 @@ export default function VehiculosPage() {
             <div>
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('vehiculos:form.maintenance')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DetailField label={t('vehiculos:form.maintenance')} value={viewEntity.ultimoMantenimiento ? formatDateHelper(viewEntity.ultimoMantenimiento, 'short') : '—'} />
-                <DetailField label={t('vehiculos:table.odometer')} value={viewEntity.odometroUltimoMantenimiento ? `${formatNumber(viewEntity.odometroUltimoMantenimiento)} km` : '—'} />
+                <DetailField label={t('vehiculos:form.lastMaintenanceDate.label')} value={viewEntity.ultimoMantenimiento ? formatDateHelper(viewEntity.ultimoMantenimiento, 'short') : '—'} />
+                <DetailField label={t('vehiculos:form.lastMaintenanceOdometer.label')} value={viewEntity.odometroUltimoMantenimiento ? `${formatNumber(viewEntity.odometroUltimoMantenimiento)} km` : '—'} />
               </div>
             </div>
 
@@ -783,7 +783,7 @@ export default function VehiculosPage() {
             {/* Filtros: Mes y Año */}
             <div className="flex flex-col sm:flex-row items-end gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="w-full sm:w-44">
-                <label htmlFor="repo-mes" className="block text-xs font-medium text-gray-500 mb-1">{t('vehiculos:report.table.date')}</label>
+                <label htmlFor="repo-mes" className="block text-xs font-medium text-gray-500 mb-1">{t('vehiculos:report.month')}</label>
                 <select
                   id="repo-mes"
                   value={reporteMes}
@@ -796,7 +796,7 @@ export default function VehiculosPage() {
                 </select>
               </div>
               <div className="w-full sm:w-36">
-                <label htmlFor="repo-anio" className="block text-xs font-medium text-gray-500 mb-1">{t('vehiculos:report.table.date')}</label>
+                <label htmlFor="repo-anio" className="block text-xs font-medium text-gray-500 mb-1">{t('vehiculos:report.year')}</label>
                 <select
                   id="repo-anio"
                   value={reporteAnio}
@@ -826,7 +826,7 @@ export default function VehiculosPage() {
                 className="btn-secondary flex items-center gap-2 disabled:opacity-50"
               >
                 {exportingReportePdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-                {t('vehiculos:report.search')}
+                {exportingReportePdf ? t('vehiculos:report.exportingPdf') : t('vehiculos:report.generatePdf')}
               </button>
             </div>
 
@@ -845,14 +845,14 @@ export default function VehiculosPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <ChevronRight className="w-4 h-4" />
-                    {t('vehiculos:form.detailTitle')}
+                    {t('vehiculos:report.vehicleData')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
                     <DetailField label={t('vehiculos:table.licensePlate')} value={reporteData.vehiculo.matricula} />
                     <DetailField label={t('vehiculos:table.brand')} value={reporteData.vehiculo.marca} />
-                    <DetailField label={t('vehiculos:form.cardNumber.label')} value={reporteData.vehiculo.numeroMotor || '—'} />
+                    <DetailField label={t('vehiculos:form.engineNumber.label')} value={reporteData.vehiculo.numeroMotor || '—'} />
                     <DetailField label={t('vehiculos:form.fuelType.label')} value={reporteData.vehiculo.tipoCombustible} />
-                    <DetailField label={t('vehiculos:table.fuelLiters')} value={`${reporteData.vehiculo.normaConsumo} km/L`} />
+                    <DetailField label={t('vehiculos:report.analysis.normConsumption')} value={`${reporteData.vehiculo.normaConsumo} km/L`} />
                     <DetailField
                       label={t('vehiculos:table.driver')}
                       value={reporteData.vehiculo.chofer
@@ -866,7 +866,7 @@ export default function VehiculosPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <ChevronRight className="w-4 h-4" />
-                    {t('vehiculos:report.table.date')}
+                    {t('vehiculos:report.dailyReadings')}
                   </h3>
                   {reporteData.lecturas.length === 0 ? (
                     <p className="text-sm text-gray-400 text-center py-6">{t('vehiculos:report.noData')}</p>
@@ -875,13 +875,13 @@ export default function VehiculosPage() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-gray-50">
-                            <th className="table-header px-3 py-2">{t('vehiculos:report.table.date')}</th>
-                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.odometerEnd')}</th>
-                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.km')}</th>
-                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
-                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
-                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
-                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.liters')}</th>
+                            <th className="table-header px-3 py-2">{t('vehiculos:report.table.day')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.odometerStart')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.kmTraveled')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.fuelInitial')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.fuelConsumed')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.fuelSupplied')}</th>
+                            <th className="table-header px-3 py-2 text-right">{t('vehiculos:report.table.fuelBalance')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -906,15 +906,15 @@ export default function VehiculosPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <ChevronRight className="w-4 h-4" />
-                    {t('vehiculos:form.metricsAndFuel')}
+                    {t('vehiculos:report.consumptionAnalysis')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-white border border-gray-200 rounded-lg">
-                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.combustibleInicial} L`} />
-                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.combustibleRecibido} L`} />
-                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.combustibleConsumido} L`} />
-                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.existenciaFinal} L`} />
-                    <DetailField label={t('vehiculos:report.table.km')} value={formatNumber(reporteData.analisis.kilometrosRecorridos)} />
-                    <DetailField label={t('vehiculos:report.table.liters')} value={`${reporteData.analisis.consumidoSegunNorma} L`} />
+                    <DetailField label={t('vehiculos:report.analysis.fuelInitial')} value={`${reporteData.analisis.combustibleInicial} L`} />
+                    <DetailField label={t('vehiculos:report.analysis.fuelReceived')} value={`${reporteData.analisis.combustibleRecibido} L`} />
+                    <DetailField label={t('vehiculos:report.analysis.fuelConsumed')} value={`${reporteData.analisis.combustibleConsumido} L`} />
+                    <DetailField label={t('vehiculos:report.analysis.finalStock')} value={`${reporteData.analisis.existenciaFinal} L`} />
+                    <DetailField label={t('vehiculos:report.analysis.kmTraveled')} value={formatNumber(reporteData.analisis.kilometrosRecorridos)} />
+                    <DetailField label={t('vehiculos:report.analysis.consumedByNorm')} value={`${reporteData.analisis.consumidoSegunNorma} L`} />
                   </div>
                 </div>
               </>
