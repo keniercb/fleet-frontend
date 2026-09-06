@@ -681,6 +681,7 @@ export interface PaymentCreateRequest {
   planId: number;
   type: PaymentType;
   subscriptionId?: number;
+  facturarAnual?: boolean;
 }
 
 export interface PaymentResponse {
