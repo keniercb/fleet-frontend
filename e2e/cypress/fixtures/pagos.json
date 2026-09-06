@@ -1,0 +1,65 @@
+{
+  "_nota": "Plantillas de PaymentResponse para las transiciones simuladas del endpoint GET /payments/{id}/status. El id real del pago se inyecta desde la URL en tiempo de ejecución (ver interceptarEstadoPagoFijo). La imagen QR es un PNG 1x1 de prueba en base64. Solo se usan cuando CYPRESS_mockEstadosPago=true: simular estados exige que un humano escanee el QR real de Enzona, algo imposible de automatizar.",
+  "pagoQrGenerado": {
+    "id": 0,
+    "plan": { "nombre": "Plan Básico" },
+    "amount": 1500.0,
+    "currency": "CUP",
+    "status": "QR_GENERADO",
+    "type": "NUEVA_SUSCRIPCION",
+    "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "qrCode": "enzona://pago/QR-SIMULADO-001",
+    "externalTransactionId": "TZ-SIMULADA-0001",
+    "expiresAt": "2030-01-01T00:00:00Z",
+    "retryCount": 0,
+    "confirmed": false,
+    "_nota": "estado inicial tras crear el pago"
+  },
+  "pagoPagado": {
+    "id": 0,
+    "plan": { "nombre": "Plan Básico" },
+    "amount": 1500.0,
+    "currency": "CUP",
+    "status": "PAGADO",
+    "type": "NUEVA_SUSCRIPCION",
+    "externalTransactionId": "TZ-SIMULADA-0001",
+    "paidAt": "2030-01-01T00:05:00Z",
+    "retryCount": 0,
+    "confirmed": true
+  },
+  "pagoFallido": {
+    "id": 0,
+    "plan": { "nombre": "Plan Básico" },
+    "amount": 1500.0,
+    "currency": "CUP",
+    "status": "FALLIDO",
+    "type": "NUEVA_SUSCRIPCION",
+    "externalTransactionId": "TZ-SIMULADA-0001",
+    "errorMessage": "Transacción rechazada por el banco emisor",
+    "retryCount": 1,
+    "confirmed": false
+  },
+  "pagoExpirado": {
+    "id": 0,
+    "plan": { "nombre": "Plan Básico" },
+    "amount": 1500.0,
+    "currency": "CUP",
+    "status": "EXPIRADO",
+    "type": "NUEVA_SUSCRIPCION",
+    "externalTransactionId": "TZ-SIMULADA-0001",
+    "expiresAt": "2025-01-01T00:00:00Z",
+    "retryCount": 0,
+    "confirmed": false
+  },
+  "pagoCancelado": {
+    "id": 0,
+    "plan": { "nombre": "Plan Básico" },
+    "amount": 1500.0,
+    "currency": "CUP",
+    "status": "CANCELADO",
+    "type": "NUEVA_SUSCRIPCION",
+    "externalTransactionId": "TZ-SIMULADA-0001",
+    "retryCount": 0,
+    "confirmed": false
+  }
+}

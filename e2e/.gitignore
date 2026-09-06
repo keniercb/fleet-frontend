@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+
+# Credenciales locales (ver .env.example)
+.env
+.env.local
+cypress.env.json
+
+# Evidencias generadas por Cypress
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Reportes y cachés
+results/
+.cypress-cache/
+*.log
+.DS_Store

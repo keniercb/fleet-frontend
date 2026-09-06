@@ -1,0 +1,13 @@
+{
+  "_nota": "Plantillas de datos para el CRUD de vehículos. La matrícula única se genera en ejecución con cy.datosUnicos() para que la suite sea repetible contra un backend real.",
+  "vehiculoNuevo": {
+    "modelo": "Lada 2107",
+    "matriculaPlantilla": "BTS-XXXXXX",
+    "numeroMotorPlantilla": "MOTOR-XXXXXX",
+    "odometro": 125000,
+    "combustible": 40,
+    "indiceConsumo": 8.5,
+    "ultimoMantenimiento": "2025-06-15",
+    "odometroUltimoMantenimiento": 120000
+  }
+}

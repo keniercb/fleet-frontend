@@ -1,0 +1,10 @@
+{
+  "_nota": "Plantillas de datos para el CRUD de choferes. El carné de identidad único se genera en ejecución con cy.datosUnicos() (11 dígitos, formato cubano).",
+  "choferNuevo": {
+    "nombre": "Juan",
+    "apellidos": "Pérez Gómez",
+    "carneIdentidadPlantilla": "XXXXXXXXXXX",
+    "numeroLicenciaPlantilla": "LIC-XXXXXX",
+    "fechaNacimiento": "1990-05-15"
+  }
+}
