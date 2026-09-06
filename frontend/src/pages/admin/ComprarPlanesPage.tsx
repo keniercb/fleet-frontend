@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CreditCard, Car, Users, Clock, Calendar, Tag, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Car, Users, Clock, Calendar, Tag, CheckCircle2, Loader2, QrCode, Copy, RotateCw, XCircle, RefreshCw, CheckCircle, AlertTriangle, Clock3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { subscriptionsApi, plansApi } from '@/api/endpoints';
+import { subscriptionsApi, plansApi, paymentsApi } from '@/api/endpoints';
 import PageHeader from '@/components/common/PageHeader';
+import Modal from '@/components/ui/Modal';
 import { formatDate, formatCurrency, formatNumber } from '@/utils/format';
 import { useSubscriptionStatusInfo } from '@/utils/statusLabels';
-import type { SubscriptionResponse, PlanResponse } from '@/types';
+import type { SubscriptionResponse, PlanResponse, PaymentResponse, PaymentType, PaymentStatus } from '@/types';
 
 export default function ComprarPlanesPage() {
   const { t } = useTranslation(['admin', 'common']);
@@ -25,6 +26,13 @@ export default function ComprarPlanesPage() {
   const [facturacionAnual, setFacturacionAnual] = useState(false);
   const [importe, setImporte] = useState<number | null>(null);
   const [importeLoading, setImporteLoading] = useState(false);
+
+  // Payment (Enzona QR) state
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [payment, setPayment] = useState<PaymentResponse | null>(null);
+  const [creatingPayment, setCreatingPayment] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Fetch current subscription
   useEffect(() => {
@@ -74,6 +82,146 @@ export default function ComprarPlanesPage() {
   }, [selectedPlanId, facturacionAnual]);
 
   const statusInfo = subscription ? getStatusInfo(subscription.status) : null;
+
+  // ---- Payment helpers ----
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
+
+  const getPaymentStatusInfo = useCallback((status: PaymentStatus) => {
+    const map: Record<PaymentStatus, { color: string; icon: typeof CheckCircle }> = {
+      PENDIENTE: { color: 'text-amber-600', icon: Clock3 },
+      QR_GENERADO: { color: 'text-blue-600', icon: QrCode },
+      PAGADO: { color: 'text-emerald-600', icon: CheckCircle },
+      FALLIDO: { color: 'text-red-600', icon: AlertTriangle },
+      EXPIRADO: { color: 'text-gray-500', icon: Clock3 },
+      CANCELADO: { color: 'text-red-600', icon: XCircle },
+    };
+    return map[status] || { color: 'text-gray-500', icon: Clock3 };
+  }, []);
+
+  const startPolling = useCallback((paymentId: number) => {
+    stopPolling();
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await paymentsApi.getStatus(paymentId);
+        const updated = res.data;
+        setPayment(updated);
+        if (updated.status === 'PAGADO') {
+          stopPolling();
+          addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paid') });
+          // Refresh subscription to reflect new plan
+          subscriptionsApi.getMyCompanySubscription().then((r) => setSubscription(r.data)).catch(() => {});
+        } else if (updated.status === 'EXPIRADO' || updated.status === 'FALLIDO' || updated.status === 'CANCELADO') {
+          stopPolling();
+          if (updated.status === 'EXPIRADO') {
+            addToast({ type: 'warning', title: t('common:state.warning'), message: t('admin:payment.toast.expired') });
+          } else if (updated.status === 'FALLIDO') {
+            addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.failed') });
+          }
+        }
+      } catch {
+        // silent — keep polling
+      }
+    }, 5000);
+  }, [stopPolling, addToast, t]);
+
+  const handleBuy = useCallback(async () => {
+    if (!selectedPlanId) return;
+    setCreatingPayment(true);
+    try {
+      const paymentType: PaymentType = subscription ? 'RENOVACION' : 'NUEVA_SUSCRIPCION';
+      const payload = {
+        planId: selectedPlanId,
+        type: paymentType,
+        subscriptionId: subscription?.id,
+      };
+      const res = await paymentsApi.create(payload);
+      setPayment(res.data);
+      setPaymentModalOpen(true);
+      addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paymentCreated') });
+      // Start polling for status updates
+      startPolling(res.data.id);
+    } catch {
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.createError') });
+    } finally {
+      setCreatingPayment(false);
+    }
+  }, [selectedPlanId, subscription, addToast, t, startPolling]);
+
+  const handleCheckStatus = useCallback(async () => {
+    if (!payment) return;
+    setActionLoading(true);
+    try {
+      const res = await paymentsApi.getStatus(payment.id);
+      setPayment(res.data);
+      if (res.data.status === 'PAGADO') {
+        stopPolling();
+        addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paid') });
+        subscriptionsApi.getMyCompanySubscription().then((r) => setSubscription(r.data)).catch(() => {});
+      } else {
+        addToast({ type: 'info', title: t('common:state.info'), message: t('admin:payment.toast.statusUpdated') });
+      }
+    } catch {
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.statusError') });
+    } finally {
+      setActionLoading(false);
+    }
+  }, [payment, addToast, t, stopPolling]);
+
+  const handleRetryPayment = useCallback(async () => {
+    if (!payment) return;
+    setActionLoading(true);
+    try {
+      const res = await paymentsApi.retry(payment.id);
+      setPayment(res.data);
+      addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.retried') });
+      startPolling(res.data.id);
+    } catch {
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.retryError') });
+    } finally {
+      setActionLoading(false);
+    }
+  }, [payment, addToast, t, startPolling]);
+
+  const handleCancelPayment = useCallback(async () => {
+    if (!payment) return;
+    setActionLoading(true);
+    try {
+      const res = await paymentsApi.cancel(payment.id);
+      setPayment(res.data);
+      stopPolling();
+      addToast({ type: 'info', title: t('common:state.info'), message: t('admin:payment.toast.cancelled') });
+    } catch {
+      addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.cancelError') });
+    } finally {
+      setActionLoading(false);
+    }
+  }, [payment, addToast, t, stopPolling]);
+
+  const handleClosePaymentModal = useCallback(() => {
+    stopPolling();
+    setPaymentModalOpen(false);
+    setPayment(null);
+  }, [stopPolling]);
+
+  const handleCopyQr = useCallback(async () => {
+    if (!payment?.qrCode) return;
+    try {
+      await navigator.clipboard.writeText(payment.qrCode);
+      addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.copied') });
+    } catch {
+      // fallback: ignore
+    }
+  }, [payment, addToast, t]);
 
   return (
     <div>
@@ -249,13 +397,161 @@ export default function ComprarPlanesPage() {
           <div className="flex justify-end pt-4 border-t border-gray-200 mt-4">
             <button
               type="button"
-              className="btn-primary flex items-center gap-2"
+              onClick={handleBuy}
+              disabled={creatingPayment || !selectedPlanId}
+              className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CreditCard className="w-4 h-4" /> {t('admin:comprarPlanes.buy')}
+              {creatingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+              {creatingPayment ? t('admin:payment.toast.creatingPayment') : t('admin:comprarPlanes.buy')}
             </button>
           </div>
         </div>
       )}
+
+      {/* Payment QR Modal (Enzona) */}
+      <Modal
+        open={paymentModalOpen}
+        title={t('admin:payment.modal.title')}
+        onClose={handleClosePaymentModal}
+        size="md"
+      >
+        {payment && (
+          <div className="space-y-4">
+            {/* Subtitle / instructions */}
+            <p className="text-sm text-gray-500 text-center">
+              {t('admin:payment.modal.subtitle')}
+            </p>
+
+            {/* QR Image */}
+            <div className="flex flex-col items-center">
+              {payment.qrImageBase64 ? (
+                <img
+                  src={payment.qrImageBase64}
+                  alt="QR Enzona"
+                  className="w-64 h-64 border-2 border-gray-200 rounded-lg"
+                />
+              ) : payment.qrCode ? (
+                <div className="w-64 h-64 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-4 text-center">
+                  <QrCode className="w-12 h-12 text-gray-400 mb-2" />
+                  <p className="text-xs text-gray-500 font-mono break-all">{payment.qrCode}</p>
+                </div>
+              ) : (
+                <div className="w-64 h-64 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center">
+                  <Loader2 className="w-12 h-12 text-gray-400 animate-spin mb-2" />
+                  <p className="text-xs text-gray-400">{t('admin:payment.toast.creatingPayment')}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Status badge */}
+            <div className="flex justify-center">
+              {(() => {
+                const info = getPaymentStatusInfo(payment.status);
+                const Icon = info.icon;
+                return (
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${info.color} bg-gray-50`}>
+                    <Icon className="w-4 h-4" />
+                    {t(`admin:payment.status.${payment.status}` as const)}
+                  </span>
+                );
+              })()}
+            </div>
+
+            {/* Payment details */}
+            <div className="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-4">
+              <div>
+                <p className="text-xs text-gray-500">{t('admin:payment.modal.amountLabel')}</p>
+                <p className="text-sm font-semibold text-gray-900">{formatCurrency(payment.amount, payment.currency)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">{t('admin:payment.modal.planLabel')}</p>
+                <p className="text-sm font-semibold text-gray-900">{payment.plan.nombre}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">{t('admin:payment.modal.transactionIdLabel')}</p>
+                <p className="text-sm font-mono text-gray-700 truncate">{payment.externalTransactionId || payment.id}</p>
+              </div>
+              {payment.expiresAt && (
+                <div>
+                  <p className="text-xs text-gray-500">{t('admin:payment.modal.expiresAtLabel')}</p>
+                  <p className="text-sm font-semibold text-gray-900">{formatDate(payment.expiresAt, 'long')}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Error message if any */}
+            {payment.errorMessage && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700">{payment.errorMessage}</p>
+              </div>
+            )}
+
+            {/* Copy QR button */}
+            {payment.qrCode && (
+              <button
+                type="button"
+                onClick={handleCopyQr}
+                className="w-full flex items-center justify-center gap-2 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+                {t('admin:payment.modal.copyQr')}
+              </button>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
+              {/* Primary action depends on status */}
+              {payment.status === 'QR_GENERADO' || payment.status === 'PENDIENTE' ? (
+                <button
+                  type="button"
+                  onClick={handleCheckStatus}
+                  disabled={actionLoading}
+                  className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                  {t('admin:payment.modal.checkStatus')}
+                </button>
+              ) : null}
+
+              {payment.status === 'FALLIDO' || payment.status === 'EXPIRADO' ? (
+                <button
+                  type="button"
+                  onClick={handleRetryPayment}
+                  disabled={actionLoading}
+                  className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCw className="w-4 h-4" />}
+                  {t('admin:payment.modal.retryPayment')}
+                </button>
+              ) : null}
+
+              {payment.status !== 'PAGADO' && payment.status !== 'CANCELADO' && (
+                <button
+                  type="button"
+                  onClick={handleCancelPayment}
+                  disabled={actionLoading}
+                  className="btn-secondary flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t('admin:payment.modal.cancelPayment')}
+                </button>
+              )}
+
+              {payment.status === 'PAGADO' && (
+                <button
+                  type="button"
+                  onClick={handleClosePaymentModal}
+                  className="btn-primary flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t('admin:payment.modal.closeModal')}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

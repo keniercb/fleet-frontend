@@ -168,5 +168,49 @@
       "vehicles": "Vehicles",
       "expiration": "Expiration"
     }
+  },
+  "payment": {
+    "modal": {
+      "title": "Enzona Payment",
+      "subtitle": "Scan the QR code with your banking app to complete the payment",
+      "amountLabel": "Amount",
+      "planLabel": "Plan",
+      "statusLabel": "Status",
+      "expiresAtLabel": "Expires at",
+      "transactionIdLabel": "Transaction ID",
+      "copyQr": "Copy QR code",
+      "copied": "QR code copied to clipboard",
+      "retryPayment": "Retry payment",
+      "cancelPayment": "Cancel payment",
+      "checkStatus": "Check status",
+      "closeModal": "Close"
+    },
+    "status": {
+      "PENDIENTE": "Pending",
+      "QR_GENERADO": "QR Generated",
+      "PAGADO": "Paid",
+      "FALLIDO": "Failed",
+      "EXPIRADO": "Expired",
+      "CANCELADO": "Canceled"
+    },
+    "type": {
+      "NUEVA_SUSCRIPCION": "New subscription",
+      "RENOVACION": "Renewal",
+      "UPGRADE": "Plan upgrade"
+    },
+    "toast": {
+      "creatingPayment": "Generating payment...",
+      "paymentCreated": "Payment created. Scan the QR to continue.",
+      "createError": "Could not generate the payment. Please try again.",
+      "statusUpdated": "Payment status updated",
+      "statusError": "Could not verify the payment status.",
+      "cancelled": "Payment canceled",
+      "cancelError": "Could not cancel the payment.",
+      "retried": "Payment retried. Scan the new QR.",
+      "retryError": "Could not retry the payment.",
+      "paid": "Payment confirmed! Your subscription has been activated.",
+      "expired": "The payment has expired.",
+      "failed": "The payment failed. Please try again."
+    }
   }
 }

@@ -665,3 +665,44 @@ export interface ConsumoCombustibleResponse {
   resumenEjecutivo: ResumenEjecutivo;
   detalle: DetalleTipoCombustible[];
 }
+
+// --- Payments (Enzona) ---
+export type PaymentStatus =
+  | 'PENDIENTE'
+  | 'QR_GENERADO'
+  | 'PAGADO'
+  | 'FALLIDO'
+  | 'EXPIRADO'
+  | 'CANCELADO';
+
+export type PaymentType = 'NUEVA_SUSCRIPCION' | 'RENOVACION' | 'UPGRADE';
+
+export interface PaymentCreateRequest {
+  planId: number;
+  type: PaymentType;
+  subscriptionId?: number;
+}
+
+export interface PaymentResponse {
+  id: number;
+  empresa: EmpresaResumidaResponse;
+  plan: PlanResumidoResponse;
+  subscriptionId?: number;
+  amount: number;
+  currency: string;
+  description?: string;
+  status: PaymentStatus;
+  type: PaymentType;
+  qrCode?: string;
+  qrImageBase64?: string;
+  externalTransactionId?: string;
+  paidAt?: string;
+  expiresAt?: string;
+  errorMessage?: string;
+  retryCount: number;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  externalStatus?: string;
+  confirmed: boolean;
+}

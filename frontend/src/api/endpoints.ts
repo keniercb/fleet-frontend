@@ -47,6 +47,8 @@ import type {
   AbastecimientoReporteResponse,
   ConsumoCombustibleResponse,
   DashboardEjecutivoResponse,
+  PaymentCreateRequest,
+  PaymentResponse,
 } from '@/types';
 
 // ---- Auth ----
@@ -568,4 +570,32 @@ export const reportesConsumoCombustibleApi = {
     tipoVehiculoId?: number;
   }): Promise<AxiosResponse<ConsumoCombustibleResponse>> =>
     apiClient.get<ConsumoCombustibleResponse>('/reportes-transporte/consumo-por-combustible', { params }),
+};
+
+// ---- Payments (Enzona) ----
+
+export const paymentsApi = {
+  create: (data: PaymentCreateRequest): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.post<PaymentResponse>('/payments', data),
+
+  findById: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>(`/payments/${id}`),
+
+  getStatus: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>(`/payments/${id}/status`),
+
+  getLocalStatus: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>(`/payments/${id}/local-status`),
+
+  retry: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.post<PaymentResponse>(`/payments/${id}/retry`),
+
+  cancel: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.post<PaymentResponse>(`/payments/${id}/cancel`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<PaymentResponse>>> =>
+    apiClient.get<PageResponse<PaymentResponse>>(`/payments/empresa/${empresaId}`, { params }),
+
+  getMyCompany: (): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>('/payments/my-company'),
 };
