@@ -128,6 +128,8 @@ export interface EmpresaRequest {
   direccion?: string;
   telefono?: string;
   email?: string;
+  provinciaId?: number;
+  municipioId?: number;
 }
 
 export interface EmpresaResponse {
@@ -137,6 +139,44 @@ export interface EmpresaResponse {
   direccion: string;
   telefono: string;
   email: string;
+  provincia: ProvinciaResponse | null;
+  municipio: MunicipioResponse | null;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Provincias ---
+export interface ProvinciaRequest {
+  codigo: number;
+  nombre: string;
+}
+
+export interface ProvinciaResponse {
+  id: number;
+  codigo: number;
+  nombre: string;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Municipios ---
+export interface MunicipioRequest {
+  provinciaId: number;
+  codigo: number;
+  nombre: string;
+}
+
+export interface MunicipioResponse {
+  id: number;
+  provincia: ProvinciaResponse;
+  codigo: number;
+  nombre: string;
   activo: boolean;
   fechaCreacion: string;
   fechaActualizacion: string;
@@ -426,11 +466,244 @@ export interface ReporteMovimientoMensualResponse {
   analisis: AnalisisConsumoResponse;
 }
 
+
+// --- Features ---
+export interface FeatureRequest {
+  name: string;
+  descripcion?: string;
+}
+
+export interface FeatureResponse {
+  id: number;
+  name: string;
+  descripcion: string;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Plans ---
+export interface PlanRequest {
+  nombre: string;
+  precioMensual?: number;
+  porcientoDescuentoAnual?: number;
+  maxUsuarios?: number;
+  maxVehiculos?: number;
+  duracion?: number;
+  featureIds?: number[];
+}
+
+export interface PlanResumidoResponse {
+  id: number;
+  nombre: string;
+  precioMensual: number;
+  maxUsuarios: number;
+  maxVehiculos: number;
+  duracion: number;
+  porcientoDescuentoAnual: number;
+  activo: boolean;
+}
+
+export interface PlanResponse {
+  id: number;
+  nombre: string;
+  precioMensual: number;
+  maxUsuarios: number;
+  maxVehiculos: number;
+  duracion: number;
+  porcientoDescuentoAnual: number;
+  features: FeatureResponse[];
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+// --- Subscriptions ---
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED';
+
+export interface SubscriptionRequest {
+  empresaId?: number;
+  planId: number;
+  status?: SubscriptionStatus;
+}
+
+export interface EmpresaResumidaResponse {
+  id: number;
+  codigo: string;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface SubscriptionResponse {
+  id: number;
+  empresa: EmpresaResumidaResponse;
+  plan: PlanResumidoResponse;
+  startDate: string;
+  endDate: string;
+  status: SubscriptionStatus;
+  currentVehicleCount: number;
+  currentUserCount: number;
+  version: number;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  creadoPor: UserAuditResponse;
+  modificadoPor: UserAuditResponse;
+}
+
+export interface CalcularImporteResponse {
+  planId: number;
+  importe: number;
+  facturarAnual: boolean;
+}
+
 // --- Menu / App Types ---
+export interface DashboardEjecutivoResponse {
+  periodo: string;
+  costoTotalCombustible: number;
+  consumoPromedioFlota: number;
+  kmTotalesFlota: number;
+  tasaUtilizacionFlota: number;
+  eficienciaPromedioChoferes: number;
+  vehiculosAlertaMantenimiento: number;
+  variacionCostoVsMesAnterior: number;
+  desviacionConsumoPromedio: number;
+}
 export interface MenuItem {
   label: string;
   icon: string;
   path: string;
   permission?: string;
   children?: MenuItem[];
+}
+
+// --- Reportes ---
+
+export interface VehiculoConsumoReporteDTO {
+  vehiculoId: number;
+  matricula: string;
+  modelo: string;
+  marcaNombre: string;
+  tipoCombustibleCodigo: string;
+  empresaNombre: string;
+  kilometrosTotales: number;
+  consumoTeorico: number;
+  consumoReal: number;
+  desviacionLitros: number;
+  desviacionPorcentaje: number;
+  eficiencia: number;
+}
+
+// --- Reporte Mantenimiento ---
+
+export interface VehiculoResumidoDTO {
+  id: number;
+  matricula: string;
+  modelo: string;
+  marcaNombre: string;
+  tipoVehiculoNombre: string;
+}
+
+export interface EmpresaResumidoDTO {
+  id: number;
+  codigo: string;
+  nombre: string;
+}
+
+export interface MantenimientoReporteResponse {
+  vehiculoResumido: VehiculoResumidoDTO;
+  empresaResumida: EmpresaResumidoDTO;
+  fechaUltimoMantenimiento: string;
+  odometroUltimoMantenimiento: number;
+  odometroActual: number;
+  kmDesdeMantenimiento: number;
+  umbralKm: number;
+  estado: string;
+  diasTranscurridos: number;
+}
+
+// --- Reporte Abastecimiento ---
+
+export interface AbastecimientoReporteResponse {
+  vehiculoResumido: VehiculoResumidoDTO;
+  totalAbastecimientos: number;
+  totalLitros: number;
+  promedioLitrosPorCarga: number;
+  frecuenciaDias: number;
+  lugarMasFrecuente: string;
+  periodo: string;
+}
+
+// --- Reporte Consumo por Combustible ---
+
+export interface ResumenEjecutivo {
+  periodo: string;
+  totalTiposCombustible: number;
+  volumenConsumidoTotal: number;
+  volumenAbastecidoTotal: number;
+  costoEstimadoTotal: number;
+  totalRecorridos: number;
+  costoPromedioPorLitro: number;
+}
+
+export interface DetalleTipoCombustible {
+  tipoCombustible: string;
+  volumenConsumido: number;
+  volumenAbastecido: number;
+  costoEstimado: number;
+  porcentajeDelTotal: number;
+  variacionVsPeriodoAnterior: number;
+  cantidadRecorridos: number;
+  costoPromedioPorLitro: number;
+}
+
+export interface ConsumoCombustibleResponse {
+  resumenEjecutivo: ResumenEjecutivo;
+  detalle: DetalleTipoCombustible[];
+}
+
+// --- Payments (Enzona) ---
+export type PaymentStatus =
+  | 'PENDIENTE'
+  | 'QR_GENERADO'
+  | 'PAGADO'
+  | 'FALLIDO'
+  | 'EXPIRADO'
+  | 'CANCELADO';
+
+export type PaymentType = 'NUEVA_SUSCRIPCION' | 'RENOVACION' | 'UPGRADE';
+
+export interface PaymentCreateRequest {
+  planId: number;
+  type: PaymentType;
+  subscriptionId?: number;
+  facturarAnual?: boolean;
+}
+
+export interface PaymentResponse {
+  id: number;
+  empresa: EmpresaResumidaResponse;
+  plan: PlanResumidoResponse;
+  subscriptionId?: number;
+  amount: number;
+  currency: string;
+  description?: string;
+  status: PaymentStatus;
+  type: PaymentType;
+  qrCode?: string;
+  qrImageBase64?: string;
+  externalTransactionId?: string;
+  paidAt?: string;
+  expiresAt?: string;
+  errorMessage?: string;
+  retryCount: number;
+  activo: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  externalStatus?: string;
+  confirmed: boolean;
 }

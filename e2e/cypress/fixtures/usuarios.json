@@ -1,0 +1,13 @@
+{
+  "_nota": "Credenciales de referencia. NUNCA commitear claves reales: usar CYPRESS_usuario / CYPRESS_password (ver .env.example). Este fixture documenta las cuentas esperadas en el entorno de pruebas.",
+  "admin": {
+    "email": "admin@empresa.cu",
+    "rolEsperado": "ADMIN",
+    "descripcion": "Usuario admin de la empresa de pruebas: acceso a flota, catálogos y comprar-plan (permiso SUBSCRIPTIONS_READ)."
+  },
+  "sinPermisos": {
+    "email": "limitado@empresa.cu",
+    "rolEsperado": "OPERARIO",
+    "descripcion": "Usuario sin permisos de lectura (sin VEHICULOS_READ ni rol ADMIN/SUPER_ADMIN): permite probar la pantalla de Acceso Denegado."
+  }
+}

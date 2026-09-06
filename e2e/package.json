@@ -1,0 +1,22 @@
+{
+  "name": "fleet-e2e-cypress",
+  "version": "1.0.0",
+  "description": "Pruebas E2E (Cypress + TypeScript) para fleet-frontend — rama enzonaIntegration: autenticación, gestión de flota, pagos Enzona y navegación/errores",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e:open": "cypress open",
+    "e2e:headless": "cypress run",
+    "e2e:smoke": "cypress run --env grepTags=@smoke",
+    "e2e:auth": "cypress run --spec \"cypress/e2e/auth/**/*.cy.ts\"",
+    "e2e:flota": "cypress run --spec \"cypress/e2e/flota/**/*.cy.ts\"",
+    "e2e:pagos": "cypress run --spec \"cypress/e2e/pagos/**/*.cy.ts\"",
+    "e2e:navegacion": "cypress run --spec \"cypress/e2e/navegacion/**/*.cy.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cypress/grep": "^4.1.0",
+    "cypress": "^14.5.4",
+    "typescript": "~5.7.0"
+  }
+}

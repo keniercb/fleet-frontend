@@ -1,0 +1,91 @@
+{
+  "actions": {
+    "new": "Nuevo",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar...",
+    "clear": "Limpiar",
+    "back": "Volver",
+    "select": "Seleccionar...",
+    "selectPlaceholder": "Seleccionar...",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "view": "Ver",
+    "loadMore": "Cargar más",
+    "refresh": "Actualizar"
+  },
+  "state": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "loading": "Cargando...",
+    "empty": "No hay registros",
+    "noResults": "No se encontraron resultados",
+    "deniedTitle": "Acceso Denegado",
+    "deniedMessage": "No tiene permisos para acceder a esta sección.",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "field": {
+    "name": "Nombre",
+    "code": "Código",
+    "description": "Descripción",
+    "state": "Estado",
+    "actions": "Acciones",
+    "status": "Estado",
+    "createdAt": "Fecha de Creación",
+    "updatedAt": "Última Actualización",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "country": "País",
+    "currency": "Moneda",
+    "company": "Empresa",
+    "user": "Usuario",
+    "role": "Rol",
+    "date": "Fecha",
+    "amount": "Importe",
+    "balance": "Saldo",
+    "number": "Número"
+  },
+  "units": {
+    "km": "km",
+    "liters": "L",
+    "litersPer100km": "L/100km",
+    "days": "días",
+    "percent": "%",
+    "currency": "USD"
+  },
+  "pagination": {
+    "showing": "Mostrando <strong>{{start}}</strong> a <strong>{{end}}</strong> de <strong>{{total}}</strong> resultados"
+  },
+  "months": {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo",
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
+  },
+  "comingSoon": {
+    "message": "Este módulo estará disponible próximamente. Se irá implementando según las necesidades del proyecto."
+  },
+  "language": {
+    "switcher": "Idioma",
+    "es": "Español",
+    "en": "English"
+  }
+}

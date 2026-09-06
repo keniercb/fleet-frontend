@@ -1,0 +1,36 @@
+{
+  "title": "Dashboard Ejecutivo",
+  "welcome": "Bienvenido, {{name}}",
+  "loading": "Cargando datos...",
+  "error": "Error al cargar datos del dashboard",
+  "period": "Período: {{periodo}}",
+  "kpis": {
+    "kmTotalesFlota": "KM Totales Flota",
+    "costoTotalCombustible": "Costo Total Combustible",
+    "consumoPromedioFlota": "Consumo Promedio Flota",
+    "tasaUtilizacion": "Tasa de Utilización",
+    "eficienciaPromedioChoferes": "Eficiencia Promedio Choferes",
+    "vehiculosAlertaMantenimiento": "Vehículos en Alerta de Mantenimiento",
+    "desviacionConsumoPromedio": "Desviación Consumo Promedio"
+  },
+  "units": {
+    "km": "km",
+    "litersPer100km": "L/100km",
+    "liters": "L",
+    "cup": "CUP"
+  },
+  "variation": {
+    "vsLastMonth": "vs mes anterior",
+    "deviation": "Desviación: {{value}} L"
+  },
+  "efficiency": {
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja"
+  },
+  "semaphore": {
+    "green": "Óptimo",
+    "yellow": "Aceptable",
+    "red": "Crítico"
+  }
+}

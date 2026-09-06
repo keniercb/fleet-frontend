@@ -1,0 +1,12 @@
+{
+  "crud": {
+    "load": "Error al cargar los datos",
+    "create": "Error al crear",
+    "update": "Error al actualizar",
+    "delete": "Error al eliminar"
+  },
+  "auth": {
+    "invalidCredentials": "Credenciales inválidas. Intente nuevamente."
+  },
+  "generic": "Ocurrió un error inesperado. Intente nuevamente."
+}

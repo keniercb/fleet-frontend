@@ -33,8 +33,22 @@ import type {
   CurrencyRequest,
   TarjetaCombustibleResponse,
   TarjetaCombustibleRequest,
+  FeatureResponse,
+  FeatureRequest,
+  PlanResponse,
+  PlanRequest,
+  SubscriptionResponse,
+  SubscriptionRequest,
   PageParams,
+  CalcularImporteResponse,
   PageResponse,
+  VehiculoConsumoReporteDTO,
+  MantenimientoReporteResponse,
+  AbastecimientoReporteResponse,
+  ConsumoCombustibleResponse,
+  DashboardEjecutivoResponse,
+  PaymentCreateRequest,
+  PaymentResponse,
 } from '@/types';
 
 // ---- Auth ----
@@ -160,6 +174,18 @@ export const vehiculosApi = {
 
   findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<VehiculoResponse>>> =>
     apiClient.get<PageResponse<VehiculoResponse>>(`/vehiculos/empresa/${empresaId}`, { params }),
+
+  reportePdf: (empresaId: number): Promise<AxiosResponse<Blob>> =>
+    apiClient.get<Blob>('/vehiculos/reporte-pdf', {
+      params: { empresaId },
+      responseType: 'blob',
+    }),
+
+  reporteMensualPdf: (vehiculoId: number, mes: number, anio: number): Promise<AxiosResponse<Blob>> =>
+    apiClient.get<Blob>(`/recorridos/vehiculo/${vehiculoId}/reporte-mensual/pdf`, {
+      params: { mes, anio },
+      responseType: 'blob',
+    }),
 };
 
 // ---- Tipos Vehiculo ----
@@ -380,4 +406,196 @@ export const recorridosApi = {
 
   findByVehiculoId: (vehiculoId: number, params?: PageParams & { from?: string; to?: string }): Promise<AxiosResponse<PageResponse<RecorridoResponse>>> =>
     apiClient.get<PageResponse<RecorridoResponse>>(`/recorridos/vehiculo/${vehiculoId}`, { params }),
+};
+
+// ---- Features ----
+
+export const featuresApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<FeatureResponse>>> =>
+    apiClient.get<PageResponse<FeatureResponse>>('/features', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<FeatureResponse>> =>
+    apiClient.get<FeatureResponse>(`/features/${id}`),
+
+  create: (data: FeatureRequest): Promise<AxiosResponse<FeatureResponse>> =>
+    apiClient.post<FeatureResponse>('/features', data),
+
+  update: (id: number, data: FeatureRequest): Promise<AxiosResponse<FeatureResponse>> =>
+    apiClient.put<FeatureResponse>(`/features/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/features/${id}`),
+};
+
+// ---- Plans ----
+
+export const plansApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<PlanResponse>>> =>
+    apiClient.get<PageResponse<PlanResponse>>('/plans', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<PlanResponse>> =>
+    apiClient.get<PlanResponse>(`/plans/${id}`),
+
+  create: (data: PlanRequest): Promise<AxiosResponse<PlanResponse>> =>
+    apiClient.post<PlanResponse>('/plans', data),
+
+  update: (id: number, data: PlanRequest): Promise<AxiosResponse<PlanResponse>> =>
+    apiClient.put<PlanResponse>(`/plans/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/plans/${id}`),
+
+  calcularImporte: (id: number, facturarAnual: boolean): Promise<AxiosResponse<CalcularImporteResponse>> =>
+    apiClient.get<CalcularImporteResponse>(`/plans/${id}/calcular-importe`, { params: { facturarAnual } }),
+};
+
+// ---- Provincias ----
+
+export const provinciasApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<ProvinciaResponse>>> =>
+    apiClient.get<PageResponse<ProvinciaResponse>>('/provincias', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<ProvinciaResponse>> =>
+    apiClient.get<ProvinciaResponse>(`/provincias/${id}`),
+
+  create: (data: ProvinciaRequest): Promise<AxiosResponse<ProvinciaResponse>> =>
+    apiClient.post<ProvinciaResponse>('/provincias', data),
+
+  update: (id: number, data: ProvinciaRequest): Promise<AxiosResponse<ProvinciaResponse>> =>
+    apiClient.put<ProvinciaResponse>(`/provincias/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/provincias/${id}`),
+};
+
+// ---- Municipios ----
+
+export const municipiosApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<MunicipioResponse>>> =>
+    apiClient.get<PageResponse<MunicipioResponse>>('/municipios', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<MunicipioResponse>> =>
+    apiClient.get<MunicipioResponse>(`/municipios/${id}`),
+
+  create: (data: MunicipioRequest): Promise<AxiosResponse<MunicipioResponse>> =>
+    apiClient.post<MunicipioResponse>('/municipios', data),
+
+  update: (id: number, data: MunicipioRequest): Promise<AxiosResponse<MunicipioResponse>> =>
+    apiClient.put<MunicipioResponse>(`/municipios/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/municipios/${id}`),
+
+  findByProvinciaId: (provinciaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<MunicipioResponse>>> =>
+    apiClient.get<PageResponse<MunicipioResponse>>(`/municipios/provincia/${provinciaId}`, { params }),
+
+  findByProvinciaIdList: (provinciaId: number): Promise<AxiosResponse<MunicipioResponse[]>> =>
+    apiClient.get<MunicipioResponse[]>(`/municipios/provincia/${provinciaId}/list`),
+};
+
+// ---- Subscriptions ----
+
+export const subscriptionsApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
+    apiClient.get<PageResponse<SubscriptionResponse>>('/subscriptions', { params }),
+
+  findById: (id: number): Promise<AxiosResponse<SubscriptionResponse>> =>
+    apiClient.get<SubscriptionResponse>(`/subscriptions/${id}`),
+
+  update: (id: number, data: SubscriptionRequest): Promise<AxiosResponse<SubscriptionResponse>> =>
+    apiClient.put<SubscriptionResponse>(`/subscriptions/${id}`, data),
+
+  delete: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete<void>(`/subscriptions/${id}`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
+    apiClient.get<PageResponse<SubscriptionResponse>>(`/subscriptions/empresa/${empresaId}`, { params }),
+
+  findByPlanId: (planId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<SubscriptionResponse>>> =>
+    apiClient.get<PageResponse<SubscriptionResponse>>(`/subscriptions/plan/${planId}`, { params }),
+
+  getMyCompanySubscription: (): Promise<AxiosResponse<SubscriptionResponse>> =>
+    apiClient.get<SubscriptionResponse>('/subscriptions/my-company'),
+};
+
+
+// ---- Reportes Transporte ----
+
+export const reportesTransporteApi = {
+  dashboardEjecutivo: (mes: number, anio: number): Promise<AxiosResponse<DashboardEjecutivoResponse>> =>
+    apiClient.get<DashboardEjecutivoResponse>('/reportes-transporte/dashboard-ejecutivo', { params: { mes, anio } }),
+  consumoVehiculo: (params: {
+    fechaDesde: string;
+    fechaHasta: string;
+    tipoVehiculoId?: number;
+    marcaId?: number;
+    tipoCombustibleId?: number;
+    page?: number;
+    size?: number;
+    sort?: string;
+    sortOrder?: string;
+  }): Promise<AxiosResponse<PageResponse<VehiculoConsumoReporteDTO>>> =>
+    apiClient.get<PageResponse<VehiculoConsumoReporteDTO>>('/reportes-transporte/consumo-vehiculo', { params }),
+};
+
+// ---- Reportes Mantenimiento ----
+
+export const reportesMantenimientoApi = {
+  findAll: (params?: PageParams): Promise<AxiosResponse<PageResponse<MantenimientoReporteResponse>>> =>
+    apiClient.get<PageResponse<MantenimientoReporteResponse>>('/reportes-transporte/mantenimiento', { params }),
+};
+
+// ---- Reportes Abastecimiento ----
+
+export const reportesAbastecimientoApi = {
+  findAll: (params: {
+    desde: string;
+    hasta: string;
+    vehiculoId?: number;
+    lugarAbastecimiento?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+    sortOrder?: string;
+  }): Promise<AxiosResponse<PageResponse<AbastecimientoReporteResponse>>> =>
+    apiClient.get<PageResponse<AbastecimientoReporteResponse>>('/reportes-transporte/abastecimiento', { params }),
+};
+
+// ---- Reportes Consumo por Combustible ----
+
+export const reportesConsumoCombustibleApi = {
+  findAll: (params: {
+    fechaDesde: string;
+    fechaHasta: string;
+    tipoVehiculoId?: number;
+  }): Promise<AxiosResponse<ConsumoCombustibleResponse>> =>
+    apiClient.get<ConsumoCombustibleResponse>('/reportes-transporte/consumo-por-combustible', { params }),
+};
+
+// ---- Payments (Enzona) ----
+
+export const paymentsApi = {
+  create: (data: PaymentCreateRequest): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.post<PaymentResponse>('/payments', data),
+
+  findById: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>(`/payments/${id}`),
+
+  getStatus: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>(`/payments/${id}/status`),
+
+  getLocalStatus: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>(`/payments/${id}/local-status`),
+
+  retry: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.post<PaymentResponse>(`/payments/${id}/retry`),
+
+  cancel: (id: number): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.post<PaymentResponse>(`/payments/${id}/cancel`),
+
+  findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<PaymentResponse>>> =>
+    apiClient.get<PageResponse<PaymentResponse>>(`/payments/empresa/${empresaId}`, { params }),
+
+  getMyCompany: (): Promise<AxiosResponse<PaymentResponse>> =>
+    apiClient.get<PaymentResponse>('/payments/my-company'),
 };

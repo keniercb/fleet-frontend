@@ -1,0 +1,134 @@
+{
+  "mantenimiento": {
+    "title": "Mantenimiento",
+    "description": "Reporte de mantenimiento de vehículos",
+    "loading": "Cargando reporte...",
+    "noData": "No hay datos de mantenimiento disponibles.",
+    "countLabel_one": "{{count}} vehículo",
+    "countLabel_other": "{{count}} vehículos",
+    "table": {
+      "licensePlate": "Matrícula",
+      "model": "Modelo",
+      "brand": "Marca",
+      "type": "Tipo",
+      "company": "Empresa",
+      "state": "Estado",
+      "currentOdometer": "Odómetro Actual",
+      "lastMaintenance": "Ult. Mant.",
+      "lastMaintenanceDate": "Fecha Ult. Mant.",
+      "kmSinceMaintenance": "Km Desde Mant.",
+      "kmThreshold": "Umbral Km",
+      "elapsedDays": "Días Transc."
+    },
+    "status": {
+      "VENCIDO": "Vencido",
+      "PROXIMO": "Próximo",
+      "VIGENTE": "Vigente"
+    },
+    "toast": {
+      "loadError": "No se pudo cargar el reporte de mantenimiento."
+    }
+  },
+  "consumoVehiculo": {
+    "title": "Consumo por Vehículo",
+    "description": "Reporte de consumo de combustible por vehículo",
+    "filters": {
+      "title": "Filtros",
+      "fromDate": "Fecha Desde *",
+      "toDate": "Fecha Hasta *",
+      "vehicleType": "Tipo de Vehículo",
+      "brand": "Marca",
+      "fuelType": "Tipo Combustible",
+      "all": "Todos",
+      "allF": "Todas",
+      "search": "Buscar",
+      "clear": "Limpiar"
+    },
+    "table": {
+      "licensePlate": "Matrícula",
+      "model": "Modelo",
+      "brand": "Marca",
+      "fuelType": "Combustible",
+      "company": "Empresa",
+      "totalKm": "Km Totales",
+      "theoreticalConsumption": "Consumo Teórico",
+      "realConsumption": "Consumo Real",
+      "deviationL": "Desviación (L)",
+      "deviationPct": "Desviación (%)",
+      "efficiency": "Eficiencia"
+    },
+    "toast": {
+      "filtersLoadError": "No se pudieron cargar los filtros.",
+      "pageChangeError": "Error al cambiar de página."
+    }
+  },
+  "abastecimiento": {
+    "title": "Abastecimiento",
+    "description": "Reporte de abastecimiento de combustible por vehículo",
+    "countLabel_one": "{{count}} resultado",
+    "countLabel_other": "{{count}} resultados",
+    "filters": {
+      "fromDate": "Desde",
+      "toDate": "Hasta",
+      "vehicle": "Vehículo",
+      "fuelStation": "Lugar de Abastecimiento",
+      "all": "Todos"
+    },
+    "summary": {
+      "totalVehicles": "Total Vehículos",
+      "totalSupplies": "Total Abastecimientos",
+      "totalLiters": "Total Litros"
+    },
+    "table": {
+      "licensePlate": "Matrícula",
+      "model": "Modelo",
+      "brand": "Marca",
+      "type": "Tipo",
+      "totalSupplies": "Total Abast.",
+      "totalLiters": "Total Litros",
+      "avgPerSupply": "Promedio L/Carga",
+      "frequencyDays": "Frecuencia (días)",
+      "mostFrequentPlace": "Lugar Más Frecuente",
+      "period": "Período"
+    },
+    "toast": {
+      "datesRequired": "Las fechas desde y hasta son obligatorias.",
+      "reportError": "No se pudo generar el reporte."
+    }
+  },
+  "consumoCombustible": {
+    "title": "Consumo por Combustible",
+    "description": "Análisis de consumo de combustible por tipo",
+    "filters": {
+      "title": "Filtros",
+      "fromDate": "Fecha Desde *",
+      "toDate": "Fecha Hasta *",
+      "vehicleType": "Tipo de Vehículo",
+      "all": "Todos",
+      "search": "Buscar",
+      "clear": "Limpiar"
+    },
+    "summary": {
+      "period": "Período",
+      "totalTrips": "Total Recorridos",
+      "suppliedVolume": "Volumen Abastecido",
+      "totalEstimatedCost": "Costo Estimado Total",
+      "consumedVolume": "Volumen Consumido",
+      "fuelTypes": "Tipos de Combustible",
+      "avgCostPerLiter": "Costo Promedio/Litro"
+    },
+    "table": {
+      "fuelType": "Tipo Combustible",
+      "consumedVolume": "Vol. Consumido",
+      "suppliedVolume": "Vol. Abastecido",
+      "estimatedCost": "Costo Estimado",
+      "pctTotal": "% del Total",
+      "variationVsPrevious": "Variación vs Período Ant.",
+      "trips": "Recorridos",
+      "avgCostPerLiter": "Costo Prom./Litro"
+    },
+    "loading": "Generando reporte...",
+    "noData": "No hay datos de consumo para el período.",
+    "placeholder": "Seleccione los filtros y presione Buscar..."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "table": {
+    "state": "Status",
+    "actions": "Actions"
+  },
+  "modal": {
+    "create": "New {{singular}}",
+    "edit": "Edit {{singular}}",
+    "delete": "Delete {{singular}}",
+    "deleteConfirm": "Are you sure you want to delete this record? This action cannot be undone."
+  },
+  "toast": {
+    "created": "The new record has been created successfully.",
+    "updated": "The record has been updated successfully.",
+    "deleted": "The record has been deleted successfully.",
+    "createdNamed": "{{singular}} created",
+    "updatedNamed": "{{singular}} updated",
+    "deletedNamed": "{{singular}} deleted"
+  },
+  "badges": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "states": {
+    "loading": "Loading...",
+    "empty": "No records",
+    "noResults": "No results found"
+  },
+  "actions": {
+    "new": "New",
+    "search": "Search..."
+  }
+}

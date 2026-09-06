@@ -4,6 +4,11 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import ToastContainer from '@/components/ui/ToastContainer';
 import MainLayout from '@/components/layout/MainLayout';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import SuperAdminRoute from "@/components/common/SuperAdminRoute.tsx";
+import FeaturePage from "@/pages/catalogs/FeaturePage.tsx";
+import PlanPage from "@/pages/catalogs/PlanPage.tsx";
+import ComprarPlanesPage from "@/pages/admin/ComprarPlanesPage.tsx";
+import SubscriptionsPage from "@/pages/admin/SubscriptionsPage.tsx";
 import LoginPage from '@/pages/auth/LoginPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import PermisosPage from '@/pages/admin/PermisosPage';
@@ -16,9 +21,15 @@ import CategoriaLicenciaPage from '@/pages/catalogs/CategoriaLicenciaPage';
 import MarcaPage from '@/pages/catalogs/MarcaPage';
 import VehiculosPage from '@/pages/vehiculos/VehiculosPage';
 import ChoferesPage from '@/pages/choferes/ChoferesPage';
+import ProvinciaPage from "@/pages/catalogs/ProvinciaPage.tsx";
+import MunicipioPage from "@/pages/catalogs/MunicipioPage.tsx";
 import EmpresaPage from '@/pages/catalogs/EmpresaPage';
 import CurrencyPage from '@/pages/catalogs/CurrencyPage';
 import TarjetaCombustiblePage from '@/pages/catalogs/TarjetaCombustiblePage';
+import ReporteConsumoVehiculoPage from '@/pages/reportes/ReporteConsumoVehiculoPage';
+import ReporteMantenimientoPage from '@/pages/reportes/ReporteMantenimientoPage';
+import ReporteAbastecimientoPage from '@/pages/reportes/ReporteAbastecimientoPage';
+import ReporteConsumoCombustiblePage from '@/pages/reportes/ReporteConsumoCombustiblePage';
 import type { ReactNode } from 'react';
 
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -75,6 +86,22 @@ export default function App() {
                 element={
                   <ProtectedRoute permission="RECORRIDOS_READ">
                     <RecorridosPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="provincias"
+                element={
+                  <ProtectedRoute permission="PROVINCIAS_READ">
+                    <ProvinciaPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="municipios"
+                element={
+                  <ProtectedRoute permission="MUNICIPIOS_READ">
+                    <MunicipioPage />
                   </ProtectedRoute>
                 }
               />
@@ -158,9 +185,71 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="features"
+                element={
+                  <SuperAdminRoute>
+                    <FeaturePage />
+                  </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="planes"
+                element={
+                  <SuperAdminRoute>
+                    <PlanPage />
+                  </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="comprar-plan"
+                element={
+                  <ProtectedRoute permission="SUBSCRIPTIONS_READ">
+                    <ComprarPlanesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="suscripciones"
+                element={
+                  <SuperAdminRoute>
+                    <SubscriptionsPage />
+                  </SuperAdminRoute>
+                }
+              />
+              <Route
+                path="reportes/mantenimiento"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteMantenimientoPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="reportes/abastecimiento"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteAbastecimientoPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="reportes/consumo-combustible"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteConsumoCombustiblePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="reportes/consumo-vehiculo"
+                element={
+                  <ProtectedRoute permission="ADMIN">
+                    <ReporteConsumoVehiculoPage />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
-
-            {/* Catch all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <ToastContainer />

@@ -1,0 +1,25 @@
+{
+  "_nota": "Plantilla de planes activos esperados del backend (GET /plans). El backend real manda sus propios datos: este fixture sirve de referencia contractual mínima.",
+  "planBasico": {
+    "id": 1,
+    "nombre": "Plan Básico",
+    "precioMensual": 1500.0,
+    "duracion": 30,
+    "maxUsuarios": 5,
+    "maxVehiculos": 10,
+    "porcientoDescuentoAnual": 10,
+    "activo": true,
+    "features": []
+  },
+  "planEmpresarial": {
+    "id": 2,
+    "nombre": "Plan Empresarial",
+    "precioMensual": 4500.0,
+    "duracion": 30,
+    "maxUsuarios": 25,
+    "maxVehiculos": 100,
+    "porcientoDescuentoAnual": 15,
+    "activo": true,
+    "features": []
+  }
+}

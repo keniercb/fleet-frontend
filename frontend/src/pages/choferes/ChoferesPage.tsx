@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, Search, X, ChevronDown } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -44,6 +45,7 @@ function getTempId() {
 // ---- Component ----
 
 export default function ChoferesPage() {
+  const { t } = useTranslation(['choferes', 'common', 'crud']);
   const { addToast } = useToast();
   const { empresaId } = useAuth();
 
@@ -78,9 +80,9 @@ export default function ChoferesPage() {
   // Show error as toast
   useEffect(() => {
     if (error) {
-      addToast({ type: 'error', title: 'Error', message: error });
+      addToast({ type: 'error', title: t('common:state.error'), message: error });
     }
-  }, [error, addToast]);
+  }, [error, addToast, t]);
 
   // Fetch dropdown data on mount
   const fetchDropdowns = useCallback(async () => {
@@ -90,9 +92,9 @@ export default function ChoferesPage() {
       ]);
       setCategoriasLicencia(catRes.data.content);
     } catch {
-      addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las categorías de licencia.' });
+      addToast({ type: 'error', title: t('common:state.error'), message: t('choferes:toast.categoriesLoadError') });
     }
-  }, [addToast]);
+  }, [addToast, t]);
 
   useEffect(() => {
     fetchDropdowns();
@@ -179,10 +181,10 @@ export default function ChoferesPage() {
       const payload = buildRequestPayload();
       if (editingEntity) {
         await updateItem(editingEntity.id, payload);
-        addToast({ type: 'success', title: 'Chofer actualizado', message: 'El registro se ha actualizado correctamente.' });
+        addToast({ type: 'success', title: t('choferes:toast.updated'), message: t('crud:toast.updated') });
       } else {
         await createItem(payload);
-        addToast({ type: 'success', title: 'Chofer creado', message: 'El nuevo registro se ha creado correctamente.' });
+        addToast({ type: 'success', title: t('choferes:toast.created'), message: t('crud:toast.created') });
       }
       setShowForm(false);
     } catch {
@@ -194,7 +196,7 @@ export default function ChoferesPage() {
     if (!deleteTarget) return;
     try {
       await deleteItem(deleteTarget.id);
-      addToast({ type: 'success', title: 'Chofer eliminado', message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('choferes:toast.deleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
     } catch {
       // error handled by useCrud → toast via useEffect
@@ -213,12 +215,12 @@ export default function ChoferesPage() {
 
   return (
     <div>
-      <PageHeader title="Choferes" description="Gestión de los choferes del sistema">
+      <PageHeader title={t('choferes:title')} description={t('choferes:description')}>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder={t('crud:actions.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-field pl-9 py-2 text-sm"
@@ -226,7 +228,7 @@ export default function ChoferesPage() {
         </div>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t('crud:actions.new')}
         </button>
       </PageHeader>
 
@@ -236,15 +238,15 @@ export default function ChoferesPage() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="table-header px-4 py-3">Nombre</th>
-                <th className="table-header px-4 py-3">Apellidos</th>
-                <th className="table-header px-4 py-3">Carné Identidad</th>
-                <th className="table-header px-4 py-3">No. Licencia</th>
-                <th className="table-header px-4 py-3">Empresa</th>
-                <th className="table-header px-4 py-3">F. Nacimiento</th>
-                <th className="table-header px-4 py-3">Categorías</th>
-                <th className="table-header px-4 py-3 text-right">Estado</th>
-                <th className="table-header px-4 py-3 text-right">Acciones</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.name')}</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.lastName')}</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.identityCard')}</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.licenseNumber')}</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.company')}</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.birthDate')}</th>
+                <th className="table-header px-4 py-3">{t('choferes:table.categories')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('choferes:table.state')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('choferes:table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -253,14 +255,14 @@ export default function ChoferesPage() {
                   <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                      Cargando...
+                      {t('crud:states.loading')}
                     </div>
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
-                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+                    {search ? t('crud:states.noResults') : t('crud:states.empty')}
                   </td>
                 </tr>
               ) : (
@@ -302,9 +304,9 @@ export default function ChoferesPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {item.activo ? (
-                        <span className="badge-active">Activo</span>
+                        <span className="badge-active">{t('crud:badges.active')}</span>
                       ) : (
-                        <span className="badge-inactive">Inactivo</span>
+                        <span className="badge-inactive">{t('crud:badges.inactive')}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -312,14 +314,14 @@ export default function ChoferesPage() {
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
-                          title="Editar"
+                          title={t('common:actions.edit')}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(item)}
                           className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                          title="Eliminar"
+                          title={t('common:actions.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -348,7 +350,7 @@ export default function ChoferesPage() {
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? 'Editar Chofer' : 'Nuevo Chofer'}
+        title={editingEntity ? t('choferes:form.editTitle') : t('choferes:form.newTitle')}
         onClose={() => setShowForm(false)}
         size="lg"
       >
@@ -358,7 +360,7 @@ export default function ChoferesPage() {
             {/* Nombre */}
             <div>
               <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Nombre<span className="text-red-500 ml-0.5">*</span>
+                {t('choferes:form.name.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="nombre"
@@ -366,7 +368,7 @@ export default function ChoferesPage() {
                 value={formData.nombre}
                 onChange={(e) => handleFieldChange('nombre', e.target.value)}
                 className="input-field"
-                placeholder="Ej: Carlos"
+                placeholder={t('choferes:form.name.placeholder')}
                 required
               />
             </div>
@@ -374,7 +376,7 @@ export default function ChoferesPage() {
             {/* Apellidos */}
             <div>
               <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Apellidos<span className="text-red-500 ml-0.5">*</span>
+                {t('choferes:form.lastName.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="apellidos"
@@ -382,7 +384,7 @@ export default function ChoferesPage() {
                 value={formData.apellidos}
                 onChange={(e) => handleFieldChange('apellidos', e.target.value)}
                 className="input-field"
-                placeholder="Ej: Pérez García"
+                placeholder={t('choferes:form.lastName.placeholder')}
                 required
               />
             </div>
@@ -390,7 +392,7 @@ export default function ChoferesPage() {
             {/* Carné Identidad */}
             <div>
               <label htmlFor="carneIdentidad" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Carné de Identidad<span className="text-red-500 ml-0.5">*</span>
+                {t('choferes:form.identityCard.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="carneIdentidad"
@@ -398,7 +400,7 @@ export default function ChoferesPage() {
                 value={formData.carneIdentidad}
                 onChange={(e) => handleFieldChange('carneIdentidad', e.target.value)}
                 className="input-field"
-                placeholder="Ej: 90010112345"
+                placeholder={t('choferes:form.identityCard.placeholder')}
                 required
               />
             </div>
@@ -406,7 +408,7 @@ export default function ChoferesPage() {
             {/* Número Licencia */}
             <div>
               <label htmlFor="numeroLicencia" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Número de Licencia<span className="text-red-500 ml-0.5">*</span>
+                {t('choferes:form.licenseNumber.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="numeroLicencia"
@@ -414,7 +416,7 @@ export default function ChoferesPage() {
                 value={formData.numeroLicencia}
                 onChange={(e) => handleFieldChange('numeroLicencia', e.target.value)}
                 className="input-field"
-                placeholder="Ej: L-123456"
+                placeholder={t('choferes:form.licenseNumber.placeholder')}
                 required
               />
             </div>
@@ -422,7 +424,7 @@ export default function ChoferesPage() {
             {/* Fecha de Nacimiento */}
             <div>
               <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Fecha de Nacimiento<span className="text-red-500 ml-0.5">*</span>
+                {t('choferes:form.birthDate.label')}<span className="text-red-500 ml-0.5">*</span>
               </label>
               <input
                 id="fechaNacimiento"
@@ -439,7 +441,7 @@ export default function ChoferesPage() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-gray-700">
-                Categorías de Licencia
+                {t('choferes:form.categories.label')}
               </label>
               <button
                 type="button"
@@ -447,13 +449,13 @@ export default function ChoferesPage() {
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Agregar
+                {t('choferes:form.addCategory')}
               </button>
             </div>
 
             {formData.categorias.length === 0 ? (
               <p className="text-sm text-gray-400 italic py-3 px-4 bg-gray-50 rounded-lg">
-                No hay categorías agregadas. Haga clic en &quot;Agregar&quot; para añadir una.
+                {t('choferes:form.noCategories')}
               </p>
             ) : (
               <div className="space-y-2">
@@ -466,7 +468,7 @@ export default function ChoferesPage() {
                         onChange={(e) => handleCategoriaChange(cat.tempId, 'categoriaLicenciaId', Number(e.target.value))}
                         className="input-field text-sm py-2 appearance-none pr-8"
                       >
-                        <option value={0}>Categoría...</option>
+                        <option value={0}>{t('choferes:form.categoryPlaceholder')}</option>
                         {categoriasLicencia
                           .filter((c) => c.activo)
                           .map((c) => (
@@ -482,13 +484,13 @@ export default function ChoferesPage() {
                       value={cat.fechaEmision}
                       onChange={(e) => handleCategoriaChange(cat.tempId, 'fechaEmision', e.target.value)}
                       className="input-field text-sm py-2 w-40 shrink-0"
-                      title="Fecha de emisión"
+                      title={t('choferes:form.birthDate.label')}
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveCategoria(cat.tempId)}
                       className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors shrink-0"
-                      title="Quitar categoría"
+                      title={t('common:actions.delete')}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -505,10 +507,10 @@ export default function ChoferesPage() {
               onClick={() => setShowForm(false)}
               className="btn-secondary"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Guardando...' : editingEntity ? 'Actualizar' : 'Crear'}
+              {saving ? t('common:actions.saving') : editingEntity ? t('common:actions.update') : t('common:actions.create')}
             </button>
           </div>
         </form>
@@ -517,11 +519,11 @@ export default function ChoferesPage() {
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title="Eliminar Chofer"
-        message="¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+        title={t('crud:modal.delete', { singular: t('choferes:title') })}
+        message={t('choferes:toast.deleteConfirm')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        confirmText="Eliminar"
+        confirmText={t('common:actions.delete')}
         danger
       />
     </div>

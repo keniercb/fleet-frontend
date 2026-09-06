@@ -1,0 +1,217 @@
+{
+  "roles": {
+    "title": "Roles",
+    "singular": "Rol",
+    "description": "Gestión de los roles del sistema",
+    "table": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "permissions": "Permisos",
+      "state": "Estado",
+      "actions": "Acciones"
+    },
+    "form": {
+      "newTitle": "Nuevo Rol",
+      "editTitle": "Editar Rol",
+      "name": { "label": "Nombre", "placeholder": "Ej: ADMIN" },
+      "description": { "label": "Descripción", "placeholder": "Ej: Administrador del sistema" },
+      "permissions": { "label": "Permisos" },
+      "noPermissions": "Sin permisos",
+      "loadingPermissions": "Cargando permisos...",
+      "noPermissionsAvailable": "No hay permisos disponibles",
+      "permissionsSelected": "{{count}} permiso(s) seleccionado(s)",
+      "clear": "Limpiar"
+    },
+    "delete": {
+      "title": "Eliminar Rol",
+      "confirm": "¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+    },
+    "toast": {
+      "created": "Rol creado",
+      "createdMessage": "El nuevo registro se ha creado correctamente.",
+      "updated": "Rol actualizado",
+      "updatedMessage": "El registro se ha actualizado correctamente.",
+      "deleted": "Rol eliminado",
+      "deletedMessage": "El registro se ha eliminado correctamente.",
+      "permissionsLoadError": "No se pudieron cargar los permisos."
+    }
+  },
+  "users": {
+    "title": "Usuarios",
+    "singular": "Usuario",
+    "description": "Gestión de los usuarios del sistema",
+    "table": {
+      "email": "Email",
+      "roles": "Roles",
+      "createdAt": "Fecha Creación",
+      "state": "Estado",
+      "actions": "Acciones"
+    },
+    "form": {
+      "newTitle": "Nuevo Usuario",
+      "editTitle": "Editar Usuario",
+      "email": { "label": "Email", "placeholder": "Ej: usuario@empresa.cu" },
+      "password": { "label": "Contraseña", "placeholder": "Contraseña" },
+      "passwordEditPlaceholder": "Dejar vacío para no cambiar",
+      "roles": { "label": "Roles" },
+      "noRoles": "Sin roles",
+      "loadingRoles": "Cargando roles...",
+      "noRolesAvailable": "No hay roles disponibles",
+      "rolesSelected": "{{count}} rol(es) seleccionado(s)",
+      "clear": "Limpiar"
+    },
+    "delete": {
+      "title": "Eliminar Usuario",
+      "confirm": "¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+    },
+    "toast": {
+      "created": "Usuario creado",
+      "createdMessage": "El nuevo registro se ha creado correctamente.",
+      "updated": "Usuario actualizado",
+      "updatedMessage": "El registro se ha actualizado correctamente.",
+      "deleted": "Usuario eliminado",
+      "deletedMessage": "El registro se ha eliminado correctamente.",
+      "passwordRequired": "La contraseña es obligatoria para crear un usuario.",
+      "rolesLoadError": "No se pudieron cargar los roles."
+    }
+  },
+  "subscription": {
+    "title": "Suscripciones",
+    "description": "Gestión de suscripciones de empresas a planes",
+    "filters": {
+      "company": "Empresa",
+      "plan": "Plan",
+      "allCompanies": "Todas las empresas",
+      "allPlans": "Todos los planes",
+      "clear": "Limpiar"
+    },
+    "table": {
+      "company": "Empresa",
+      "plan": "Plan",
+      "state": "Estado",
+      "startDate": "Fecha Inicio",
+      "endDate": "Fecha Fin",
+      "vehicles": "Vehículos",
+      "users": "Usuarios",
+      "actions": "Acciones"
+    },
+    "form": {
+      "editTitle": "Editar Suscripción",
+      "company": "Empresa",
+      "currentPlan": "Plan Actual",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "editableFields": "Campos editables",
+      "plan": "Plan",
+      "state": "Estado",
+      "selectPlaceholder": "Seleccionar...",
+      "usageSummary": "Resumen de uso",
+      "users": "Usuarios",
+      "vehicles": "Vehículos",
+      "max": "max"
+    },
+    "warnings": {
+      "planLimitUsers": "El nuevo plan permite máximo {{max}} usuarios, pero actualmente hay {{current}}.",
+      "planLimitVehicles": "El nuevo plan permite máximo {{max}} vehículos, pero actualmente hay {{current}}."
+    },
+    "delete": {
+      "title": "Eliminar Suscripción",
+      "confirm": "¿Está seguro que desea eliminar esta suscripción? Esta acción no se puede deshacer."
+    },
+    "toast": {
+      "updated": "Suscripción actualizada",
+      "updatedMessage": "El registro se ha actualizado correctamente.",
+      "deleted": "Suscripción eliminada",
+      "deletedMessage": "El registro se ha eliminado correctamente.",
+      "updateError": "Error al actualizar la suscripción.",
+      "deleteError": "Error al eliminar la suscripción.",
+      "loadError": "Error al cargar las suscripciones."
+    },
+    "status": {
+      "TRIAL": "Prueba",
+      "ACTIVE": "Activa",
+      "PAST_DUE": "Vencida",
+      "CANCELED": "Cancelada",
+      "EXPIRED": "Expirada"
+    },
+    "noResultsFiltered": "No se encontraron resultados para los filtros aplicados"
+  },
+  "comprarPlanes": {
+    "title": "Comprar Planes",
+    "description": "Gestiona la suscripción de tu empresa",
+    "back": "Volver",
+    "currentSubscription": "Suscripción Actual",
+    "loadingSubscription": "Cargando suscripción...",
+    "noSubscription": "{{company}} no tiene una suscripción activa.",
+    "selectPlan": "Seleccionar Plan",
+    "loadingPlans": "Cargando planes...",
+    "plan": "Plan",
+    "selectPlaceholder": "Seleccionar...",
+    "annualBilling": "Facturación anual",
+    "annualDiscount": "({{percent}}% descuento)",
+    "selectedPlanDetails": "Datos del Plan Seleccionado",
+    "maxUsers": "Máx. Usuarios",
+    "maxVehicles": "Máx. Vehículos",
+    "duration": "Duración",
+    "days": "días",
+    "monthlyPrice": "Precio Mensual",
+    "features": "Características",
+    "includedFeatures": "Características incluidas",
+    "costToPay": "Costo a Pagar",
+    "calculating": "Calculando...",
+    "subscriptionDuration": "Duración de la Suscripción",
+    "annualBillingNote": "Facturación anual (360 días)",
+    "buy": "Comprar",
+    "labels": {
+      "plan": "Plan",
+      "users": "Usuarios",
+      "vehicles": "Vehículos",
+      "expiration": "Vencimiento"
+    }
+  },
+  "payment": {
+    "modal": {
+      "title": "Pago Enzona",
+      "subtitle": "Escanea el código QR con tu app bancaria para completar el pago",
+      "amountLabel": "Importe",
+      "planLabel": "Plan",
+      "statusLabel": "Estado",
+      "expiresAtLabel": "Expira en",
+      "transactionIdLabel": "ID de transacción",
+      "copyQr": "Copiar código QR",
+      "copied": "Código QR copiado al portapapeles",
+      "copyError": "No se pudo copiar el código QR.",
+      "retryPayment": "Reintentar pago",
+      "cancelPayment": "Cancelar pago",
+      "checkStatus": "Verificar estado",
+      "closeModal": "Cerrar"
+    },
+    "status": {
+      "PENDIENTE": "Pendiente",
+      "QR_GENERADO": "QR Generado",
+      "PAGADO": "Pagado",
+      "FALLIDO": "Fallido",
+      "EXPIRADO": "Expirado",
+      "CANCELADO": "Cancelado"
+    },
+    "type": {
+      "NUEVA_SUSCRIPCION": "Nueva suscripción",
+      "RENOVACION": "Renovación",
+      "UPGRADE": "Mejora de plan"
+    },
+    "toast": {
+      "creatingPayment": "Generando pago...",
+      "paymentCreated": "Pago creado. Escanea el QR para continuar.",
+      "createError": "No se pudo generar el pago. Intente nuevamente.",
+      "statusUpdated": "Estado del pago actualizado",
+      "statusError": "No se pudo verificar el estado del pago.",
+      "cancelled": "Pago cancelado",
+      "cancelError": "No se pudo cancelar el pago.",
+      "retried": "Pago reintentado. Escanea el nuevo QR.",
+      "retryError": "No se pudo reintentar el pago.",
+      "paid": "¡Pago confirmado! Su suscripción ha sido activada.",
+      "expired": "El pago ha expirado.",
+      "failed": "El pago ha fallado. Intente nuevamente."
+    }
+  }
+}

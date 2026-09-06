@@ -1,0 +1,188 @@
+{
+  "province": {
+    "title": "Provincias",
+    "singular": "Provincia",
+    "description": "Gestión de las provincias",
+    "table": { "code": "Código", "name": "Nombre" },
+    "form": {
+      "code": { "label": "Código", "placeholder": "Ej: 1" },
+      "name": { "label": "Nombre", "placeholder": "Ej: La Habana" }
+    }
+  },
+  "municipality": {
+    "title": "Municipios",
+    "singular": "Municipio",
+    "description": "Gestión de los municipios",
+    "table": { "code": "Código", "name": "Nombre", "province": "Provincia" },
+    "form": {
+      "provinceId": { "label": "Provincia" },
+      "code": { "label": "Código", "placeholder": "Ej: 101" },
+      "name": { "label": "Nombre", "placeholder": "Ej: Arroyo Naranjo" }
+    }
+  },
+  "brand": {
+    "title": "Marcas",
+    "singular": "Marca",
+    "description": "Gestión de las marcas de vehículos",
+    "table": { "name": "Nombre", "description": "Descripción", "originCountry": "País de Origen" },
+    "form": {
+      "name": { "label": "Nombre", "placeholder": "Ej: Toyota" },
+      "originCountry": { "label": "País de Origen", "placeholder": "Ej: Japón" },
+      "description": { "label": "Descripción", "placeholder": "Descripción opcional" }
+    }
+  },
+  "fuelType": {
+    "title": "Tipos de Combustible",
+    "singular": "Tipo de combustible",
+    "description": "Gestión de los tipos de combustible del sistema",
+    "table": { "code": "Código", "denomination": "Denominación", "description": "Descripción" },
+    "form": {
+      "code": { "label": "Código", "placeholder": "Ej: DIESEL" },
+      "denomination": { "label": "Denominación", "placeholder": "Ej: Diésel" },
+      "description": { "label": "Descripción", "placeholder": "Descripción opcional" }
+    }
+  },
+  "vehicleType": {
+    "title": "Tipos de Vehículo",
+    "singular": "Tipo de vehículo",
+    "description": "Gestión de los tipos de vehículos del sistema",
+    "table": { "name": "Nombre", "description": "Descripción" },
+    "form": {
+      "name": { "label": "Nombre", "placeholder": "Ej: Camioneta" },
+      "description": { "label": "Descripción", "placeholder": "Descripción opcional" }
+    }
+  },
+  "licenseCategory": {
+    "title": "Categorías de Licencia",
+    "singular": "Categoría de licencia",
+    "description": "Gestión de las categorías de licencia de conducir",
+    "table": { "code": "Código", "denomination": "Denominación", "description": "Descripción" },
+    "form": {
+      "code": { "label": "Código", "placeholder": "Ej: B1" },
+      "denomination": { "label": "Denominación", "placeholder": "Ej: Autobús" },
+      "description": { "label": "Descripción", "placeholder": "Descripción opcional" }
+    }
+  },
+  "currency": {
+    "title": "Monedas",
+    "singular": "Moneda",
+    "description": "Gestión de monedas del sistema",
+    "table": { "isoCode": "Código ISO", "description": "Descripción" },
+    "form": {
+      "isoCode": { "label": "Código ISO", "placeholder": "Ej: CUP, USD, EUR" },
+      "description": { "label": "Descripción", "placeholder": "Ej: Peso Cubano" }
+    }
+  },
+  "company": {
+    "title": "Empresas",
+    "singular": "Empresa",
+    "description": "Gestión de las empresas del sistema",
+    "table": {
+      "code": "Código",
+      "name": "Nombre",
+      "province": "Provincia",
+      "municipality": "Municipio",
+      "address": "Dirección",
+      "phone": "Teléfono",
+      "email": "Email"
+    },
+    "form": {
+      "code": { "label": "Código", "placeholder": "Ej: EMP-001" },
+      "name": { "label": "Nombre", "placeholder": "Ej: Transportes del Sur S.A." },
+      "provinceId": { "label": "Provincia" },
+      "municipioId": { "label": "Municipio" },
+      "address": { "label": "Dirección", "placeholder": "Ej: Calle 5 #123, Habana" },
+      "phone": { "label": "Teléfono", "placeholder": "Ej: +53 5 1234567" },
+      "email": { "label": "Email", "placeholder": "Ej: contacto@empresa.cu" }
+    }
+  },
+  "feature": {
+    "title": "Características",
+    "singular": "Característica",
+    "description": "Gestión de las características del sistema",
+    "table": { "name": "Nombre", "description": "Descripción" },
+    "form": {
+      "name": { "label": "Nombre", "placeholder": "Ej: Reportes avanzados" },
+      "description": { "label": "Descripción", "placeholder": "Descripción opcional de la funcionalidad" }
+    }
+  },
+  "permission": {
+    "title": "Permisos",
+    "singular": "Permiso",
+    "description": "Gestión de los permisos del sistema",
+    "table": { "name": "Nombre", "description": "Descripción" },
+    "form": {
+      "name": { "label": "Nombre", "placeholder": "Ej: USUARIOS_CREATE" },
+      "description": { "label": "Descripción", "placeholder": "Ej: Permite crear nuevos usuarios" }
+    }
+  },
+  "fuelCard": {
+    "title": "Tarjetas de Combustible",
+    "singular": "Tarjeta de Combustible",
+    "description": "Gestión de tarjetas de combustible",
+    "table": {
+      "number": "Número",
+      "company": "Empresa",
+      "currency": "Moneda",
+      "balance": "Saldo",
+      "state": "Estado",
+      "actions": "Acciones"
+    },
+    "form": {
+      "numero": { "label": "Número", "placeholder": "Ej: 1234567890123456" },
+      "empresaId": { "label": "Empresa" },
+      "currencyId": { "label": "Moneda" },
+      "selectCurrency": "Seleccionar moneda...",
+      "saldo": { "label": "Saldo", "placeholder": "Ej: 5000.00" }
+    },
+    "modal": {
+      "edit": "Editar Tarjeta",
+      "create": "Nueva Tarjeta"
+    },
+    "deleteConfirm": "¿Está seguro que desea eliminar esta tarjeta? Esta acción no se puede deshacer.",
+    "toast": {
+      "selectCurrenciesError": "No se pudieron cargar las monedas.",
+      "created": "Tarjeta creada",
+      "updated": "Tarjeta actualizada",
+      "deleted": "Tarjeta eliminada",
+      "createdMessage": "El nuevo registro se ha creado correctamente.",
+      "updatedMessage": "El registro se ha actualizado correctamente.",
+      "deletedMessage": "El registro se ha eliminado correctamente."
+    }
+  },
+  "plan": {
+    "title": "Planes",
+    "singular": "Plan",
+    "description": "Gestión de los planes de suscripción",
+    "table": {
+      "name": "Nombre",
+      "monthlyPrice": "Precio Mensual",
+      "maxUsers": "Máx. Usuarios",
+      "maxVehicles": "Máx. Vehículos",
+      "duration": "Duración (días)",
+      "annualDiscount": "Dto. Anual %",
+      "features": "Características",
+      "state": "Estado",
+      "actions": "Acciones"
+    },
+    "form": {
+      "name": { "label": "Nombre", "placeholder": "Ej: Plan Básico" },
+      "precioMensual": { "label": "Precio Mensual", "placeholder": "Ej: 50.00" },
+      "maxUsuarios": { "label": "Máx. Usuarios", "placeholder": "Ej: 10" },
+      "maxVehiculos": { "label": "Máx. Vehículos", "placeholder": "Ej: 50" },
+      "duracionDias": { "label": "Duración (días)", "placeholder": "Ej: 30" },
+      "porcientoDescuentoAnual": { "label": "Dto. Anual %", "placeholder": "Ej: 10" },
+      "features": { "label": "Características" }
+    },
+    "labels": {
+      "noFeatures": "No hay características disponibles",
+      "noFeaturesAssigned": "Sin características asignadas",
+      "featuresCount": "Características ({{count}})",
+      "days": "días"
+    },
+    "toast": {
+      "updated": "Plan actualizado",
+      "error": "Error al guardar el plan."
+    }
+  }
+}

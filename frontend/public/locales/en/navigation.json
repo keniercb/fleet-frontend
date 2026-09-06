@@ -1,0 +1,51 @@
+{
+  "sections": {
+    "administracion": "Administration",
+    "catalogos": "Catalogs",
+    "reportes": "Reports",
+    "transporte": "Transport Control"
+  },
+  "items": {
+    "roles": "Roles",
+    "users": "Users",
+    "permissions": "Permissions",
+    "empresas": "Companies",
+    "comprarPlan": "Buy Plans",
+    "suscripciones": "Subscriptions",
+    "provincias": "Provinces",
+    "municipios": "Municipalities",
+    "marcas": "Brands",
+    "tiposCombustible": "Fuel Type",
+    "tiposVehiculo": "Vehicle Type",
+    "categoriasLicencia": "License Category",
+    "monedas": "Currencies",
+    "features": "Features",
+    "planes": "Plans",
+    "consumoVehiculo": "Consumption by Vehicle",
+    "mantenimiento": "Maintenance",
+    "abastecimiento": "Supply",
+    "consumoCombustible": "Consumption by Fuel",
+    "vehiculos": "Vehicles",
+    "choferes": "Drivers",
+    "recorridos": "Trips",
+    "tarjetasCombustible": "Fuel Cards"
+  },
+  "sidebar": {
+    "title": "Fleet Management",
+    "subtitle": "Control System",
+    "expand": "Expand menu",
+    "collapse": "Collapse menu",
+    "version": "v1.0.0 — Fleet Management",
+    "dashboard": "Dashboard"
+  },
+  "topnavbar": {
+    "noRole": "No role",
+    "profile": "Profile",
+    "changePassword": "Change password",
+    "logout": "Logout",
+    "toggleSidebar": "Show menu"
+  },
+  "denied": {
+    "superAdminOnly": "Only the super administrator can access this section."
+  }
+}

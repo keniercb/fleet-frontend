@@ -1,0 +1,33 @@
+{
+  "table": {
+    "state": "Estado",
+    "actions": "Acciones"
+  },
+  "modal": {
+    "create": "Nuevo {{singular}}",
+    "edit": "Editar {{singular}}",
+    "delete": "Eliminar {{singular}}",
+    "deleteConfirm": "¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer."
+  },
+  "toast": {
+    "created": "El nuevo registro se ha creado correctamente.",
+    "updated": "El registro se ha actualizado correctamente.",
+    "deleted": "El registro se ha eliminado correctamente.",
+    "createdNamed": "{{singular}} creado",
+    "updatedNamed": "{{singular}} actualizado",
+    "deletedNamed": "{{singular}} eliminado"
+  },
+  "badges": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "states": {
+    "loading": "Cargando...",
+    "empty": "No hay registros",
+    "noResults": "No se encontraron resultados"
+  },
+  "actions": {
+    "new": "Nuevo",
+    "search": "Buscar..."
+  }
+}

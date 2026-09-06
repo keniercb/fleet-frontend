@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
@@ -22,6 +23,8 @@ export interface FormFieldDef {
   key: string;
   label: string;
   type: 'text' | 'textarea' | 'number' | 'date' | 'email' | 'select';
+  asyncOptions?: () => Promise<{ label: string; value: string | number }[]>;
+  onChange?: (value: string | number, formData: Record<string, unknown>) => void;
   placeholder?: string;
   required?: boolean;
   options?: { label: string; value: string | number }[];
@@ -70,6 +73,8 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     getIsActive,
   } = config;
 
+  const { t } = useTranslation(['crud', 'common']);
+
   const { data, loading, saving, totalPages, totalElements, page, size, error, setPage, createItem, updateItem, deleteItem } =
     useCrud<TReq, TRes>(api);
 
@@ -78,13 +83,14 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingEntity, setEditingEntity] = useState<TRes | null>(null);
+  const [asyncOptionMap, setAsyncOptionMap] = useState<Record<string, { label: string; value: string | number }[]>>({});
   const [formData, setFormData] = useState<TReq>(getFormDefaultValues());
   const [deleteTarget, setDeleteTarget] = useState<TRes | null>(null);
 
   // Show error as toast when it changes
   useEffect(() => {
     if (error) {
-      addToast({ type: 'error', title: 'Error', message: error });
+      addToast({ type: 'error', title: t('common:state.error'), message: error });
     }
   }, [error, addToast]);
 
@@ -111,10 +117,10 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     try {
       if (editingEntity) {
         await updateItem(getId(editingEntity), formData);
-        addToast({ type: 'success', title: `${singular} actualizado`, message: 'El registro se ha actualizado correctamente.' });
+        addToast({ type: 'success', title: t('crud:toast.updatedNamed', { singular }), message: t('crud:toast.updated') });
       } else {
         await createItem(formData);
-        addToast({ type: 'success', title: `${singular} creado`, message: 'El nuevo registro se ha creado correctamente.' });
+        addToast({ type: 'success', title: t('crud:toast.createdNamed', { singular }), message: t('crud:toast.created') });
       }
       setShowForm(false);
     } catch {
@@ -126,7 +132,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
     if (!deleteTarget) return;
     try {
       await deleteItem(getId(deleteTarget));
-      addToast({ type: 'success', title: `${singular} eliminado`, message: 'El registro se ha eliminado correctamente.' });
+      addToast({ type: 'success', title: t('crud:toast.deletedNamed', { singular }), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
     } catch {
       // error handled by hook → toast via useEffect
@@ -142,6 +148,18 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
       )
     : data;
 
+  // Load async options for select fields
+  useEffect(() => {
+    config.formFields.forEach(async (field) => {
+      if (field.asyncOptions) {
+        try {
+          const opts = await field.asyncOptions();
+          setAsyncOptionMap((prev) => ({ ...prev, [field.key]: opts }));
+        } catch { /* ignore */ }
+      }
+    });
+  }, []);
+
   return (
     <div>
       <PageHeader title={title} description={description}>
@@ -149,7 +167,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder={t('crud:actions.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-field pl-9 py-2 text-sm"
@@ -157,7 +175,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
         </div>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t('crud:actions.new')}
         </button>
       </PageHeader>
 
@@ -175,8 +193,8 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                     {col.label}
                   </th>
                 ))}
-                <th className="table-header px-4 py-3 text-right">Estado</th>
-                <th className="table-header px-4 py-3 text-right">Acciones</th>
+                <th className="table-header px-4 py-3 text-right">{t('crud:table.state')}</th>
+                <th className="table-header px-4 py-3 text-right">{t('crud:table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -188,7 +206,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                   >
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                      Cargando...
+                      {t('crud:states.loading')}
                     </div>
                   </td>
                 </tr>
@@ -198,7 +216,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                     colSpan={columns.length + 2}
                     className="px-4 py-12 text-center text-gray-400"
                   >
-                    {search ? 'No se encontraron resultados' : 'No hay registros'}
+                    {search ? t('crud:states.noResults') : t('crud:states.empty')}
                   </td>
                 </tr>
               ) : (
@@ -218,9 +236,9 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                     ))}
                     <td className="px-4 py-3 text-right">
                       {getIsActive(item) ? (
-                        <span className="badge-active">Activo</span>
+                        <span className="badge-active">{t('crud:badges.active')}</span>
                       ) : (
-                        <span className="badge-inactive">Inactivo</span>
+                        <span className="badge-inactive">{t('crud:badges.inactive')}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -228,14 +246,14 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 hover:bg-primary-50 rounded-lg text-gray-400 hover:text-primary-600 transition-colors"
-                          title="Editar"
+                          title={t('common:actions.edit')}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(item)}
                           className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                          title="Eliminar"
+                          title={t('common:actions.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -264,7 +282,7 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
       {/* Create / Edit Modal */}
       <Modal
         open={showForm}
-        title={editingEntity ? `Editar ${singular}` : `Nuevo ${singular}`}
+        title={editingEntity ? t('crud:modal.edit', { singular }) : t('crud:modal.create', { singular })}
         onClose={() => setShowForm(false)}
         size="md"
       >
@@ -287,7 +305,11 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                     id={field.key}
                     rows={3}
                     value={(formData as Record<string, unknown>)[field.key] as string ?? ''}
-                    onChange={(e) => handleFormChange(field.key, e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : (isNaN(Number(e.target.value)) ? e.target.value : Number(e.target.value));
+                      handleFormChange(field.key, val);
+                      if (field.onChange) field.onChange(val, formData as Record<string, unknown>);
+                    }}
                     className="input-field"
                     placeholder={field.placeholder}
                   />
@@ -295,12 +317,16 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
                   <select
                     id={field.key}
                     value={(formData as Record<string, unknown>)[field.key] as string ?? ''}
-                    onChange={(e) => handleFormChange(field.key, e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : (isNaN(Number(e.target.value)) ? e.target.value : Number(e.target.value));
+                      handleFormChange(field.key, val);
+                      if (field.onChange) field.onChange(val, formData as Record<string, unknown>);
+                    }}
                     className="input-field"
                     required={field.required}
                   >
-                    <option value="">Seleccionar...</option>
-                    {field.options?.map((opt) => (
+                    <option value="">{t('common:actions.select')}</option>
+                    {(field.options ?? asyncOptionMap[field.key] ?? []).map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>
@@ -331,14 +357,14 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
               onClick={() => setShowForm(false)}
               className="btn-secondary"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="btn-primary">
               {saving
-                ? 'Guardando...'
+                ? t('common:actions.saving')
                 : editingEntity
-                  ? 'Actualizar'
-                  : 'Crear'}
+                  ? t('common:actions.update')
+                  : t('common:actions.create')}
             </button>
           </div>
         </form>
@@ -347,11 +373,11 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
       {/* Delete Confirmation */}
       <ConfirmModal
         open={!!deleteTarget}
-        title={`Eliminar ${singular}`}
-        message={`¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer.`}
+        title={t('crud:modal.delete', { singular })}
+        message={t('crud:modal.deleteConfirm')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        confirmText="Eliminar"
+        confirmText={t('common:actions.delete')}
         danger
       />
     </div>
