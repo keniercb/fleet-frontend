@@ -119,7 +119,9 @@ export default function ComprarPlanesPage() {
           stopPolling();
           addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paid') });
           // Refresh subscription to reflect new plan
-          subscriptionsApi.getMyCompanySubscription().then((r) => setSubscription(r.data)).catch(() => {});
+          subscriptionsApi.getMyCompanySubscription()
+            .then((r) => { if (r.data) setSubscription(r.data); })
+            .catch(() => {});
         } else if (updated.status === 'EXPIRADO' || updated.status === 'FALLIDO' || updated.status === 'CANCELADO') {
           stopPolling();
           if (updated.status === 'EXPIRADO') {
@@ -166,7 +168,9 @@ export default function ComprarPlanesPage() {
       if (res.data.status === 'PAGADO') {
         stopPolling();
         addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paid') });
-        subscriptionsApi.getMyCompanySubscription().then((r) => setSubscription(r.data)).catch(() => {});
+        subscriptionsApi.getMyCompanySubscription()
+          .then((r) => { if (r.data) setSubscription(r.data); })
+          .catch(() => {});
       } else {
         addToast({ type: 'info', title: t('common:state.info'), message: t('admin:payment.toast.statusUpdated') });
       }
@@ -245,28 +249,28 @@ export default function ComprarPlanesPage() {
                 <CreditCard className="w-4 h-4 text-primary-600" />
                 <span className="text-xs text-gray-500">{t('admin:comprarPlanes.labels.plan')}</span>
               </div>
-              <p className="text-sm font-bold text-gray-900">{subscription.plan.nombre}</p>
+              <p className="text-sm font-bold text-gray-900">{subscription?.plan?.nombre ?? '—'}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="w-4 h-4 text-gray-400" />
                 <span className="text-xs text-gray-500">{t('admin:comprarPlanes.labels.users')}</span>
               </div>
-              <p className="text-sm font-bold text-gray-900">{subscription.currentUserCount} / {subscription.plan.maxUsuarios}</p>
+              <p className="text-sm font-bold text-gray-900">{subscription?.currentUserCount ?? 0} / {subscription?.plan?.maxUsuarios ?? '—'}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Car className="w-4 h-4 text-gray-400" />
                 <span className="text-xs text-gray-500">{t('admin:comprarPlanes.labels.vehicles')}</span>
               </div>
-              <p className="text-sm font-bold text-gray-900">{subscription.currentVehicleCount} / {subscription.plan.maxVehiculos}</p>
+              <p className="text-sm font-bold text-gray-900">{subscription?.currentVehicleCount ?? 0} / {subscription?.plan?.maxVehiculos ?? '—'}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-gray-400" />
                 <span className="text-xs text-gray-500">{t('admin:comprarPlanes.labels.expiration')}</span>
               </div>
-              <p className="text-sm font-bold text-gray-900">{formatDate(subscription.endDate, 'long')}</p>
+              <p className="text-sm font-bold text-gray-900">{formatDate(subscription?.endDate, 'long')}</p>
             </div>
           </div>
         ) : (
@@ -467,7 +471,7 @@ export default function ComprarPlanesPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500">{t('admin:payment.modal.planLabel')}</p>
-                <p className="text-sm font-semibold text-gray-900">{payment.plan.nombre}</p>
+                <p className="text-sm font-semibold text-gray-900">{payment?.plan?.nombre ?? '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">{t('admin:payment.modal.transactionIdLabel')}</p>
