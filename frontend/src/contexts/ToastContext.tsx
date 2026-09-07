@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { setToastHandler, clearToastHandler } from '@/api/toastBridge';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -40,6 +41,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     },
     [removeToast]
   );
+
+  // Registrar addToast en el puente para que el interceptor de Axios
+  // pueda disparar toasts desde fuera del arbol de React
+  useEffect(() => {
+    setToastHandler(addToast);
+    return () => clearToastHandler();
+  }, [addToast]);
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>

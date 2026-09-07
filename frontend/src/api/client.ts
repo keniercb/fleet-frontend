@@ -1,7 +1,34 @@
 import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import type { PageResponse } from '@/types';
+import { showToastFromInterceptor } from './toastBridge';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+// Tipos de mensaje segun el codigo HTTP
+interface BackendMessage {
+  message?: string;
+  error?: string;
+}
+
+function getToastTypeForStatus(status: number): 'success' | 'info' | 'warning' | 'error' {
+  if (status >= 200 && status < 300) return 'success';
+  if (status === 401 || status === 403) return 'warning';
+  if (status >= 400 && status < 500) return 'warning';
+  if (status >= 500) return 'error';
+  return 'info';
+}
+
+function getTitleForStatus(status: number): string {
+  if (status >= 200 && status < 300) return 'Operación exitosa';
+  if (status === 400) return 'Solicitud incorrecta';
+  if (status === 401) return 'No autorizado';
+  if (status === 403) return 'Acceso denegado';
+  if (status === 404) return 'No encontrado';
+  if (status === 409) return 'Conflicto';
+  if (status === 422) return 'Datos inválidos';
+  if (status >= 500) return 'Error del servidor';
+  return 'Información';
+}
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -22,13 +49,38 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    // Mostrar toast si la respuesta exitosa contiene un mensaje del backend
+    const data = response.data as BackendMessage;
+    if (data && typeof data.message === 'string' && data.message.trim()) {
+      const toastType = getToastTypeForStatus(response.status);
+      const title = getTitleForStatus(response.status);
+      showToastFromInterceptor(toastType, title, data.message);
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+
+    // Mostrar toast si el error contiene un mensaje del backend
+    const errorData = error?.response?.data as BackendMessage;
+    if (errorData && typeof errorData.message === 'string' && errorData.message.trim()) {
+      const status = error.response?.status ?? 500;
+      const toastType = getToastTypeForStatus(status);
+      const title = getTitleForStatus(status);
+      showToastFromInterceptor(toastType, title, errorData.message);
+    } else if (errorData && typeof errorData.error === 'string' && errorData.error.trim()) {
+      // Algunos endpoints retornan { error: "..." } en lugar de { message: "..." }
+      const status = error.response?.status ?? 500;
+      const toastType = getToastTypeForStatus(status);
+      const title = getTitleForStatus(status);
+      showToastFromInterceptor(toastType, title, errorData.error);
+    }
+
     return Promise.reject(error);
   }
 );
