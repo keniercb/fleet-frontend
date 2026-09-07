@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import { Car } from 'lucide-react';
+import { Car, WifiOff, RefreshCw } from 'lucide-react';
+import apiClient from '@/api/client';
 import type { AxiosError } from 'axios';
 
 interface ApiError {
@@ -16,8 +17,37 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+  const [checkingConnection, setCheckingConnection] = useState(true);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Verificar conexion con el backend al montar el componente
+  const checkBackendConnection = useCallback(async () => {
+    setCheckingConnection(true);
+    try {
+      // Hacer una peticion ligera al backend (auth/me responde 401 si no hay token,
+      // pero si el servidor esta caido, lanza error de red)
+      await apiClient.get('/auth/me', { timeout: 5000 });
+      // Si llega aqui con 200, el servidor esta activo (raro sin token, pero posible)
+      setBackendOnline(true);
+    } catch (err) {
+      const axiosErr = err as AxiosError;
+      // 401 significa que el servidor responde, solo no hay token
+      if (axiosErr.response?.status === 401) {
+        setBackendOnline(true);
+      } else {
+        // ERR_NETWORK, ERR_CONNECTION_REFUSED, ECONNABORTED → servidor caido
+        setBackendOnline(false);
+      }
+    } finally {
+      setCheckingConnection(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkBackendConnection();
+  }, [checkBackendConnection]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -29,16 +59,71 @@ export default function LoginPage() {
       navigate('/', { replace: true });
     } catch (err) {
       const axiosErr = err as AxiosError<ApiError>;
-      const message =
-        axiosErr.response?.data?.message ||
-        axiosErr.response?.data?.error ||
-        t('login.invalidCredentials');
-      setError(message);
+      // Si el error es de red (sin response), el backend se cayo durante el login
+      if (!axiosErr.response) {
+        setBackendOnline(false);
+        setError(t('login.backendUnreachableMessage'));
+      } else {
+        const message =
+          axiosErr.response?.data?.message ||
+          axiosErr.response?.data?.error ||
+          t('login.invalidCredentials');
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Mientras verifica la conexion, mostrar spinner
+  if (checkingConnection) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 px-4">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white" />
+          <p className="text-primary-200 text-sm">{t('login.retryingConnection')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si el backend esta caido, mostrar pantalla de error con boton de reintentar
+  if (backendOnline === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-2xl mb-4">
+              <WifiOff className="w-8 h-8 text-red-400" />
+            </div>
+            <h1 className="text-xl font-bold text-white">
+              {t('login.backendUnreachableTitle')}
+            </h1>
+            <p className="text-primary-200 mt-2 text-sm px-4">
+              {t('login.backendUnreachableMessage')}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <button
+              onClick={checkBackendConnection}
+              disabled={checkingConnection}
+              className="btn-primary w-full py-2.5 text-base flex items-center justify-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${checkingConnection ? 'animate-spin' : ''}`} />
+              {t('login.retry')}
+            </button>
+          </div>
+
+          <p className="text-center text-primary-300 text-xs mt-6">
+            {t('login.systemTitle')}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Backend online: mostrar formulario de login normal
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 px-4">
       <div className="w-full max-w-md">
