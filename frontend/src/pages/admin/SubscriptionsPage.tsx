@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useSubscriptionStatusInfo } from '@/utils/statusLabels';
 import type { SubscriptionRequest, SubscriptionResponse, SubscriptionStatus, EmpresaResponse, PlanResponse, PageParams } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 const STATUS_VALUES: SubscriptionStatus[] = ['TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED'];
 
@@ -63,9 +64,11 @@ export default function SubscriptionsPage() {
       setData(content);
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:subscription.toast.loadError') });
       setData([]);
+      }
     } finally { setLoading(false); }
   }, [size, addToast, t]);
 
@@ -119,8 +122,10 @@ export default function SubscriptionsPage() {
       addToast({ type: 'success', title: t('admin:subscription.toast.updated'), message: t('crud:toast.updated') });
       setShowForm(false);
       fetchData(page, filterEmpresaId ? Number(filterEmpresaId) : undefined, filterPlanId ? Number(filterPlanId) : undefined);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:subscription.toast.updateError') });
+      }
     } finally { setSaving(false); }
   };
 
@@ -132,8 +137,10 @@ export default function SubscriptionsPage() {
       addToast({ type: 'success', title: t('admin:subscription.toast.deleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
       fetchData(page, filterEmpresaId ? Number(filterEmpresaId) : undefined, filterPlanId ? Number(filterPlanId) : undefined);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:subscription.toast.deleteError') });
+      }
     } finally { setSaving(false); }
   };
 

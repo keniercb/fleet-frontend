@@ -10,6 +10,7 @@ import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { formatNumber } from '@/utils/format';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 import type {
   TarjetaCombustibleRequest,
   TarjetaCombustibleResponse,
@@ -75,8 +76,10 @@ export default function TarjetaCombustiblePage() {
     try {
       const res = await currenciesApi.findAll({ page: 0, perPage: 200 });
       setCurrencies(res.data.content.filter((c) => c.activo));
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('catalogs:fuelCard.toast.selectCurrenciesError') });
+      }
     }
   }, [addToast, t]);
 

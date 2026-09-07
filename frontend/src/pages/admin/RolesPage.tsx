@@ -9,6 +9,7 @@ import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import type { RoleRequest, RoleResponse, PermissionResponse } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 // ---- Types ----
 
@@ -59,8 +60,10 @@ export default function RolesPage() {
     try {
       const res = await permissionsApi.findAll({ page: 0, perPage: 500 });
       setAllPermissions(res.data.content.filter((p) => p.activo));
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:roles.toast.permissionsLoadError') });
+      }
     } finally {
       setLoadingPermissions(false);
     }

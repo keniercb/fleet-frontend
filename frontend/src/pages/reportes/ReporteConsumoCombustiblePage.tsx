@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/components/common/PageHeader';
 import { formatNumber as fmtHelper, formatCurrency as fmtCurHelper } from '@/utils/format';
 import type { ConsumoCombustibleResponse, DetalleTipoCombustible } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 export default function ReporteConsumoCombustiblePage() {
   const { t } = useTranslation(['reportes', 'common']);
@@ -48,9 +49,11 @@ export default function ReporteConsumoCombustiblePage() {
         tipoVehiculoId: tipoVehiculoId || undefined,
       });
       setData(res.data);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.reportError') });
       setData(null);
+      }
     } finally {
       setLoading(false);
     }

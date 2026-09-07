@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { formatCurrency } from '@/utils/format';
 import type { PlanRequest, PlanResponse, FeatureResponse } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 interface FormData {
   nombre: string;
@@ -130,8 +131,10 @@ export default function PlanPage() {
       }
       setShowForm(false);
       fetchData(page);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('catalogs:plan.toast.error') });
+      }
     } finally { setSaving(false); }
   };
 
@@ -143,8 +146,10 @@ export default function PlanPage() {
       addToast({ type: 'success', title: t('crud:toast.deletedNamed', { singular: t('catalogs:plan.singular') }), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
       fetchData(page);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('catalogs:plan.toast.error') });
+      }
     } finally { setSaving(false); }
   };
 

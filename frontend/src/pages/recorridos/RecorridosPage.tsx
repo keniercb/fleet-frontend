@@ -9,6 +9,7 @@ import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { formatDate as formatDateHelper, formatNumber } from '@/utils/format';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 import type {
   RecorridoRequest,
   RecorridoResponse,
@@ -262,8 +263,10 @@ export default function RecorridosPage() {
       }
       setShowForm(false);
       if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('recorridos:toast.saveError') });
+      }
     } finally {
       setSaving(false);
     }
@@ -277,8 +280,10 @@ export default function RecorridosPage() {
       addToast({ type: 'success', title: t('recorridos:toast.deleted'), message: t('crud:toast.deleted') });
       setDeleteTarget(null);
       if (canLoadData) fetchRecorridos(page, filterVehiculoId, filterFechaFrom, filterFechaTo);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('recorridos:toast.deleteError') });
+      }
     } finally {
       setSaving(false);
     }

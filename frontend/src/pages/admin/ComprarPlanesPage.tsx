@@ -10,6 +10,7 @@ import Modal from '@/components/ui/Modal';
 import { formatDate, formatCurrency, formatNumber } from '@/utils/format';
 import { useSubscriptionStatusInfo } from '@/utils/statusLabels';
 import type { SubscriptionResponse, PlanResponse, PaymentResponse, PaymentType, PaymentStatus } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 export default function ComprarPlanesPage() {
   const { t } = useTranslation(['admin', 'common']);
@@ -153,8 +154,10 @@ export default function ComprarPlanesPage() {
       addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paymentCreated') });
       // Start polling for status updates
       startPolling(res.data.id);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.createError') });
+      }
     } finally {
       setCreatingPayment(false);
     }
@@ -175,8 +178,10 @@ export default function ComprarPlanesPage() {
       } else {
         addToast({ type: 'info', title: t('common:state.info'), message: t('admin:payment.toast.statusUpdated') });
       }
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.statusError') });
+      }
     } finally {
       setActionLoading(false);
     }
@@ -190,8 +195,10 @@ export default function ComprarPlanesPage() {
       setPayment(res.data);
       addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.retried') });
       startPolling(res.data.id);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.retryError') });
+      }
     } finally {
       setActionLoading(false);
     }
@@ -205,8 +212,10 @@ export default function ComprarPlanesPage() {
       setPayment({ ...res.data, qrImageBase64: undefined, qrCode: undefined });
       stopPolling();
       addToast({ type: 'info', title: t('common:state.info'), message: t('admin:payment.toast.cancelled') });
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.cancelError') });
+      }
     } finally {
       setActionLoading(false);
     }
@@ -236,8 +245,10 @@ export default function ComprarPlanesPage() {
         document.execCommand('copy');
         document.body.removeChild(textarea);
         addToast({ type: 'info', title: t('admin:payment.modal.copyQr'), message: t('admin:payment.toast.copied') });
-      } catch {
+      } catch (err) {
+        if (!isToastAlreadyShown(err)) {
         addToast({ type: 'error', title: t('common:state.error'), message: t('admin:payment.toast.copyError') });
+        }
       }
     }
   }, [payment, addToast, t]);

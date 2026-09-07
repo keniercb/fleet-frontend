@@ -34,3 +34,19 @@ export function showToastFromInterceptor(
     handler({ type, title, message });
   }
 }
+
+/**
+ * Verifica si un error de Axios ya fue mostrado como toast por el interceptor.
+ * Los componentes deben usar esto en sus bloques catch para evitar
+ * mostrar toasts duplicados.
+ *
+ * Uso:
+ *   } catch (err) {
+ *     if (!isToastAlreadyShown(err)) {
+ *       addToast({ type: 'error', ... });
+ *     }
+ *   }
+ */
+export function isToastAlreadyShown(err: unknown): boolean {
+  return (err as { __toastShown?: boolean })?.__toastShown === true;
+}

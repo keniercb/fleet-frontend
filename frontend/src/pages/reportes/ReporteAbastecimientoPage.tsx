@@ -8,6 +8,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import { formatNumber as formatNum } from '@/utils/format';
 import type { AbastecimientoReporteResponse, VehiculoResponse } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 interface Filtros {
   desde: string;
@@ -72,11 +73,13 @@ export default function ReporteAbastecimientoPage() {
       setData(res.data.content);
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.reportError') });
       setData([]);
       setTotalPages(0);
       setTotalElements(0);
+      }
     } finally {
       setLoading(false);
     }

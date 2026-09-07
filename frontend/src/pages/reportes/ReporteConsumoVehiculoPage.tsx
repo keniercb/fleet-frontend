@@ -8,6 +8,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import { formatNumber as formatNum } from '@/utils/format';
 import type { VehiculoConsumoReporteDTO, TipoVehiculoResponse, MarcaResponse, TipoCombustibleResponse } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 interface Filtros {
   fechaDesde: string;
@@ -56,8 +57,10 @@ export default function ReporteConsumoVehiculoPage() {
       setTiposVehiculo(tvRes.data.content.filter((e) => e.activo));
       setMarcas(marRes.data.content.filter((e) => e.activo));
       setTiposCombustible(tcRes.data.content.filter((e) => e.activo));
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:consumoVehiculo.toast.filtersLoadError') });
+      }
     }
   }, [addToast, t]);
 
@@ -86,11 +89,13 @@ export default function ReporteConsumoVehiculoPage() {
       setData(res.data.content);
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:abastecimiento.toast.reportError') });
       setData([]);
       setTotalPages(0);
       setTotalElements(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -112,8 +117,10 @@ export default function ReporteConsumoVehiculoPage() {
       setData(res.data.content);
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:consumoVehiculo.toast.pageChangeError') });
+      }
     } finally {
       setLoading(false);
     }

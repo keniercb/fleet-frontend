@@ -2,6 +2,13 @@ import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axio
 import type { PageResponse } from '@/types';
 import { showToastFromInterceptor } from './toastBridge';
 
+// Extender el tipo de error de Axios para incluir la bandera __toastShown
+declare module 'axios' {
+  export interface AxiosError {
+    __toastShown?: boolean;
+  }
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Tipos de mensaje segun el codigo HTTP
@@ -68,17 +75,24 @@ apiClient.interceptors.response.use(
 
     // Mostrar toast si el error contiene un mensaje del backend
     const errorData = error?.response?.data as BackendMessage;
+    let toastShown = false;
     if (errorData && typeof errorData.message === 'string' && errorData.message.trim()) {
       const status = error.response?.status ?? 500;
       const toastType = getToastTypeForStatus(status);
       const title = getTitleForStatus(status);
       showToastFromInterceptor(toastType, title, errorData.message);
+      toastShown = true;
     } else if (errorData && typeof errorData.error === 'string' && errorData.error.trim()) {
-      // Algunos endpoints retornan { error: "..." } en lugar de { message: "..." }
       const status = error.response?.status ?? 500;
       const toastType = getToastTypeForStatus(status);
       const title = getTitleForStatus(status);
       showToastFromInterceptor(toastType, title, errorData.error);
+      toastShown = true;
+    }
+
+    // Marcar el error para que los componentes sepan que el toast ya fue mostrado
+    if (toastShown) {
+      error.__toastShown = true;
     }
 
     return Promise.reject(error);

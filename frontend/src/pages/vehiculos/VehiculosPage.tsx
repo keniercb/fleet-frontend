@@ -16,6 +16,7 @@ import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { formatDate as formatDateHelper, formatNumber, getMonthNames } from '@/utils/format';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 import type {
   VehiculoRequest,
   VehiculoResponse,
@@ -156,8 +157,10 @@ export default function VehiculosPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       addToast({ type: 'success', title: t('common:state.success'), message: t('vehiculos:toast.pdfSuccess') });
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.pdfError') });
+      }
     } finally {
       setExportingPdf(false);
     }
@@ -180,8 +183,10 @@ export default function VehiculosPage() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.pdfError') });
+      }
     } finally {
       setExportingReportePdf(false);
     }
@@ -194,8 +199,10 @@ export default function VehiculosPage() {
     try {
       const res = await vehiculosApi.reporteMovimientoMensual(reporteVehiculo.id, reporteMes, reporteAnio);
       setReporteData(res.data);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.pdfError') });
+      }
     } finally {
       setReporteLoading(false);
     }
@@ -221,8 +228,10 @@ export default function VehiculosPage() {
         marcas: marRes.data.content.filter((e) => e.activo),
         tiposCombustible: tcRes.data.content.filter((e) => e.activo),
       });
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('vehiculos:toast.selectorsError') });
+      }
     }
   }, [addToast, t]);
 

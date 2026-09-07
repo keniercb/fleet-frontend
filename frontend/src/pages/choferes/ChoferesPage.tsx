@@ -10,6 +10,7 @@ import Pagination from '@/components/common/Pagination';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import type { ChoferRequest, ChoferResponse, CategoriaLicenciaResponse, PageParams } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 // ---- Types ----
 
@@ -91,8 +92,10 @@ export default function ChoferesPage() {
         categoriasLicenciaApi.findAll({ page: 0, perPage: 200 }),
       ]);
       setCategoriasLicencia(catRes.data.content);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('choferes:toast.categoriesLoadError') });
+      }
     }
   }, [addToast, t]);
 

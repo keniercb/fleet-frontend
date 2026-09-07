@@ -11,6 +11,7 @@ import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { formatDate } from '@/utils/format';
 import type { UserRequest, UserResponse, RoleResponse, PageParams } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 // ---- Types ----
 
@@ -78,8 +79,10 @@ export default function UsuariosPage() {
     try {
       const res = await rolesApi.findAll({ page: 0, perPage: 500 });
       setAllRoles(res.data.content.filter((r) => r.activo));
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('admin:users.toast.rolesLoadError') });
+      }
     } finally {
       setLoadingRoles(false);
     }

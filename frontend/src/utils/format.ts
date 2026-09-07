@@ -12,8 +12,17 @@ export function formatDate(
   format: DateFormat = 'short'
 ): string {
   if (!date) return '—';
-  const d = typeof date === 'string' ? new Date(date) : date;
+  let d = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return '—';
+
+  // Si la fecha es un string tipo "YYYY-MM-DD" (sin hora ni timezone),
+  // new Date() la interpreta como UTC midnight. En zonas horarias negativas
+  // (ej. Cuba UTC-4), al formatear con Intl.DateTimeFormat se resta un dia.
+  // Solucion: si el string tiene formato YYYY-MM-DD, agregar 'T00:00:00'
+  // para que se interprete como local time.
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    d = new Date(date + 'T00:00:00');
+  }
 
   const locale = i18n.language || 'es';
 

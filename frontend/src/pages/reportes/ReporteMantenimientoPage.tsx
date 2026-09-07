@@ -8,6 +8,7 @@ import Pagination from '@/components/common/Pagination';
 import { formatDate, formatNumber } from '@/utils/format';
 import { useMantenimientoStatusInfo } from '@/utils/statusLabels';
 import type { MantenimientoReporteResponse } from '@/types';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 
 export default function ReporteMantenimientoPage() {
   const { t } = useTranslation(['reportes', 'common']);
@@ -28,8 +29,10 @@ export default function ReporteMantenimientoPage() {
       setData(res.data.content);
       setTotalPages(res.data.totalPages);
       setTotalElements(res.data.totalElements);
-    } catch {
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
       addToast({ type: 'error', title: t('common:state.error'), message: t('reportes:mantenimiento.toast.loadError') });
+      }
     } finally {
       setLoading(false);
     }
