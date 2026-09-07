@@ -115,7 +115,14 @@ export default function ComprarPlanesPage() {
       try {
         const res = await paymentsApi.getStatus(paymentId);
         const updated = res.data;
-        setPayment(updated);
+        // Preservar el QR del estado anterior si el backend no lo incluye
+        // en la respuesta de polling (algunos backends solo retornan el QR
+        // en la creacion, no en cada getStatus)
+        setPayment((prev) => ({
+          ...updated,
+          qrImageBase64: updated.qrImageBase64 ?? prev?.qrImageBase64,
+          qrCode: updated.qrCode ?? prev?.qrCode,
+        }));
         if (updated.status === 'PAGADO') {
           stopPolling();
           addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paid') });
@@ -168,7 +175,12 @@ export default function ComprarPlanesPage() {
     setActionLoading(true);
     try {
       const res = await paymentsApi.getStatus(payment.id);
-      setPayment(res.data);
+      // Preservar el QR del estado anterior si el backend no lo incluye
+      setPayment((prev) => ({
+        ...res.data,
+        qrImageBase64: res.data.qrImageBase64 ?? prev?.qrImageBase64,
+        qrCode: res.data.qrCode ?? prev?.qrCode,
+      }));
       if (res.data.status === 'PAGADO') {
         stopPolling();
         addToast({ type: 'success', title: t('common:state.success'), message: t('admin:payment.toast.paid') });
