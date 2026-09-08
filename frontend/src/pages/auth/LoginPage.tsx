@@ -26,18 +26,25 @@ export default function LoginPage() {
   const checkBackendConnection = useCallback(async () => {
     setCheckingConnection(true);
     try {
-      // Hacer una peticion ligera al backend (auth/me responde 401 si no hay token,
-      // pero si el servidor esta caido, lanza error de red)
-      await apiClient.get('/auth/me', { timeout: 5000 });
-      // Si llega aqui con 200, el servidor esta activo (raro sin token, pero posible)
+      // Hacer una peticion ligera al backend.
+      // Si el servidor responde (cualquier status), esta online.
+      // Solo si no hay respuesta (error de red), esta caido.
+      // X-Skip-Toast evita que el interceptor muestre toasts por token invalido
+      await apiClient.get('/auth/me', {
+        timeout: 5000,
+        headers: { 'X-Skip-Toast': 'true' },
+      });
+      // 200 = servidor online y token valido
       setBackendOnline(true);
     } catch (err) {
       const axiosErr = err as AxiosError;
-      // 401 significa que el servidor responde, solo no hay token
-      if (axiosErr.response?.status === 401) {
+      // Si hay response (cualquier status: 400, 401, 403, 404, 500...),
+      // el servidor esta online — respondio algo
+      if (axiosErr.response) {
         setBackendOnline(true);
       } else {
-        // ERR_NETWORK, ERR_CONNECTION_REFUSED, ECONNABORTED → servidor caido
+        // Sin response = error de red (ERR_NETWORK, ERR_CONNECTION_REFUSED,
+        // ECONNABORTED) → servidor caido o inalcanzable
         setBackendOnline(false);
       }
     } finally {
