@@ -87,12 +87,12 @@ export default function CrudPage<TReq, TRes extends { id: number }>({
   const [formData, setFormData] = useState<TReq>(getFormDefaultValues());
   const [deleteTarget, setDeleteTarget] = useState<TRes | null>(null);
 
-  // Show error as toast when it changes
+  // Show error as toast when it changes (only if not empty and interceptor didn't already show it)
   useEffect(() => {
     if (error) {
       addToast({ type: 'error', title: t('common:state.error'), message: error });
     }
-  }, [error, addToast]);
+  }, [error, addToast, t]);
 
   // ---- Handlers ----
 

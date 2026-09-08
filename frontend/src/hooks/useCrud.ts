@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import i18n from '@/i18n';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 import type { PageResponse, PageParams } from '@/types';
 import type { AxiosResponse } from 'axios';
 
@@ -60,10 +61,12 @@ export function useCrud<TReq, TRes>(
         setTotalElements(pageData.totalElements);
         setSize(pageData.size);
       } catch (err) {
-        const message =
-          (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          t('crud.load');
-        setError(message);
+        if (!isToastAlreadyShown(err)) {
+          const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('crud.load');
+          setError(message);
+        } else {
+          setError('');
+        }
       } finally {
         setLoading(false);
       }
@@ -92,10 +95,12 @@ export function useCrud<TReq, TRes>(
       await fetchData();
       return response.data;
     } catch (err) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        t('crud.create');
-      setError(message);
+      if (!isToastAlreadyShown(err)) {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('crud.create');
+        setError(message);
+      } else {
+        setError('');
+      }
       throw err;
     } finally {
       setSaving(false);
@@ -110,10 +115,12 @@ export function useCrud<TReq, TRes>(
       await fetchData();
       return response.data;
     } catch (err) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        t('crud.update');
-      setError(message);
+      if (!isToastAlreadyShown(err)) {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('crud.update');
+        setError(message);
+      } else {
+        setError('');
+      }
       throw err;
     } finally {
       setSaving(false);
@@ -127,10 +134,12 @@ export function useCrud<TReq, TRes>(
       await api.delete(id);
       await fetchData();
     } catch (err) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        t('crud.delete');
-      setError(message);
+      if (!isToastAlreadyShown(err)) {
+        const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || t('crud.delete');
+        setError(message);
+      } else {
+        setError('');
+      }
       throw err;
     } finally {
       setSaving(false);
