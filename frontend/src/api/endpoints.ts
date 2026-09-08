@@ -515,7 +515,7 @@ export const subscriptionsApi = {
     apiClient.get<PageResponse<SubscriptionResponse>>(`/subscriptions/plan/${planId}`, { params }),
 
   getMyCompanySubscription: (): Promise<AxiosResponse<SubscriptionResponse>> =>
-    apiClient.get<SubscriptionResponse>('/subscriptions/my-company'),
+    apiClient.get<SubscriptionResponse>('/subscriptions/my-company', { headers: { 'X-Skip-Toast': 'true' } }),
 };
 
 
@@ -597,5 +597,5 @@ export const paymentsApi = {
     apiClient.get<PageResponse<PaymentResponse>>(`/payments/empresa/${empresaId}`, { params }),
 
   getMyCompany: (): Promise<AxiosResponse<PaymentResponse>> =>
-    apiClient.get<PaymentResponse>('/payments/my-company'),
+    apiClient.get<PaymentResponse>('/payments/my-company', { headers: { 'X-Skip-Toast': 'true' } }),
 };

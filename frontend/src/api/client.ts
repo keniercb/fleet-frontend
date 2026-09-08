@@ -57,6 +57,10 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
+    // No mostrar toast si la peticion incluye el header X-Skip-Toast
+    const skipToast = response.config?.headers?.['X-Skip-Toast'] === 'true';
+    if (skipToast) return response;
+
     // Mostrar toast si la respuesta exitosa contiene un mensaje del backend
     const data = response.data as BackendMessage;
     if (data && typeof data.message === 'string' && data.message.trim()) {
@@ -73,16 +77,19 @@ apiClient.interceptors.response.use(
       window.location.href = '/login';
     }
 
+    // No mostrar toast si la peticion incluye el header X-Skip-Toast
+    const skipToast = error.config?.headers?.['X-Skip-Toast'] === 'true';
+
     // Mostrar toast si el error contiene un mensaje del backend
     const errorData = error?.response?.data as BackendMessage;
     let toastShown = false;
-    if (errorData && typeof errorData.message === 'string' && errorData.message.trim()) {
+    if (!skipToast && errorData && typeof errorData.message === 'string' && errorData.message.trim()) {
       const status = error.response?.status ?? 500;
       const toastType = getToastTypeForStatus(status);
       const title = getTitleForStatus(status);
       showToastFromInterceptor(toastType, title, errorData.message);
       toastShown = true;
-    } else if (errorData && typeof errorData.error === 'string' && errorData.error.trim()) {
+    } else if (!skipToast && errorData && typeof errorData.error === 'string' && errorData.error.trim()) {
       const status = error.response?.status ?? 500;
       const toastType = getToastTypeForStatus(status);
       const title = getTitleForStatus(status);
