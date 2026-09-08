@@ -86,6 +86,8 @@
       "phone": "Phone",
       "email": "Email"
     },
+    "generatePdf": "Generate PDF",
+    "exportingPdf": "Exporting PDF...",
     "form": {
       "code": { "label": "Code", "placeholder": "E.g.: CMP-001" },
       "name": { "label": "Name", "placeholder": "E.g.: Southern Transport Inc." },
@@ -128,6 +130,8 @@
       "state": "Status",
       "actions": "Actions"
     },
+    "generatePdf": "Generate PDF",
+    "exportingPdf": "Exporting PDF...",
     "form": {
       "numero": { "label": "Number", "placeholder": "E.g.: 1234567890123456" },
       "empresaId": { "label": "Company" },

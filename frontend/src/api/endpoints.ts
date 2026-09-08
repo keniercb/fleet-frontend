@@ -268,6 +268,9 @@ export const empresasApi = {
 
   findByCodigo: (codigo: string): Promise<AxiosResponse<EmpresaResponse>> =>
     apiClient.get<EmpresaResponse>(`/empresas/codigo/${codigo}`),
+
+  reportePdf: (): Promise<AxiosResponse<Blob>> =>
+    apiClient.get<Blob>('/empresas/reporte-pdf', { responseType: 'blob' }),
 };
 
 // ---- Choferes ----
@@ -290,6 +293,9 @@ export const choferesApi = {
 
   findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<ChoferResponse>>> =>
     apiClient.get<PageResponse<ChoferResponse>>(`/choferes/empresa/${empresaId}`, { params }),
+
+  reportePdf: (empresaId?: number): Promise<AxiosResponse<Blob>> =>
+    apiClient.get<Blob>('/choferes/reporte-pdf', { params: { empresaId }, responseType: 'blob' }),
 };
 
 // ---- Categorias Licencia ----
@@ -384,6 +390,9 @@ export const tarjetasCombustibleApi = {
 
   findByEmpresaId: (empresaId: number, params?: PageParams): Promise<AxiosResponse<PageResponse<TarjetaCombustibleResponse>>> =>
     apiClient.get<PageResponse<TarjetaCombustibleResponse>>(`/tarjetas-combustible/empresa/${empresaId}`, { params }),
+
+  reportePdf: (empresaId?: number): Promise<AxiosResponse<Blob>> =>
+    apiClient.get<Blob>('/tarjetas-combustible/reporte-pdf', { params: { empresaId }, responseType: 'blob' }),
 };
 
 // ---- Recorridos ----

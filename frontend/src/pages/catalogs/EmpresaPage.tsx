@@ -1,10 +1,40 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FileDown, Loader2 } from 'lucide-react';
 import CrudPage, { type CrudPageConfig, type ColumnDef, type FormFieldDef } from '@/components/common/CrudPage';
+import PageHeader from '@/components/common/PageHeader';
 import { empresasApi, provinciasApi, municipiosApi } from '@/api/endpoints';
+import { useToast } from '@/contexts/ToastContext';
+import { isToastAlreadyShown } from '@/api/toastBridge';
 import type { EmpresaRequest, EmpresaResponse } from '@/types';
 
 export default function EmpresaPage() {
   const { t } = useTranslation(['catalogs', 'common']);
+  const { addToast } = useToast();
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const res = await empresasApi.reportePdf();
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `empresas_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      addToast({ type: 'success', title: t('common:state.success'), message: t('catalogs:company.generatePdf') });
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
+        addToast({ type: 'error', title: t('common:state.error'), message: t('catalogs:company.exportingPdf') });
+      }
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   const columns: ColumnDef<EmpresaResponse>[] = [
     { key: 'codigo', label: t('common:field.code') },
@@ -43,7 +73,6 @@ export default function EmpresaPage() {
         } catch { return []; }
       },
       onChange: () => {
-        // When provincia changes, reload municipio options
         return;
       },
     },
@@ -101,5 +130,20 @@ export default function EmpresaPage() {
     getIsActive: (e) => e.activo,
   };
 
-  return <CrudPage config={config} />;
+  // Renderizar CrudPage sin el header propio (lo renderizamos nosotros con el boton PDF)
+  return (
+    <div>
+      <PageHeader title={config.title} description={config.description}>
+        <button
+          onClick={handleExportPdf}
+          disabled={exportingPdf}
+          className="btn-secondary flex items-center gap-2"
+        >
+          {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+          {exportingPdf ? t('catalogs:company.exportingPdf') : t('catalogs:company.generatePdf')}
+        </button>
+      </PageHeader>
+      <CrudPage config={{ ...config, title: '', description: '' }} />
+    </div>
+  );
 }

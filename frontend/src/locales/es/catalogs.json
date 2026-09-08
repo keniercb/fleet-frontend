@@ -86,6 +86,8 @@
       "phone": "Teléfono",
       "email": "Email"
     },
+    "generatePdf": "Generar PDF",
+    "exportingPdf": "Exportando PDF...",
     "form": {
       "code": { "label": "Código", "placeholder": "Ej: EMP-001" },
       "name": { "label": "Nombre", "placeholder": "Ej: Transportes del Sur S.A." },
@@ -128,6 +130,8 @@
       "state": "Estado",
       "actions": "Acciones"
     },
+    "generatePdf": "Generar PDF",
+    "exportingPdf": "Exportando PDF...",
     "form": {
       "numero": { "label": "Número", "placeholder": "Ej: 1234567890123456" },
       "empresaId": { "label": "Empresa" },

@@ -1,6 +1,8 @@
 {
   "title": "Choferes",
   "description": "Gestión de choferes del sistema",
+  "generatePdf": "Generar PDF",
+  "exportingPdf": "Exportando PDF...",
   "table": {
     "name": "Nombre",
     "lastName": "Apellidos",

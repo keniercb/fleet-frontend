@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Pencil, Trash2, Search, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ChevronDown, FileDown, Loader2 } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +38,7 @@ export default function TarjetaCombustiblePage() {
   const { t } = useTranslation(['catalogs', 'common']);
   const { addToast } = useToast();
   const { empresaId } = useAuth();
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const tarjetasApiScoped = useMemo(() => ({
     ...tarjetasCombustibleApi,
@@ -150,6 +151,29 @@ export default function TarjetaCombustiblePage() {
       )
     : data;
 
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const res = await tarjetasCombustibleApi.reportePdf(empresaId);
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tarjetas_combustible_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      addToast({ type: 'success', title: t('common:state.success'), message: t('catalogs:fuelCard.generatePdf') });
+    } catch (err) {
+      if (!isToastAlreadyShown(err)) {
+        addToast({ type: 'error', title: t('common:state.error'), message: t('catalogs:fuelCard.exportingPdf') });
+      }
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   const colCount = 6;
 
   return (
@@ -165,6 +189,14 @@ export default function TarjetaCombustiblePage() {
             className="input-field pl-9 py-2 text-sm"
           />
         </div>
+        <button
+          onClick={handleExportPdf}
+          disabled={exportingPdf}
+          className="btn-secondary flex items-center gap-2"
+        >
+          {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+          {exportingPdf ? t('catalogs:fuelCard.exportingPdf') : t('catalogs:fuelCard.generatePdf')}
+        </button>
         <button onClick={handleOpenCreate} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
           {t('crud:actions.new')}

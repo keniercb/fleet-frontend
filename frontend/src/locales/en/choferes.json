@@ -1,6 +1,8 @@
 {
   "title": "Drivers",
   "description": "System driver management",
+  "generatePdf": "Generate PDF",
+  "exportingPdf": "Exporting PDF...",
   "table": {
     "name": "Name",
     "lastName": "Last Name",
